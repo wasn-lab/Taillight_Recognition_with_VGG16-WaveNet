@@ -1,8 +1,10 @@
-#include "pc_transform_gpu.h"
-#include "glog/stl_logging.h"
-#include "glog/logging.h"
+#include <glog/stl_logging.h>
+#include <glog/logging.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include "pc_transform_gpu.h"
 
 namespace pc_transform
 {
@@ -126,6 +128,19 @@ bool PCTransformGPU<PointT>::transform(pcl::PointCloud<PointT>& cloud)
   }
 
   return true;
+}
+
+
+template <typename PointT>
+bool PCTransformGPU<PointT>::transform(sensor_msgs::PointCloud2Ptr msg)
+{
+  pcl::PointCloud<PointT> cloud;
+  auto header = msg->header;
+  pcl::fromROSMsg(*msg, cloud);
+  bool ret = transform(cloud);
+  pcl::toROSMsg(cloud, *msg);
+  msg->header = header;
+  return ret;
 }
 
 template class PCTransformGPU<pcl::PointXYZI>;

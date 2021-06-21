@@ -5,10 +5,13 @@
 #include <cstdio>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include "pc_transform_cpu.h"
 #include "pc_transform_gpu.h"
+#include "pc_transform_node.h"
 
 using namespace pc_transform;
 
@@ -53,8 +56,26 @@ static auto get_affine3f()
   return a3f;
 }
 
+TEST(pc_transform, test_transform_gpu)
+{
+  sensor_msgs::PointCloud2Ptr pc2_msg_ptr{new sensor_msgs::PointCloud2};
+  auto cloud = gen_random_cloud();
+  pcl::toROSMsg(cloud, *pc2_msg_ptr);
+  pc2_msg_ptr->header.seq = 31415;
+  pc2_msg_ptr->header.stamp.sec = 1608000995;
+  pc2_msg_ptr->header.stamp.nsec = 10007;
+  pc2_msg_ptr->header.frame_id = "test";
 
-TEST(kk, test_transform_gpu_eq_cpu_varing_clouds)
+  PCTransformGPU<pcl::PointXYZI> obj;
+  obj.transform(pc2_msg_ptr);
+  auto transformed_pc2_ptr = pc2_msg_ptr;
+  EXPECT_EQ(transformed_pc2_ptr->header.seq, 31415);
+  EXPECT_EQ(transformed_pc2_ptr->header.stamp.sec, 1608000995);
+  EXPECT_EQ(transformed_pc2_ptr->header.stamp.nsec, 10007);
+  EXPECT_EQ(transformed_pc2_ptr->header.frame_id, "test");
+}
+
+TEST(pc_transform, test_transform_gpu_eq_cpu_varing_clouds)
 {
   PCTransformGPU<pcl::PointXYZI> obj;
   obj.set_transform_matrix(tx, ty, tz, rx, ry, rz);
@@ -85,7 +106,7 @@ TEST(kk, test_transform_gpu_eq_cpu_varing_clouds)
   }
 }
 
-TEST(kk, test_transform_cpu_perf)
+TEST(pc_transform, test_transform_cpu_perf)
 {
   auto cloud = gen_random_cloud();
   auto a3f = get_affine3f();
@@ -95,7 +116,7 @@ TEST(kk, test_transform_cpu_perf)
   }
 }
 
-TEST(kk, test_transform_gpu_perf)
+TEST(pc_transform, test_transform_gpu_perf)
 {
   auto cloud = gen_random_cloud();
   PCTransformGPU<pcl::PointXYZI> obj;

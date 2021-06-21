@@ -3,6 +3,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
+#include <sensor_msgs/PointCloud2.h>
 
 namespace pc_transform
 {
@@ -16,6 +17,7 @@ public:
                            const float rz);
 
   bool transform(pcl::PointCloud<PointT>& cloud);
+  bool transform(sensor_msgs::PointCloud2Ptr msg);
 
 private:
   Eigen::Affine3f transform_matrix_;

@@ -20,8 +20,8 @@ private:
   PCTransformGPU<pcl::PointXYZI> pc_transform_gpu_;
 
   // functions
-  void callback(const sensor_msgs::PointCloud2ConstPtr& msg);
-  void publish(const sensor_msgs::PointCloud2ConstPtr& msg);
+  void callback(sensor_msgs::PointCloud2Ptr msg);
+  void publish(sensor_msgs::PointCloud2ConstPtr msg);
   int set_subscriber();
   int set_publisher();
   int set_transform_parameters();

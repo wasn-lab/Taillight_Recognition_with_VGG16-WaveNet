@@ -13,19 +13,61 @@
 
 namespace pc_transform
 {
+static int pc2_msg_to_xyzi(const sensor_msgs::PointCloud2& cloud_msg, pcl::PointCloud<pcl::PointXYZI>::Ptr target_cloud)
+{
+  // Get the field structure of this point cloud
+  int point_bytes = cloud_msg.point_step;
+  int offset_x = 0;
+  int offset_y = 0;
+  int offset_z = 0;
+  int offset_intensity = 0;
+  for (const auto& field: cloud_msg.fields)
+  {
+    if (field.name == "x")
+    {
+      offset_x = field.offset;
+    }
+    else if (field.name == "y")
+    {
+      offset_y = field.offset;
+    }
+    else if (field.name == "z")
+    {
+      offset_z = field.offset;
+    }
+    else if (field.name == "intensity")
+    {
+      offset_intensity = field.offset;
+    }
+  }
+
+  // populate point cloud object
+  target_cloud->points.resize(cloud_msg.width * cloud_msg.height);
+  for (size_t p = 0, bound = cloud_msg.width * cloud_msg.height, point_offset = 0; p < bound;
+       ++p, point_offset += point_bytes)
+  {
+    const auto base_addr = &cloud_msg.data[0] + point_offset;
+    target_cloud->points[p].x = *(float*)(base_addr + offset_x);
+    target_cloud->points[p].y = *(float*)(base_addr + offset_y);
+    target_cloud->points[p].z = *(float*)(base_addr + offset_z);
+    target_cloud->points[p].intensity = *(float*)(base_addr + offset_intensity);
+  }
+  pcl_conversions::toPCL(cloud_msg.header, target_cloud->header);
+  return 0;
+}
+
 
 PCTransformNode::PCTransformNode() : pc_transform_gpu_()
 {
 }
 
-void PCTransformNode::callback(const sensor_msgs::PointCloud2ConstPtr& msg)
+void PCTransformNode::callback(sensor_msgs::PointCloud2Ptr msg)
 {
-  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
-
-  pcl_conversions::toPCL(msg, *cloud);
+  pc_transform_gpu_.transform(msg);
+  publish(msg);
 }
 
-void PCTransformNode::publish(const sensor_msgs::PointCloud2ConstPtr& msg)
+void PCTransformNode::publish(sensor_msgs::PointCloud2ConstPtr msg)
 {
   publisher_.publish(msg);
 
