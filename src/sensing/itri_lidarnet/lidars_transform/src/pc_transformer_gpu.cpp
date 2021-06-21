@@ -10,7 +10,7 @@ template <typename PointT>
 cudaError_t cudaTransformPoints(int threads, PointT* cloud_gpu_, int number_of_points, float* d_matrix);
 
 template <typename PointT>
-PCTransformerGPU<PointT>::PCTransformerGPU()
+PCTransformerGPU<PointT>::PCTransformerGPU(): num_cuda_threads_(0)
 {
   cudaError_t err = ::cudaSuccess;
   err = cudaSetDevice(0);
@@ -19,20 +19,9 @@ PCTransformerGPU<PointT>::PCTransformerGPU()
   cudaDeviceProp prop;
   cudaGetDeviceProperties(&prop, 0);
 
-  if (prop.major == 2)
-  {
-    num_cuda_threads_ = prop.maxThreadsPerBlock / 2;
-  }
-  else if (prop.major > 2)
-  {
-    num_cuda_threads_ = prop.maxThreadsPerBlock;
-  }
-  else
-  {
-    num_cuda_threads_ = 0;
-  }
-  LOG(INFO) << "cuda device version: " << prop.major << "." << prop.minor << ", set num_cuda_threads_ to "
-            << num_cuda_threads_;
+  num_cuda_threads_ = prop.maxThreadsPerBlock;
+  LOG(INFO) << "cuda device version: " << prop.major << "." << prop.minor << ", device name: " << prop.name
+            << ", set num_cuda_threads_ to " << num_cuda_threads_;
   CHECK(num_cuda_threads_ > 0) << "Cuda threads is 0!";
 
   err = cudaMalloc((void**)&tm_elements_gpu_, 16 * sizeof(float));
