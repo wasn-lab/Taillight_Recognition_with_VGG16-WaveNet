@@ -82,12 +82,16 @@ void LidarDetection_Publisher(int argc, char** argv)
       std::cout << "WARNING: Car & Ped_Cyc is Out of Sync! " << time_diff_ms << "ms" << std::endl;
     }
     
-    if(!g_msgArr.objects.empty() || (g_car_msg_rostime_last == g_car_msg_rostime && g_ped_cyc_msg_rostime_last == g_ped_cyc_msg_rostime))
+    if(!(g_car_msg_rostime_last == g_car_msg_rostime && g_ped_cyc_msg_rostime_last == g_ped_cyc_msg_rostime))
     {
-    // if (g_msgArr.objects.empty())
-    // {
-    //   g_integrator_stopWatch.reset();
-    // }
+      if (g_car_msg_rostime_last == g_car_msg_rostime)
+      {
+        ROS_WARN_STREAM("PointPillars car model time not updated.");
+      }
+      if (g_ped_cyc_msg_rostime_last == g_ped_cyc_msg_rostime)
+      {
+        ROS_WARN_STREAM("PointPillars pedestrian/cyclist model time not updated.");
+      }
       if (g_ped_cyc_msg_rostime.isValid())
       {
         g_msgArr.header.stamp = g_ped_cyc_msg_rostime;
@@ -100,7 +104,15 @@ void LidarDetection_Publisher(int argc, char** argv)
       {
         std::cout << "[WARNING]: NO VALID TIMESTAMP FOR LiDAR DETECTION!!" << std::endl;
       }
-      
+      if (g_ped_cyc_msg_rostime.isValid())
+      {
+        g_ped_cyc_msg_rostime_last = g_ped_cyc_msg_rostime;
+      }
+      if (g_car_msg_rostime.isValid())
+      {
+        g_car_msg_rostime_last = g_car_msg_rostime;
+      }
+
       g_msgArr.header.frame_id = "lidar";
 
       g_pub_lidar_detection.publish(g_msgArr);

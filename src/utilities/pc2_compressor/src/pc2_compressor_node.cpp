@@ -72,6 +72,10 @@ void PC2CompressorNode::publish_compressed_pc2(const sensor_msgs::PointCloud2Con
     heartbeat_publisher_.publish(empty_msg);
   }
 
+  ros::Time now = ros::Time::now();
+  int32_t latency = (now.sec - msg->header.stamp.sec) * 1000 + (now.nsec - msg->header.stamp.nsec) / 1000000;
+  LOG_EVERY_N(INFO, 64) << publisher_.getTopic() << " latency: " << latency << " ms.";
+
   if (pc2_compressor::should_verify_decompressed_data())
   {
     auto decmpr_msg = pc2_compressor::decompress_msg(cmpr_msg);
