@@ -11,6 +11,7 @@ set(PC_TRANSFORM_LIB_SRCS
 set(PC_TRANSFORM_INCLUDE_DIRS
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_BINARY_DIR}/include
+    ${car_model_BINARY_DIR}/include
     ${catkin_INCLUDE_DIRS}
     ${PCL_IO_INCLUDE_DIR}
     ${EIGEN3_INCLUDE_DIR}

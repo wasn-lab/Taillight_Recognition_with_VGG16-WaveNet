@@ -24,13 +24,15 @@ private:
   void publish(sensor_msgs::PointCloud2ConstPtr msg);
   int set_subscriber();
   int set_publisher();
-  int set_transform_parameters();
 
 
 public:
   PCTransformNode();
   ~PCTransformNode() = default;
   sensor_msgs::PointCloud2ConstPtr transform(const sensor_msgs::PointCloud2ConstPtr& msg);
+  int set_transform_parameters();
+  int set_transform_parameters(const float tx, const float ty, const float tz, const float rx, const float ry,
+                               const float rz);
   void run();
 };
 };  // namespace pc_transform

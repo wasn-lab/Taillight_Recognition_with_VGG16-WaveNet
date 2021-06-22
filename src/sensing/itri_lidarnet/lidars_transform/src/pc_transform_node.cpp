@@ -9,6 +9,7 @@
 #include <sensor_msgs/PointCloud.h>
 #include <std_msgs/Empty.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include "car_model.h"
 #include "pc_transform_args_parser.h"
 #include "pc_transform_utils.h"
 #include "pc_transform_node.h"
@@ -77,11 +78,24 @@ int PCTransformNode::set_publisher()
   return EXIT_SUCCESS;
 }
 
+int PCTransformNode::set_transform_parameters(const float tx, const float ty, const float tz, const float rx, const float ry,
+                             const float rz)
+{
+  pc_transform_gpu_.set_transform_matrix(tx, ty, tz, rx, ry, rz);
+  return EXIT_SUCCESS;
+}
+
 int PCTransformNode::set_transform_parameters()
 {
   std::string param_name = get_transform_param_name();
   // params is {tx, ty, tz, rx, ry, rz}, where t* is translation and r* is rotation
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3
   std::vector<double> transform_params{ 0, 0, 0, 0, 0.2, 0 };
+#elif CAR_MODEL_IS_C1
+  std::vector<double> transform_params{ 0, 0, 0, 0.023, 0.21, 0 };
+#else
+  std::vector<double> transform_params{ 0, 0, 0, 0, 0, 0 };
+#endif
 
   if (ros::param::has(param_name))
   {
@@ -99,7 +113,7 @@ int PCTransformNode::set_transform_parameters()
   pc_transform_gpu_.set_transform_matrix(transform_params[0], transform_params[1], transform_params[2],
                                          transform_params[3], transform_params[4], transform_params[5]);
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 void PCTransformNode::run()

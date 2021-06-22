@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
     std_msgs
     roscpp
     msgs
+    car_model
 )
 
 catkin_package(CATKIN_DEPENDS
@@ -16,6 +17,7 @@ catkin_package(CATKIN_DEPENDS
     std_msgs
     roscpp
     msgs
+    car_model
 )
 
 find_package(CUDA)
