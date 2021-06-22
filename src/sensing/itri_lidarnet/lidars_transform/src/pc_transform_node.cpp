@@ -18,6 +18,7 @@ namespace pc_transform
 {
 PCTransformNode::PCTransformNode() : pc_transform_gpu_()
 {
+  set_transform_parameters();
 }
 
 void PCTransformNode::callback(sensor_msgs::PointCloud2Ptr msg)
@@ -30,7 +31,7 @@ sensor_msgs::PointCloud2ConstPtr PCTransformNode::transform(const sensor_msgs::P
   auto cloud = pc2_msg_to_xyzi(msg);
   bool ret = pc_transform_gpu_.transform(*cloud);
   CHECK(ret == true) << "Fail to transform point cloud";
-  // LOG(INFO) << "(" << msg->header.frame_id << ", " << msg->header.seq << "): checksum: " << checksum_of(cloud);
+  // LOG(INFO) << msg->header.seq << ": " << checksum_of(cloud) << " (pc_transform_node)";
   sensor_msgs::PointCloud2Ptr output_msg{ new sensor_msgs::PointCloud2 };
   pcl::toROSMsg(*cloud, *output_msg);
   output_msg->header = msg->header;
