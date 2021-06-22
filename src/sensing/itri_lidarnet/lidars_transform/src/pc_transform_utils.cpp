@@ -71,4 +71,23 @@ uint32_t checksum_of(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ptr)
   return hash;
 }
 
+uint32_t checksum_of(const sensor_msgs::PointCloud2ConstPtr& msg)
+{
+  const uint32_t p = 16777619;
+  auto hash = static_cast<uint32_t>(2166136261);
+  hash = (hash ^ (static_cast<uint32_t>(msg->header.seq))) * p;
+  hash = (hash ^ (static_cast<uint32_t>(msg->header.stamp.sec))) * p;
+  hash = (hash ^ (static_cast<uint32_t>(msg->header.stamp.nsec))) * p;
+  for(const unsigned char ch: msg->data)
+  {
+    hash = (hash ^ (static_cast<uint32_t>(ch))) * p;
+    hash += hash << 13u;
+    hash ^= hash >> 7u;
+    hash += hash << 3u;
+    hash ^= hash >> 17u;
+    hash += hash << 5u;
+  }
+  return hash;
+}
+
 };  // namespace pc_transform

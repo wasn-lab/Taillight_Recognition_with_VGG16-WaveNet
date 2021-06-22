@@ -18,6 +18,8 @@ private:
   ros::Publisher heartbeat_publisher_;
   ros::NodeHandle node_handle_;
   PCTransformGPU<pcl::PointXYZI> pc_transform_gpu_;
+  uint32_t max_latency_in_ms_ = 0;
+  uint32_t num_msgs_per_second_ = 0;
 
   // functions
   void callback(sensor_msgs::PointCloud2Ptr msg);

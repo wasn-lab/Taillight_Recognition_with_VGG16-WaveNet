@@ -9,4 +9,5 @@ namespace pc_transform
 {
 pcl::PointCloud<pcl::PointXYZI>::Ptr pc2_msg_to_xyzi(const sensor_msgs::PointCloud2ConstPtr& msg_ptr);
 uint32_t checksum_of(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ptr);
+uint32_t checksum_of(const sensor_msgs::PointCloud2ConstPtr& msg);
 };  // namespace pc_transform

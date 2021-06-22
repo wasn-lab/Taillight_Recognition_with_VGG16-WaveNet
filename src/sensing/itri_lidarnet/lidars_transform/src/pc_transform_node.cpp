@@ -45,9 +45,10 @@ void PCTransformNode::publish(sensor_msgs::PointCloud2ConstPtr msg)
   std_msgs::Empty empty_msg;
   heartbeat_publisher_.publish(empty_msg);
 
+  num_msgs_per_second_++;
   ros::Time now = ros::Time::now();
-  int32_t latency = (now.sec - msg->header.stamp.sec) * 1000 + (now.nsec - msg->header.stamp.nsec) / 1000000;
-  LOG_EVERY_N(INFO, 64) << publisher_.getTopic() << " latency: " << latency << " ms.";
+  uint32_t latency = (now.sec - msg->header.stamp.sec) * 1000 + (now.nsec - msg->header.stamp.nsec) / 1000000;
+  max_latency_in_ms_ = std::max(max_latency_in_ms_, latency);
 }
 
 int PCTransformNode::set_subscriber()
@@ -130,6 +131,9 @@ void PCTransformNode::run()
   ros::Rate r(1);
   while (ros::ok())
   {
+    LOG(INFO) << publisher_.getTopic() << ": fps " << num_msgs_per_second_ << ", latency w.r.t Raw: " << max_latency_in_ms_ << " ms";
+    max_latency_in_ms_ = 0;
+    num_msgs_per_second_ = 0;
     r.sleep();
   }
   spinner.stop();
