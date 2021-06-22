@@ -3,6 +3,7 @@ set(PC_TRANSFORM_LIB "pc_transform")
 set(PC_TRANSFORM_LIB_SRCS
   transform_points.cu
   pc_transform_args_parser.cpp
+  pc_transform_utils.cpp
   pc_transform_node.cpp
   pc_transform_cpu.cpp
   pc_transform_gpu.cpp)

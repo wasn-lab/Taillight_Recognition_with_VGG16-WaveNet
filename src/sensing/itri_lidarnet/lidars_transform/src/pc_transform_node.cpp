@@ -10,54 +10,11 @@
 #include <std_msgs/Empty.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include "pc_transform_args_parser.h"
+#include "pc_transform_utils.h"
 #include "pc_transform_node.h"
 
 namespace pc_transform
 {
-static int pc2_msg_to_xyzi(const sensor_msgs::PointCloud2ConstPtr& msg_ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr target_cloud)
-{
-  // Get the field structure of this point cloud
-  int point_bytes = msg_ptr->point_step;
-  int offset_x = 0;
-  int offset_y = 0;
-  int offset_z = 0;
-  int offset_intensity = 0;
-  for (const auto& field: msg_ptr->fields)
-  {
-    if (field.name == "x")
-    {
-      offset_x = field.offset;
-    }
-    else if (field.name == "y")
-    {
-      offset_y = field.offset;
-    }
-    else if (field.name == "z")
-    {
-      offset_z = field.offset;
-    }
-    else if (field.name == "intensity")
-    {
-      offset_intensity = field.offset;
-    }
-  }
-
-  // populate point cloud object
-  target_cloud->points.resize(msg_ptr->width * msg_ptr->height);
-  for (size_t p = 0, bound = msg_ptr->width * msg_ptr->height, point_offset = 0; p < bound;
-       ++p, point_offset += point_bytes)
-  {
-    const auto base_addr = &msg_ptr->data[0] + point_offset;
-    target_cloud->points[p].x = *(float*)(base_addr + offset_x);
-    target_cloud->points[p].y = *(float*)(base_addr + offset_y);
-    target_cloud->points[p].z = *(float*)(base_addr + offset_z);
-    target_cloud->points[p].intensity = *(float*)(base_addr + offset_intensity);
-  }
-  pcl_conversions::toPCL(msg_ptr->header, target_cloud->header);
-  return 0;
-}
-
-
 PCTransformNode::PCTransformNode() : pc_transform_gpu_()
 {
 }
@@ -69,11 +26,10 @@ void PCTransformNode::callback(sensor_msgs::PointCloud2Ptr msg)
 
 sensor_msgs::PointCloud2ConstPtr PCTransformNode::transform(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
-  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud{new pcl::PointCloud<pcl::PointXYZI>};
-  pc2_msg_to_xyzi(msg, cloud);
+  auto cloud = pc2_msg_to_xyzi(msg);
   bool ret = pc_transform_gpu_.transform(*cloud);
   CHECK(ret == true) << "Fail to transform point cloud";
-  sensor_msgs::PointCloud2Ptr output_msg{new sensor_msgs::PointCloud2};
+  sensor_msgs::PointCloud2Ptr output_msg{ new sensor_msgs::PointCloud2 };
   pcl::toROSMsg(*cloud, *output_msg);
   output_msg->header = msg->header;
   return output_msg;
@@ -121,12 +77,11 @@ int PCTransformNode::set_publisher()
   return EXIT_SUCCESS;
 }
 
-
 int PCTransformNode::set_transform_parameters()
 {
   std::string param_name = get_transform_param_name();
   // params is {tx, ty, tz, rx, ry, rz}, where t* is translation and r* is rotation
-  std::vector<double> transform_params{0, 0, 0, 0, 0.2, 0};
+  std::vector<double> transform_params{ 0, 0, 0, 0, 0.2, 0 };
 
   if (ros::param::has(param_name))
   {
@@ -134,7 +89,8 @@ int PCTransformNode::set_transform_parameters()
   }
   else
   {
-    LOG(INFO) << "Cannot find transform parameters from " << param_name << ". Assume this is front-top lidar and use default values.";
+    LOG(INFO) << "Cannot find transform parameters from " << param_name
+              << ". Assume this is front-top lidar and use default values.";
   }
 
   LOG(INFO) << "transform parameters -- tx: " << transform_params[0] << ", ty: " << transform_params[1]
