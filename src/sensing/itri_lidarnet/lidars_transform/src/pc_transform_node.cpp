@@ -91,7 +91,8 @@ int PCTransformNode::set_transform_parameters(const float tx, const float ty, co
 int PCTransformNode::set_transform_parameters()
 {
   std::string param_name = get_transform_param_name();
-  // params is {tx, ty, tz, rx, ry, rz}, where t* is translation and r* is rotation
+  // params is {tx, ty, tz, rx, ry, rz}, where t* is translation and r* is rotation.
+  // The default parameters are for front-top lidar and for the localization node.
 #if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3
   std::vector<double> transform_params{ 0, 0, 0, 0, 0.2, 0 };
 #elif CAR_MODEL_IS_C1
