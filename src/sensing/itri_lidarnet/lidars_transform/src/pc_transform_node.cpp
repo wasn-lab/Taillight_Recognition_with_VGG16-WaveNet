@@ -16,12 +16,12 @@
 
 namespace pc_transform
 {
-PCTransformNode::PCTransformNode() : pc_transform_gpu_()
+PCTransformNode::PCTransformNode()
 {
   set_transform_parameters();
 }
 
-void PCTransformNode::callback(sensor_msgs::PointCloud2Ptr msg)
+void PCTransformNode::callback(const sensor_msgs::PointCloud2Ptr& msg)
 {
   publish(transform(msg));
 }
@@ -38,7 +38,7 @@ sensor_msgs::PointCloud2ConstPtr PCTransformNode::transform(const sensor_msgs::P
   return output_msg;
 }
 
-void PCTransformNode::publish(sensor_msgs::PointCloud2ConstPtr msg)
+void PCTransformNode::publish(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
   publisher_.publish(msg);
 

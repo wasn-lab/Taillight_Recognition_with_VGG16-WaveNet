@@ -22,8 +22,8 @@ private:
   uint32_t num_msgs_per_second_ = 0;
 
   // functions
-  void callback(sensor_msgs::PointCloud2Ptr msg);
-  void publish(sensor_msgs::PointCloud2ConstPtr msg);
+  void callback(const sensor_msgs::PointCloud2Ptr& msg);
+  void publish(const sensor_msgs::PointCloud2ConstPtr& msg);
   int set_subscriber();
   int set_publisher();
 

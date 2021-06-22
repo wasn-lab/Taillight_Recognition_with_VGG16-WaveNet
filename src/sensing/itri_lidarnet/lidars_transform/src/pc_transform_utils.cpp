@@ -52,7 +52,7 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr pc2_msg_to_xyzi(const sensor_msgs::PointClo
   return target_cloud;
 }
 
-uint32_t checksum_of(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ptr)
+uint32_t checksum_of(const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud_ptr)
 {
   const uint32_t p = 16777619;
   auto hash = static_cast<uint32_t>(2166136261);
