@@ -10,14 +10,14 @@ namespace pc_transform
 {
 pcl::PointCloud<pcl::PointXYZI>::Ptr pc2_msg_to_xyzi(const sensor_msgs::PointCloud2ConstPtr& msg_ptr)
 {
-  pcl::PointCloud<pcl::PointXYZI>::Ptr target_cloud{new pcl::PointCloud<pcl::PointXYZI>};
+  pcl::PointCloud<pcl::PointXYZI>::Ptr target_cloud{ new pcl::PointCloud<pcl::PointXYZI> };
   // Get the field structure of this point cloud
   int point_bytes = msg_ptr->point_step;
   int offset_x = 0;
   int offset_y = 0;
   int offset_z = 0;
   int offset_intensity = 0;
-  for (const auto& field: msg_ptr->fields)
+  for (const auto& field : msg_ptr->fields)
   {
     if (field.name == "x")
     {
@@ -51,4 +51,24 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr pc2_msg_to_xyzi(const sensor_msgs::PointClo
   pcl_conversions::toPCL(msg_ptr->header, target_cloud->header);
   return target_cloud;
 }
+
+uint32_t checksum_of(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ptr)
+{
+  const uint32_t p = 16777619;
+  auto hash = static_cast<uint32_t>(2166136261);
+  for(int i=cloud_ptr->points.size()-1; i>=0; i--)
+  {
+    hash = (hash ^ (static_cast<uint32_t>(cloud_ptr->points[i].x))) * p;
+    hash = (hash ^ (static_cast<uint32_t>(cloud_ptr->points[i].y))) * p;
+    hash = (hash ^ (static_cast<uint32_t>(cloud_ptr->points[i].z))) * p;
+    hash = (hash ^ (static_cast<uint32_t>(cloud_ptr->points[i].intensity))) * p;
+    hash += hash << 13u;
+    hash ^= hash >> 7u;
+    hash += hash << 3u;
+    hash ^= hash >> 17u;
+    hash += hash << 5u;
+  }
+  return hash;
+}
+
 };  // namespace pc_transform
