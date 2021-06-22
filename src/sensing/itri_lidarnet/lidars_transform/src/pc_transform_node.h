@@ -27,7 +27,6 @@ private:
   int set_subscriber();
   int set_publisher();
 
-
 public:
   PCTransformNode();
   ~PCTransformNode() = default;

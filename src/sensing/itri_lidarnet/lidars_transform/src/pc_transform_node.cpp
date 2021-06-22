@@ -81,8 +81,8 @@ int PCTransformNode::set_publisher()
   return EXIT_SUCCESS;
 }
 
-int PCTransformNode::set_transform_parameters(const float tx, const float ty, const float tz, const float rx, const float ry,
-                             const float rz)
+int PCTransformNode::set_transform_parameters(const float tx, const float ty, const float tz, const float rx,
+                                              const float ry, const float rz)
 {
   pc_transform_gpu_.set_transform_matrix(tx, ty, tz, rx, ry, rz);
   return EXIT_SUCCESS;
@@ -131,7 +131,8 @@ void PCTransformNode::run()
   ros::Rate r(1);
   while (ros::ok())
   {
-    LOG(INFO) << publisher_.getTopic() << ": fps " << num_msgs_per_second_ << ", latency w.r.t Raw: " << max_latency_in_ms_ << " ms";
+    LOG(INFO) << publisher_.getTopic() << ": fps " << num_msgs_per_second_
+              << ", latency w.r.t Raw: " << max_latency_in_ms_ << " ms";
     max_latency_in_ms_ = 0;
     num_msgs_per_second_ = 0;
     r.sleep();

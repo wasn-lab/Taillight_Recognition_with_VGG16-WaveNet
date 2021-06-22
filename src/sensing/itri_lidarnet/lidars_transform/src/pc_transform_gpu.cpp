@@ -12,7 +12,7 @@ template <typename PointT>
 cudaError_t cudaTransformPoints(int threads, PointT* cloud_gpu_, int number_of_points, float* d_matrix);
 
 template <typename PointT>
-PCTransformGPU<PointT>::PCTransformGPU(): num_cuda_threads_(0)
+PCTransformGPU<PointT>::PCTransformGPU() : num_cuda_threads_(0)
 {
   cudaError_t err = ::cudaSuccess;
   err = cudaSetDevice(0);
@@ -55,7 +55,7 @@ void PCTransformGPU<PointT>::free_cloud_gpu_if_necessary()
 
 template <typename PointT>
 int PCTransformGPU<PointT>::set_transform_matrix(const float tx, const float ty, const float tz, const float rx,
-                                                   const float ry, const float rz)
+                                                 const float ry, const float rz)
 {
   transform_matrix_ = Eigen::Affine3f::Identity();
   transform_matrix_.translation() << tx, ty, tz;

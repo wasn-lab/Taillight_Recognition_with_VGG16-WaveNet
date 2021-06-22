@@ -56,7 +56,7 @@ uint32_t checksum_of(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ptr)
 {
   const uint32_t p = 16777619;
   auto hash = static_cast<uint32_t>(2166136261);
-  for(int i=cloud_ptr->points.size()-1; i>=0; i--)
+  for (int i = cloud_ptr->points.size() - 1; i >= 0; i--)
   {
     hash = (hash ^ (static_cast<uint32_t>(cloud_ptr->points[i].x))) * p;
     hash = (hash ^ (static_cast<uint32_t>(cloud_ptr->points[i].y))) * p;
@@ -78,7 +78,7 @@ uint32_t checksum_of(const sensor_msgs::PointCloud2ConstPtr& msg)
   hash = (hash ^ (static_cast<uint32_t>(msg->header.seq))) * p;
   hash = (hash ^ (static_cast<uint32_t>(msg->header.stamp.sec))) * p;
   hash = (hash ^ (static_cast<uint32_t>(msg->header.stamp.nsec))) * p;
-  for(const unsigned char ch: msg->data)
+  for (const unsigned char ch : msg->data)
   {
     hash = (hash ^ (static_cast<uint32_t>(ch))) * p;
     hash += hash << 13u;
