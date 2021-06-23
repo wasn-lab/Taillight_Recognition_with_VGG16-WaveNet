@@ -13,6 +13,7 @@ def _save_avi(bag_filename, topic, avi_filename):
         bag = rosbag.Bag(bag_filename)
     except rosbag.bag.ROSBagException:
         logging.warning("Unable to open bag file: %s", bag_filename)
+        return
     images = []
     timestamps = []
     for _topic, msg, timestamp in bag.read_messages(topics=[topic]):
