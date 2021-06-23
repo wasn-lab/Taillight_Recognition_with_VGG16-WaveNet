@@ -24,6 +24,7 @@ bind u encoding utf8 utf8
 defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
+sessionname "adv"
 
 # ROS has trouble when dealing multiple nodes concurrently.
 # We first make light-weight load_monitor to successfully connect to master,

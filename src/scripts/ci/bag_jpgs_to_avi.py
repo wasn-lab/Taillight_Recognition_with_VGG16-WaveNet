@@ -9,8 +9,10 @@ import cv2
 
 
 def _save_avi(bag_filename, topic, avi_filename):
-    bag = rosbag.Bag(bag_filename)
-#cv2.VideoWriter('output.avi', fourcc, 20.0, (640, 480))
+    try:
+        bag = rosbag.Bag(bag_filename)
+    except rosbag.bag.ROSBagException:
+        logging.warning("Unable to open bag file: %s", bag_filename)
     images = []
     timestamps = []
     for _topic, msg, timestamp in bag.read_messages(topics=[topic]):
@@ -47,7 +49,7 @@ def _save_avi(bag_filename, topic, avi_filename):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--rosbag", required=True)
-    parser.add_argument("--topic", defualt="/xwin_grabber/rviz/jpg")
+    parser.add_argument("--topic", default="/xwin_grabber/rviz/jpg")
     parser.add_argument("--output", "-o", default="output.avi")
     args = parser.parse_args()
     _save_avi(args.rosbag, args.topic, args.output)
