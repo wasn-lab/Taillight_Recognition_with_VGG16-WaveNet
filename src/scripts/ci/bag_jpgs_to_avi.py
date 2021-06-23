@@ -1,6 +1,8 @@
 from __future__ import print_function
+import os
 import argparse
 import datetime
+import logging
 import rosbag
 import numpy as np
 import cv2
@@ -22,8 +24,8 @@ def _save_avi(bag_filename, topic, avi_filename):
         width = images[0].shape[1]
         height = images[0].shape[0]
 
-        first_dt = datetime.datetime.fromtimestamp(timestamps[0])
-        last_dt = datetime.datetime.fromtimestamp(timestamps[-1])
+        first_dt = datetime.datetime.fromtimestamp(timestamps[0].secs)
+        last_dt = datetime.datetime.fromtimestamp(timestamps[-1].secs)
         delta = last_dt - first_dt
         duration_in_second = delta.seconds
         if duration_in_second <= 0:
@@ -35,7 +37,12 @@ def _save_avi(bag_filename, topic, avi_filename):
         for image in images:
             avi.write(image)
         avi.release()
-    print("Write {}".format(avi_filename))
+    else:
+        logging.warning("%s has no image in topic %s", bag_filename, topic)
+        if not os.path.isfile(avi_filename):
+            with open(avi_filename, "w") as _fp:
+                pass
+    logging.warning("Write %s", avi_filename)
 
 def main():
     parser = argparse.ArgumentParser()
