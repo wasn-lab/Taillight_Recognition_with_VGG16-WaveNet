@@ -83,9 +83,6 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_pedcross_tf.sh^M"
 screen -t replay_lidar_data_to_localization
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_replay_lidar_data_to_localization.sh^M"
 
-screen -t replay_on_switch
-stuff "bash /home/lidar/itriadv/src/scripts/bus_env/lidar/run_replay_lidar_data_to_localization_switch.sh^M"
-
 screen -t detection_viz
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_detection_viz.sh^M"
 
