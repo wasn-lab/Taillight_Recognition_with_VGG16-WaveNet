@@ -24,17 +24,23 @@
 #include <thread>
 
 
+static ros::Publisher traffic_pub;
+static ros::Publisher backend_pub;
+static ros::Publisher occ_pub;
 
 class RosModuleTraffic
 {
   public:
-
+    
     static void
     Initial (int argc,
              char ** argv)
     {
       ros::init (argc, argv, "adv_to_server");
-
+      ros::NodeHandle n;
+      traffic_pub = n.advertise<msgs::Spat>("/traffic", 1000);
+      backend_pub = n.advertise<std_msgs::Bool>("/backend_sender/status", 1000);
+      occ_pub = n.advertise<std_msgs::Bool>("/occ_sender/status", 1000);
     }
 
     static std::string getPlate(){
@@ -79,7 +85,7 @@ class RosModuleTraffic
                       void
                       (*cb10) (const sensor_msgs::Imu::ConstPtr&),
                       void
-                      (*cb11) (const std_msgs::String::ConstPtr&),
+                      (*cb11) (const std_msgs::Bool::ConstPtr&),
                       void
                       (*cb12) (const msgs::BackendInfo::ConstPtr&),
                       void
@@ -90,6 +96,8 @@ class RosModuleTraffic
                       (*cb15) (const std_msgs::String::ConstPtr&),
                       void
                       (*cb16) (const msgs::Flag_Info::ConstPtr&),
+                      void
+                      (*cb17) (const msgs::Flag_Info::ConstPtr&),
                       bool isNewMap)
     {
       ros::NodeHandle n;
@@ -114,21 +122,35 @@ class RosModuleTraffic
       static ros::Subscriber round = n.subscribe("/BusStop/Round", 1, cb9);
       static ros::Subscriber imu = n.subscribe("imu_data_rad", 1, cb10);
       //checker big buffer for multi event at the same time.
-      static ros::Subscriber checker = n.subscribe("/ADV_op/event_json", 1000, cb11);
+      //get event from fail_safe
+      static ros::Subscriber checker = n.subscribe("/ADV_op/sys_ready", 1000, cb11);
       static ros::Subscriber backendInfo = n.subscribe("Backend/Info", 1, cb12);
       static ros::Subscriber sensor_status = n.subscribe("/vehicle/report/itri/sensor_status", 1, cb13);
       static ros::Subscriber tracking = n.subscribe("/Tracking3D/xyz2lla", 100, cb14);
       static ros::Subscriber fail_safe = n.subscribe("/vehicle/report/itri/fail_safe_status", 1, cb15);
       static ros::Subscriber flag04 = n.subscribe("/Flag_Info04", 1, cb16);
+      static ros::Subscriber flag02 = n.subscribe("/Flag_Info02", 1, cb17);
     }
 
     static void
     publishTraffic(std::string topic, msgs::Spat input)
     {
-      //std::cout << "publishTraffic topic " << topic <<  std::endl;
-      ros::NodeHandle n;
-      static ros::Publisher traffic_pub = n.advertise<msgs::Spat>(topic, 1000);
+      std::cout << "publishTraffic topic " << topic <<  std::endl;
       traffic_pub.publish(input);
+    }
+
+    static void pubBackendState(bool input)
+    {
+        std_msgs::Bool result;
+        result.data = input;
+        backend_pub.publish(result);
+    }
+
+    static void pubOCCState(bool input)
+    {
+        std_msgs::Bool result;
+        result.data = input;
+        occ_pub.publish(result);
     }
 
     static void

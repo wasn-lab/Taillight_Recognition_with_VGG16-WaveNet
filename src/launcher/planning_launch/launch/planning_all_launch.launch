@@ -1,17 +1,23 @@
 <!-- -*- mode: XML -*- -->
 <launch>
+
+    <!--location-->
+    <arg name="location_name" default="ITRI"/>
+
     <!-- vehicle description module -->
       <include file="$(find vehicle_launch)/launch/vehicle_description/vehicle_description.launch">
       </include>
 
     <!-- lanelet2 map module -->
-      <include file="$(find map_launch)/launch/map.launch">
+      <include file="$(find map_launch)/launch/map.launch" pass_all_args="true">
+	<param name="location_name" value="$(arg location_name)" />
       </include>
 
     <!-- planning initial module -->
       <arg name="use_virtual_objects" default="false" />
       <include file="$(find control)/launch/planning_initial.launch" pass_all_args="true">
         <param name="use_virtual_objects" value="$(arg use_virtual_objects)" />
+	<param name="location_name" value="$(arg location_name)" />
       </include>
 
     <!-- planning module -->
@@ -20,16 +26,20 @@
 
     <!-- mission input module -->
       <arg name="ORGS" default="0" />
-      <arg name="route_choose" default="2" />
+      <arg name="route_choose" default="01" />
       <include file="$(find control)/launch/mission_input.launch" pass_all_args="true">
         <param name="ORGS" value="$(arg ORGS)" />
-        <param name="route_choose" value="$(arg route_choose)" />
+        <param name="route_choose" value="$(arg route_choose)" type="string"/>
+	<param name="location_name" value="$(arg location_name)" />
       </include>
 
     <!-- decision module -->
       <arg name="force_disable_avoidance" default="false" />
+      <arg name="disable_lane_event" default="true" />
       <include file="$(find decision)/launch/decision.launch" pass_all_args="true">
         <param name="force_disable_avoidance" value="$(arg force_disable_avoidance)" />
+	<param name="disable_lane_event" value="$(arg disable_lane_event)" />
+	<param name="location_name" value="$(arg location_name)" />
       </include>
 
 </launch>

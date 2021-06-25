@@ -6,7 +6,7 @@ readonly build_type="${build_type:-Release}"
 readonly install_prefix="${install_prefix:-/usr/local/itriadv}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 # clean up the previous build.
-for _dir in build devel; do
+for _dir in build_c1 devel_c1; do
     if [[ -d $_dir ]]; then
         rm -rf $_dir
     fi

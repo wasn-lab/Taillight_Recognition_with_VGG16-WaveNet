@@ -29,7 +29,7 @@
 #include <linux/can.h>
 #include <linux/can/raw.h>
 #define CAN_DLC 8;
-#define CAN_INTERFACE_NAME "can1"
+#define CAN_INTERFACE_NAME "can0"
 
 void callbackRadFront(const msgs::Rad::ConstPtr& msg)
 {

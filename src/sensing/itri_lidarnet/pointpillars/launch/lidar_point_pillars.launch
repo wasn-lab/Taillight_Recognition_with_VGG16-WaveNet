@@ -3,12 +3,13 @@
   <arg name="input_topic" default="/LidarAll" />
   <arg name="baselink_support" default="false" />
   <arg name="reproduce_result_mode" default="false" />
+  <arg name="integrator_await_msgs" default="false"/>
 
-  <arg name="score_threshold_car" default="0.4" />
-  <arg name="nms_overlap_threshold_car" default="0.05" />
+  <arg name="score_threshold_car" default="0.5" />
+  <arg name="nms_overlap_threshold_car" default="0.4" />
 
-  <arg name="score_threshold_ped_cyc" default="0.2" />
-  <arg name="nms_overlap_threshold_ped_cyc" default="0.05" />
+  <arg name="score_threshold_ped_cyc" default="0.4" />
+  <arg name="nms_overlap_threshold_ped_cyc" default="0.4" />
 
 <!-- car -->
   <node pkg="lidar_point_pillars" type="lidar_point_pillars_car" name="lidar_point_pillars_car" output="screen" respawn="true">
@@ -33,7 +34,9 @@
   </node>
 
 <!-- integrator -->
-  <node pkg="lidar_point_pillars" type="lidar_point_pillars_integrator" name="lidar_point_pillars_integrator" output="screen" respawn="true" />
+  <node pkg="lidar_point_pillars" type="lidar_point_pillars_integrator" name="lidar_point_pillars_integrator" output="screen" respawn="true">
+    <param name="integrator_await_msgs" value="$(arg integrator_await_msgs)"/>
+  </node>
 
 
 </launch>

@@ -89,4 +89,4 @@ void Int8EntropyCalibrator::writeCalibrationCache(const void* cache, size_t leng
   output.write(reinterpret_cast<const char*>(cache), length);
   output.close();
 }
-}
+}  // namespace DriveNet

@@ -5,6 +5,7 @@
 #include "car_model.h"
 #include <camera_params.h>
 #include "drivenet/image_preprocessing.h"
+#include "drivenet/object_label_util.h"
 #include <opencv2/imgproc/imgproc.hpp>
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/DetectedObject.h>
@@ -25,7 +26,6 @@ private:
   int image_h_ = camera::image_height;
   CheckArea front_bottom, left_back;
   int pixelthres_ = 40;
-  float iou_threshold_ = 0;
 
   static constexpr int FB_left_top_x = 0;
   static constexpr int FB_left_top_y = 821;
@@ -37,6 +37,9 @@ private:
   static constexpr int LB_right_bottom_x = 1832;
   static constexpr int LB_right_bottom_y = 340;
 
+  std::vector<msgs::CamInfo> cam_info_vector;
+  std::vector<msgs::CamInfo> cam_info_vector_tmp;
+  
 public:
   Boxfusion();
   ~Boxfusion();

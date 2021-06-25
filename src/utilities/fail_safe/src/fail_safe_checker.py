@@ -4,7 +4,6 @@ from __future__ import print_function
 import configparser
 import json
 import pprint
-import time
 import rospy
 from std_msgs.msg import String, Bool
 from heartbeat import Heartbeat
@@ -13,12 +12,15 @@ from ctrl_info02 import CtrlInfo02
 from ctrl_info03 import CtrlInfo03
 from can_checker import CanChecker
 from pedcross_alert import PedCrossAlert
+from system_load_checker import SystemLoadChecker
 from action_emitter import ActionEmitter
 from status_level import OK, WARN, ERROR, FATAL, STATUS_CODE_TO_STR
 from sb_param_utils import get_vid
 from issue_reporter import IssueReporter, generate_issue_description
+from timestamp_utils import get_timestamp_mot
 
-
+_MQTT_FAIL_SAFE_TOPIC = "/fail_safe"  # To be removed in the future
+_MQTT_FAIL_SAFE_STATUS_TOPIC = "vehicle/report/itri/fail_safe_status"
 _MQTT_SYS_READY_TOPIC = "ADV_op/sys_ready"
 
 
@@ -51,7 +53,7 @@ def aggregate_event_status(status, status_str, events):
 
 
 class FailSafeChecker(object):
-    def __init__(self, heartbeat_ini, mqtt_ini, mqtt_fqdn):
+    def __init__(self, heartbeat_ini, mqtt_fqdn, mqtt_port):
         self.debug_mode = False
         self.vid = get_vid()  # vehicle id
         rospy.init_node("FailSafeChecker")
@@ -77,21 +79,18 @@ class FailSafeChecker(object):
         self.ctrl_info_03 = CtrlInfo03()
         self.ctrl_info_02 = CtrlInfo02()
         self.pedcross_alert = PedCrossAlert()
+        self.system_load_checker = SystemLoadChecker()
         self.can_checker = CanChecker()
         self.issue_reporter = IssueReporter()
 
-        mqtt_cfg = configparser.ConfigParser()
-        mqtt_cfg.read(mqtt_ini)
-        if mqtt_fqdn is None:
-            mqtt_fqdn = mqtt_cfg["mqtt_broker"].get("fqdn", "127.0.0.1")
-        self.mqtt_client = ItriMqttClient(
-            mqtt_fqdn, mqtt_cfg["mqtt_broker"].getint("port", 1883))
-        self.mqtt_topic = mqtt_cfg["mqtt_topics"]["fail_safe"]
+        self.mqtt_client = ItriMqttClient(mqtt_fqdn, mqtt_port)
         self.action_emitter = ActionEmitter()
         self.sensor_status_publisher = rospy.Publisher(
             "/vehicle/report/itri/sensor_status", String, queue_size=1000)
         self.fail_safe_status_publisher = rospy.Publisher(
             "/vehicle/report/itri/fail_safe_status", String, queue_size=1000)
+        self.self_driving_mode_publisher = rospy.Publisher(
+            "/vehicle/report/itri/self_driving_mode", Bool, queue_size=2)
         self.sys_ready_publisher = rospy.Publisher(
             "/ADV_op/sys_ready", Bool, queue_size=1000)
 
@@ -114,12 +113,13 @@ class FailSafeChecker(object):
         ret = {"states": self.ctrl_info_03.get_status_in_list(),
                "events": self.ctrl_info_03.get_events_in_list(),
                "seq": self.seq,
-               "timestamp": time.time()}
+               "timestamp": get_timestamp_mot()}
         self.seq += 1
         ret["states"] += self.can_checker.get_status_in_list()
         ret["states"] += [self.modules[_].to_dict() for _ in self.modules]
         # pedcross is still under heavy development
         ret["states"] += self.pedcross_alert.get_status_in_list()
+        ret["states"] += self.system_load_checker.get_status_in_list()
         status = _overall_status(ret["states"])
         status_str = _overall_status_str(ret["states"])
 
@@ -154,11 +154,11 @@ class FailSafeChecker(object):
         status, status_str = aggregate_event_status(status, status_str, ret["events"])
         ret["status"] = status
         ret["status_str"] = status_str
-        self._publish_sys_ready(status, status_str)
+        self._publish_sys_ready(status)
 
         return ret
 
-    def _publish_sys_ready(self, status, status_str):
+    def _publish_sys_ready(self, status):
         if status == FATAL:
             # force stop self-driving mode
             self.sys_ready_publisher.publish(False)
@@ -225,14 +225,16 @@ class FailSafeChecker(object):
             if self.debug_mode:
                 # pprint.pprint(sensor_status)
                 pprint.pprint(current_status)
-            if current_status["status"] != OK:
+            if current_status["status"] != OK and self.is_self_driving():
                 self.action_emitter.backup_rosbag(current_status["status_str"])
 
             self.post_issue_if_necessary(current_status)
             current_status_json = json.dumps(current_status)
-            self.mqtt_client.publish(self.mqtt_topic, current_status_json)
+            self.mqtt_client.publish(_MQTT_FAIL_SAFE_TOPIC, current_status_json)
+            self.mqtt_client.publish(_MQTT_FAIL_SAFE_STATUS_TOPIC, current_status_json)
             self.fail_safe_status_publisher.publish(current_status_json)
             self.sensor_status_publisher.publish(json.dumps(sensor_status))
+            self.self_driving_mode_publisher.publish(Bool(self.is_self_driving()))
 
             if self.warn_count + self.error_count > 0:
                 rospy.logwarn("warn_count: %d, error_count: %d",

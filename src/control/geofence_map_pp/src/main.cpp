@@ -397,6 +397,9 @@ void callbackPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& m
 {
   if (msg->objects.empty())
   {
+    PP_Stop = 0;
+    PP_Distance = 100;
+    PP_Speed = 0;
     return;
   }
 

@@ -3,7 +3,10 @@ set -x
 set -e
 readonly repo_dir=$(git rev-parse --show-toplevel)
 pushd $repo_dir/build
+set +x
+echo "source $repo_dir/devel/setup.bash"
 source $repo_dir/devel/setup.bash
+set -x
 export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 
 make auto_record_2020-03-10-10-48-39_41_image_raw.bag

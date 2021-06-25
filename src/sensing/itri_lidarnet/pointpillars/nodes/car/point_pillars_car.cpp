@@ -30,7 +30,7 @@ PointPillars_Car::PointPillars_Car(const bool reproduce_result_mode, const float
   , nms_overlap_threshold_(nms_overlap_threshold)
   , pfe_onnx_file_(pfe_onnx_file)
   , rpn_onnx_file_(rpn_onnx_file)
-  , MAX_NUM_PILLARS_(36000)
+  , MAX_NUM_PILLARS_(24000)
   , MAX_NUM_POINTS_PER_PILLAR_(100)
   , PFE_OUTPUT_SIZE_(MAX_NUM_PILLARS_ * 64)
   , GRID_X_SIZE_(496)

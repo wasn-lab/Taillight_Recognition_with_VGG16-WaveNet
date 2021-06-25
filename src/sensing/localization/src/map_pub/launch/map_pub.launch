@@ -1,7 +1,5 @@
 <!-- -->
 <launch>
-
-
   <node pkg="map_pub" type="map_pub_node" name="map_pub" output="screen"></node>
 </launch>
 

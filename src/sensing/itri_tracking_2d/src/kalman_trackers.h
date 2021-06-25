@@ -16,6 +16,7 @@ public:
   std_msgs::Header header_;
   std::vector<msgs::DetectedObject> objs_;
   std::vector<KalmanTracker> tracks_;
+  int cam_id_ = -1;
 
   KalmanTrackers()
   {

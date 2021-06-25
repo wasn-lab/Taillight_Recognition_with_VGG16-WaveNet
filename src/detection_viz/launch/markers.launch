@@ -20,9 +20,9 @@
 <!-- Lidar bbox **************************************************************************** -->
   <node name="m_LidarDetection_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/LidarDetection"/>
-      <param name="red"   value="0.2"/>
+      <param name="red"   value="0.0"/>
       <param name="green" value="1.0"/>
-      <param name="blue"  value="1.0"/>
+      <param name="blue"  value="0.0"/>
       <param name="delay_prefix"  value="lidar_bbox"/>
       <param name="delay_pos_x"  value="3.0"/>
       <param name="is_using_costmap_listener"  value="True"/>
@@ -54,7 +54,7 @@
   </node>
   -->
 
-  <!-- Camera Polygon **************************************************************************** -->
+  <!-- Camera Polygon **************************************************************************** 
   <node name="m_CameraDetection_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/CameraDetection"/>
       <param name="red"   value="0.2"/>
@@ -64,8 +64,9 @@
       <param name="delay_pos_x"  value="-1.0"/>
       <param name="show_heading"  value="true"/>
   </node>
+  -->
 
-  <!-- Radar Polygon **************************************************************************** -->
+  <!-- Radar Polygon ****************************************************************************
   <node name="m_RadarDetection_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/RadarDetection"/>
       <param name="red"   value="1.0"/>
@@ -75,8 +76,9 @@
       <param name="delay_pos_x"  value="-1.0"/>
       <param name="show_heading"  value="false"/>
   </node>
+  -->
 
-  <!-- Fusion Polygon *************************************************************************** -->
+  <!-- Fusion Polygon ***************************************************************************
   <node name="m_SensorFusion_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/SensorFusion"/>
       <param name="red"   value="1.0"/>
@@ -86,6 +88,7 @@
       <param name="delay_pos_x"  value="-3.0"/>
       <param name="show_heading"  value="true"/>
   </node>
+  -->
 
   <!-- Filtered BBox **************************************************************************** -->
   <node name="m_Filtered_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
@@ -98,7 +101,7 @@
       <param name="is_tracking_mode"  value="true"/>
   </node>
 
-  <!-- Tracking Polygon ************************************************************************* -->
+  <!-- Tracking Polygon *************************************************************************
   <node name="m_Tracking_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/PathPredictionOutput"/>
       <param name="red"   value="1.0"/>
@@ -109,6 +112,7 @@
       <param name="is_tracking_mode"  value="true"/>
       <param name="show_heading"  value="true"/>
   </node>
+  -->
   <!-- Tracking BBox **************************************************************************** -->
   <node name="m_Tracking_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/PathPredictionOutput"/>
@@ -120,7 +124,7 @@
       <param name="is_tracking_mode"  value="true"/>
   </node>
 
-  <!-- Tracking 3D Polygon ************************************************************************* -->
+  <!-- Tracking 3D Polygon *************************************************************************
   <node name="m_Tracking_3d_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/Tracking3D"/>
       <param name="red"   value="1.0"/>
@@ -131,6 +135,7 @@
       <param name="is_tracking_mode"  value="true"/>
       <param name="show_heading"  value="true"/>
   </node>
+  -->
   <!-- Tracking 3D BBox **************************************************************************** -->
   <node name="m_Tracking_3d_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/Tracking3D"/>
@@ -142,7 +147,7 @@
       <param name="is_tracking_mode"  value="true"/>
   </node>
 
-  <!-- Tracking 2D Polygon ************************************************************************* -->
+  <!-- Tracking 2D Polygon *************************************************************************
   <node name="m_Tracking_2d_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/Tracking2D/front_bottom_60"/>
       <param name="red"   value="0.87451"/>
@@ -153,6 +158,7 @@
       <param name="is_tracking_mode"  value="true"/>
       <param name="show_heading"  value="true"/>
   </node>
+  -->
   <!-- Tracking BBox **************************************************************************** -->
   <node name="m_Tracking_2d_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/Tracking2D/front_bottom_60"/>
@@ -193,6 +199,7 @@
       <param name="delay_prefix"  value="cam_bbox"/>
       <param name="delay_pos_x"  value="1.0"/>
       <param name="is_using_costmap_listener"  value="True"/>
+      <param name="is_output_class_name"  value="True"/>
   </node>
 
   <!-- Camera Port A ******************************************************************************** -->

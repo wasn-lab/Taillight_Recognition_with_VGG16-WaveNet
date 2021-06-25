@@ -55,7 +55,7 @@ const std::string TOPIC_RESERVE = "/reserve/request";
 // route 
 const std::string TOPIC_ROUTE = "/reserve/route";
 
-
+const int SEND_CHECK_MICROSECONDS = 500 * 1000; // 0.5 sec
 // wait reserve result: 300ms.
 const int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
 //reserve waiting timeout: 3 seconds
@@ -241,7 +241,7 @@ struct BatteryInfo
   float highest_temperature; //電池最高環境溫度
 };
 
-unsigned int g_mode; //模式 自動/半自動/手動/鎖定
+float g_mode; //模式 自動/半自動/手動/鎖定
 float g_emergency_exit; //緊急出口
   
 Pose g_current_gnss_pose;
@@ -260,6 +260,12 @@ json genMqttBmsMsg();
 json genMqttECUMsg(ecu_type);
 json genMqttIMUMsg();
 json getMqttDOMsg();
+
+bool g_backend_state_001 = false;
+bool g_backend_state_006 = false;
+bool g_occ_state = false;
+bool g_sys_ready = false;
+
 
 /*=========================tools begin=========================*/
 bool checkCommand(int argc, char** argv, const std::string& command)
@@ -295,6 +301,13 @@ bool convertBoolean(int state)
 /*=========================tools end=========================*/
 
 /*========================= ROS callbacks begin=========================*/
+
+
+void callback_flag_info02(const msgs::Flag_Info::ConstPtr& input)
+{
+    g_mode = input->Dspace_Flag08;
+    std::cout << "adv mode: " << g_mode << std::endl;
+}
 
 void callback_flag_info04(const msgs::Flag_Info::ConstPtr& input)
 {
@@ -436,38 +449,10 @@ void callbackRound(const std_msgs::Int32::ConstPtr& input)
   g_cuttent_arrive_stop.round = (int) input->data;
 }
 
-void callbackEvent(const std_msgs::String::ConstPtr& input)
+void callbackSysReady(const std_msgs::Bool::ConstPtr& input)
 {
-  using namespace std;
-  g_event_json = input->data.c_str();
-  json j0 = json::parse(g_event_json);
-  json j1;
-  
-  j1["type"] = "M8.2.VK003";
-  j1["deviceid"] = g_plate;
-  j1["lat"] = g_gps.lidar_Lat;
-  j1["lng"] = g_gps.lidar_Lon;  
-  j1["module"] = j0.at("module");
-  j1["status"] = j0.at("status");
-  j1["event_str"] = j0.at("event_str");
-  j1["timestamp"] = j0.at("timestamp");
-  
-  
-  if(g_event_queue_switch)
-  {
-    cout << " push to queue1 event: " << j1.dump() << endl;
-    g_mutex_event_1.lock();
-    g_event_queue_1.push(j1);
-    g_mutex_event_1.unlock();
-  }
-  else
-  {
-    cout << " push to queue2 event: " << j1.dump() << endl;
-    g_mutex_event_2.lock();
-    g_event_queue_2.push(j1);
-    g_mutex_event_2.unlock();
-  }
-  g_event_recv_count ++;
+    std::cout << "====================================" << input->data << std::endl;
+    g_sys_ready = (bool)input->data;
 }
 
 std::string get_msg_type(int id)
@@ -544,7 +529,7 @@ void callbackBI(const msgs::BackendInfo::ConstPtr& input)
   g_battery.voltage_deviation = input->voltage_deviation; //高低電壓差 0.01V
   g_battery.highest_temp_location = input->highest_temp_location; //電池最高環境溫度位置 區域編號
   g_battery.highest_temperature = input->highest_temperature; //電池最高環境溫度
-  g_mode = input->mode; //模式 自動/半自動/手動/鎖定
+  //g_mode = input->mode; //模式 自動/半自動/手動/鎖定
   g_emergency_exit = input->emergency_exit; //緊急出口
   g_delta_mileage = input->mileage;
 }
@@ -688,7 +673,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["electricity"] = g_vs.battery; //電量//0.0;
     j1["steering"] = g_vs.steer; // 轉向 
     j1["bearing"] = g_current_gnss_pose.yaw * 180 / PI;
-    j1["heading"] = 0.0;
+    j1["heading"] = g_current_gnss_pose.yaw * 180 / PI;;
     j1["milage"] =  g_vs.odometry; //行駛距離//0.0;
     j1["speed"] = g_vs.speed; //vs.speed 車速 目前來源CAN
     j1["rotate"] = g_vs.rotating_speed; //轉速 //0.0;
@@ -697,8 +682,8 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["Steeringwheel"] = g_vs.steering_wheel; //方向盤 //0.0;
     j1["door"] = convertBoolean(g_vs.door); //車門 //true;
     j1["airconditioner"] = convertBoolean(g_vs.air_conditioner); //空調;
-    j1["lat"] = g_gps.lidar_Lat; //vs.location 目前來源 lidar_lla
-    j1["lng"] = g_gps.lidar_Lon; //vs.location 目前來源 lidar_lla
+    j1["lat"] = g_current_gnss_pose.x; //vs.location 目前來源 gnss
+    j1["lng"] = g_current_gnss_pose.y; //vs.location 目前來源 gnss
     j1["headlight"] = convertBoolean(g_vs.headlight); //車燈 //true;
     j1["wiper"] =  convertBoolean(g_vs.wiper); //雨刷//true;
     j1["Interiorlight"] = convertBoolean(g_vs.indoor_light); //車內燈//true;
@@ -732,6 +717,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["CMS"] = 1; //無資料
     j1["setting"] = g_mode; // 自動/半自動/手動/鎖定
     j1["board_list"] = g_board_list;
+    j1["sys_ready"] = g_sys_ready;
   }
   else if (type == "M8.2.VK002")
   {
@@ -741,7 +727,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["electricity"] =  g_vs.battery; //電量//0.0;
     j1["steering"] = g_vs.steer; // 轉向 
     j1["bearing"] = g_current_gnss_pose.yaw * 180 / PI;
-    j1["heading"] = 0.0;
+    j1["heading"] = g_current_gnss_pose.yaw * 180 / PI;;
     j1["milage"] = g_vs.odometry; //行駛距離//0.0;
     j1["speed"] = g_vs.speed; //vs.speed 車速 
     j1["rotate"] = g_vs.rotating_speed; //轉速 //0.0;
@@ -750,8 +736,8 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["Steeringwheel"] = g_vs.steering_wheel; //方向盤 //0.0;
     j1["door"] = convertBoolean(g_vs.door); //車門 //true;
     j1["airconditioner"] = convertBoolean(g_vs.air_conditioner); //空調;
-    j1["lat"] = g_gps.lidar_Lat;  //vs.location 目前來源 lidar_lla
-    j1["lng"] = g_gps.lidar_Lon;  //vs.location 目前來源 lidar_lla
+    j1["lat"] = g_current_gnss_pose.x;  //vs.location 目前來源 gnss
+    j1["lng"] = g_current_gnss_pose.y;  //vs.location 目前來源 gnss
     j1["headlight"] = convertBoolean(g_vs.headlight); //車燈 //true;
     j1["wiper"] = convertBoolean(g_vs.wiper); //雨刷//true;
     j1["Interiorlight"] = convertBoolean(g_vs.indoor_light); //車內燈//true;
@@ -761,7 +747,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["EStop"] = convertBoolean(g_vs.estop); // E-Stop//true;
     j1["ACCpower"] = convertBoolean(g_vs.ACC_state); //ACC 電源//true;
     j1["route_id"] = g_route_id; //default 2000
-    j1["RouteMode"] = g_mode;
+    j1["RouteMode"] = 2;
     j1["Gx"] = g_imu.Gx; //   目前來源 imu_data_rad
     j1["Gy"] = g_imu.Gy; //   目前來源 imu_data_rad
     j1["Gz"] = g_imu.Gz; //   目前來源 imu_data_rad
@@ -778,6 +764,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["setting"] = g_mode; 
     j1["EExit"] = g_emergency_exit; 
     j1["board_list"] = g_board_list;
+    j1["sys_ready"] = g_sys_ready;
   }else if (type == "M8.2.VK003"){
     j1["lat"] = g_gps.lidar_Lat;
     j1["lng"] = g_gps.lidar_Lon;
@@ -817,12 +804,40 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
 /*========================= json parsers end =========================*/
 
 /*========================= thread runnables begin =========================*/
+
+void backendStateChecker(int argc, char** argv)
+{
+    while (true)
+    {
+        RosModuleTraffic::pubBackendState(g_backend_state_001 & g_backend_state_006);
+        boost::this_thread::sleep(boost::posix_time::microseconds(SEND_CHECK_MICROSECONDS));
+    }
+}
+
+void occChecker(int argc, char** argv)
+{
+    while (true)
+    {
+        RosModuleTraffic::pubOCCState(g_occ_state);
+        boost::this_thread::sleep(boost::posix_time::microseconds(SEND_CHECK_MICROSECONDS));
+    }
+
+}
+
+
 void mqtt_pubish( const std::string& msg)
 {
-  if(g_is_mqtt_connected){
-      std::string topic = "vehicle/report/" + g_vid;
-      std::cout << "publish "  << msg << std::endl;
-      g_mqtt_client.publish(topic, msg);
+    if(g_is_mqtt_connected){
+        std::string topic = "vehicle/report/" + g_vid;
+        std::cout << "publish "  << msg << std::endl;
+        int rc = g_mqtt_client.publish(topic, msg);
+        if(rc == 0){ 
+            g_occ_state = true;
+        }else{
+             g_occ_state = false;
+        }
+    }else{
+     g_occ_state = false;
     }
 }
 
@@ -867,14 +882,23 @@ void sendRun(int argc, char** argv)
 
     while (!g_vk_queue.empty())
     {
-      udp_vk_client.send_obj_to_server(g_vk_queue.front(), g_flag_show_udp_send);
+      if(udp_vk_client.send_obj_to_server(g_vk_queue.front(), g_flag_show_udp_send) != -1){
+          g_backend_state_006 = true;
+      }else{
+          g_backend_state_006 = false;
+      }
       //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       g_vk_queue.pop();
     }
     
     while (!g_vk_status_queue.empty())
     {
-      udp_vk_client.send_obj_to_server(g_vk_status_queue.front(), true);
+      if(udp_vk_client.send_obj_to_server(g_vk_status_queue.front(), true) != -1)
+      {
+          g_backend_state_001 = true;
+      }else{
+          g_backend_state_001 = false;
+      }
       udp_vk_fg_client.send_obj_to_server(g_vk_status_queue.front(), true);
       udp_tablet_client.send_obj_to_server(g_vk_status_queue.front(), g_flag_show_udp_send);
       g_vk_status_queue.pop();
@@ -1105,8 +1129,8 @@ void receiveRosRun(int argc, char** argv)
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
                                      callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
-                                     callbackEvent, callbackBI, callbackSersorStatus,callbackTracking,callbackFailSafe,               
-                                     callback_flag_info04, is_new_map);
+                                     callbackSysReady, callbackBI,callbackSersorStatus,callbackTracking,callbackFailSafe,               
+                                     callback_flag_info04, callback_flag_info02, is_new_map);
 
 
   while (ros::ok())
@@ -1142,11 +1166,13 @@ void receiveRosRun(int argc, char** argv)
       g_vk_status_queue.push(temp_vk001);
       g_mutex_queue.unlock();
     }
-
+    
+    /*
     std::string temp_vk004 = get_jsonmsg_to_vk_server("M8.2.VK004");
     g_mutex_queue.lock();
     g_vk_queue.push(temp_vk004);
     g_mutex_queue.unlock();
+    */
 
     std::string temp_vk_006 = get_jsonmsg_to_vk_server("M8.2.VK006");
     g_mutex_queue.lock();
@@ -1215,7 +1241,7 @@ void getServerStatusRun(int argc, char** argv)
     tcp_vk_client.connectServer();
     json j1;
     j1["type"] = "M8.2.VK008";
-    j1["deviceid"] = "ITRI-ADV";
+    j1["deviceid"] = g_plate;
     std::string json_str = j1.dump();
     const char* msg = json_str.c_str();
     tcp_vk_client.sendRequest(msg, strlen(msg));
@@ -1560,9 +1586,9 @@ json genMqttGnssMsg()
   json gnss;
   uint64_t timestamp_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
   //uint64_t source_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-  double lat = g_gps.lidar_Lat;
-  double lon = g_gps.lidar_Lon;
-  double alt = g_gps.lidar_Alt;
+  double lat = g_current_gnss_pose.x;
+  double lon = g_current_gnss_pose.y;
+  double alt = g_current_gnss_pose.z;
   gnss["coord"] = {lat, lon, alt};
   //gnss["speed"] = -1; remove speed
   gnss["heading"] = get_GNSS_heading_360(g_current_gnss_pose.yaw * 180 / PI);
@@ -1781,6 +1807,8 @@ int main(int argc, char** argv)
     3. /reserve/request: Reserve request from back end to Control team.
   */
   boost::thread thread_ros_send(sendROSRun, argc, argv);
+  boost::thread thread_backend_check(backendStateChecker, argc, argv);
+  boost::thread thread_occ_check(occChecker, argc, argv);
 
   /*Strart thread for TCP client: Send VK005 to get server status.*/
   boost::thread thread_get_server_status(getServerStatusRun, argc, argv);

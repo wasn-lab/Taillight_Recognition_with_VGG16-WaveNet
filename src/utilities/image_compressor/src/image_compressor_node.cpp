@@ -1,5 +1,4 @@
 #include <thread>
-#include <chrono>
 #include <glog/logging.h>
 #include <std_msgs/Empty.h>
 #include <sensor_msgs/CompressedImage.h>
@@ -9,48 +8,26 @@
 
 namespace image_compressor
 {
-ImageCompressorNode::ImageCompressorNode() : num_compression_(0)
+ImageCompressorNode::ImageCompressorNode() : num_compression_(0), latency_wrt_raw_in_ms_(0)
 {
 }
 ImageCompressorNode::~ImageCompressorNode() = default;
 
 void ImageCompressorNode::callback(const sensor_msgs::ImageConstPtr& msg)
 {
-  num_compression_ += 1;
-  if (image_compressor::use_threading())
-  {
-    std::thread t(&ImageCompressorNode::publish, this, msg);
-    t.detach();
-  }
-  else
-  {
-    publish(msg);
-  }
+  publish(msg);
 }
 
 void ImageCompressorNode::publish(const sensor_msgs::ImageConstPtr& msg)
 {
   auto cmpr_msg_ptr = compress_msg(msg);
-  {
-    std::lock_guard<std::mutex> lk(mu_publisher_);
-    publisher_.publish(cmpr_msg_ptr);
-  }
+  num_compression_ += 1;
+
+  publisher_.publish(cmpr_msg_ptr);
+  ros::Time now = ros::Time::now();
+  latency_wrt_raw_in_ms_ = (now.sec - msg->header.stamp.sec) * 1000 + (now.nsec - msg->header.stamp.nsec) / 1000000;
+
   heartbeat_publisher_.publish(std_msgs::Empty{});
-}
-
-static bool is_topic_published(const std::string& topic)
-{
-  ros::master::V_TopicInfo master_topics;
-  ros::master::getTopics(master_topics);
-
-  for (auto& master_topic : master_topics)
-  {
-    if (master_topic.name == topic)
-    {
-      return true;
-    }
-  }
-  return false;
 }
 
 int ImageCompressorNode::set_subscriber()
@@ -61,12 +38,24 @@ int ImageCompressorNode::set_subscriber()
     LOG(ERROR) << "Empty input topic name is not allow. Please pass it with -input_topic in the command line";
     return EXIT_FAILURE;
   }
-  while (ros::ok() && !is_topic_published(topic))
+
+  bool done = false;
+  while (ros::ok() && !done)
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // timeout: 1 second
+    auto msg_ptr =
+        ros::topic::waitForMessage<sensor_msgs::Image>(topic, node_handle_, ros::Duration(/*sec*/ 1, /*nsec*/ 0));
+    if (msg_ptr)
+    {
+      LOG(INFO) << topic << " is ready";
+      done = true;
+    }
+    else
+    {
+      LOG(INFO) << "Wait for input topic " << topic;
+    }
   }
-  LOG(INFO) << ros::this_node::getName() << ":"
-            << " subscribe " << topic;
+
   subscriber_ = node_handle_.subscribe(topic, 2, &ImageCompressorNode::callback, this);
   return EXIT_SUCCESS;
 }
@@ -96,7 +85,13 @@ void ImageCompressorNode::run()
   ros::Rate r(1);
   while (ros::ok())
   {
-    LOG(INFO) << "compress " << image_compressor::get_input_topic() << " in 1s: " << num_compression_;
+    LOG(INFO) << publisher_.getTopic() << ": fps " << num_compression_ << ", latency " << latency_wrt_raw_in_ms_
+              << " ms.";
+    if (num_compression_ == 0)
+    {
+      subscriber_.shutdown();
+      set_subscriber();
+    }
     num_compression_ = 0;
     r.sleep();
   }

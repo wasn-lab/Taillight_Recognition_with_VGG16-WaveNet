@@ -14,20 +14,26 @@ export ROS_HOME=$repo_dir
 pushd $repo_dir/build
 
 # Let catkin_make builds only the target run_tests.
-make -j car_model_test
+make -j car_model_test camera_utils_test lidar_test pc_transform_test
+export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 ../devel/lib/car_model/car_model_test
-
-make -j camera_utils_test
 ../devel/lib/camera_utils/camera_utils_test
+../devel/lib/libs/lidar_test
 
 pushd $repo_dir
+set +x
 source devel/setup.bash
+set -x
 src/car_model/south_bridge/run_unittest.sh
 src/utilities/fail_safe/src/run_unittest.sh
+src/utilities/powerled/src/run_unittest.sh
 src/utilities/image_compressor/src/test/run_unittest.sh
 src/utilities/image_compressor/src/test/run_publish_test.sh
 src/utilities/pc2_compressor/src/test/run_unittest.sh
 src/utilities/pc2_compressor/src/test/run_publish_test.sh
+src/sensing/itri_lidarnet/lidars_transform/src/test/run_unittest.sh
+src/sensing/itri_lidarnet/lidars_transform/src/test/run_publish_test.sh
+
 popd
 
 echo "ALL done!"
