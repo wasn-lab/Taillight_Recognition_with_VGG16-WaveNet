@@ -1,7 +1,6 @@
 # Copyright (c) 2021, Industrial Technology and Research Institute.
 # All rights reserved.
 import unittest
-import json
 # import pprint
 from jira_utils import (
     get_issue_contents, generate_issue_contents, post_issue, resolve_issue,
@@ -62,22 +61,6 @@ class JiraUtilsTest(unittest.TestCase):
             self.assertEqual(ret, 0)
             ret = close_issue(iid)
             self.assertEqual(ret, 0)
-
-    @unittest.skip("Manual test")
-    def test_dump_issue_contents(self):
-        for i in range(930, 1021):
-            iid = "S3-{}".format(i)
-            resp = get_issue_contents(iid)
-            jdata = resp.json()
-            # s = json.dumps(jdata, indent=2)
-            # print(s)
-            summary = jdata["fields"]["summary"]
-            desc = jdata["fields"]["description"]
-            if "[Auto Report]" in summary and "試0002" in desc:
-                print("{}: {}".format(iid, summary))
-                print(desc)
-                print("-" * 80)
-
 
 if __name__ == "__main__":
     unittest.main()
