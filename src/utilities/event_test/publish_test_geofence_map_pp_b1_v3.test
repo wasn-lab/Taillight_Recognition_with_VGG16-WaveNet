@@ -1,0 +1,21 @@
+<launch>
+    <arg name="bag_name" default="AAA"/>
+    <arg name="start_time" default="0"/>
+    <arg name="duration_time" default="15"/>
+    <arg name="target_id" default="AAAA"/>
+
+    <node name="geofence_map_pp_test" pkg="geofence_map_pp_test" type="geofence_map_pp_test" output="screen">
+        <param name="target_id" value="$(arg target_id)" type="str"/>
+    </node>
+
+    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock -s $(arg start_time) -u $(arg duration_time) $(find event_test)/bags/$(arg bag_name).bag /PP_geofence_line:=/PP_geofence_line/bak" />
+
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+        <rosparam>
+            topics:
+                - name: /pp_geofence_test
+                  timeout: 15
+                  negative: False
+        </rosparam>
+    </test>
+</launch>
