@@ -1,4 +1,9 @@
 <launch>
+    <arg name="is_cut" default="false"/>
+
+    <arg name="prefix" value="pos" if="$(arg is_cut)"/>
+    <arg name="prefix" value="neg" unless="$(arg is_cut)"/>
+
     <arg name="bag_name" default="AAA"/>
     <arg name="start_time" default="0"/>
     <arg name="duration" default="15"/>
@@ -9,14 +14,28 @@
         <param name="target_id" value="$(arg target_id)" type="str"/>
     </node>
 
-    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock -s $(arg start_time) -u $(arg duration) $(find event_test)/bags/$(arg bag_name).bag /PP_geofence_line:=/PP_geofence_line/bak" />
+    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock -s $(arg start_time) -u $(arg duration) $(find event_test)/bags/$(arg prefix)/$(arg bag_name).bag /PP_geofence_line:=/PP_geofence_line/bak" />
 
+    <group if="$(arg is_cut)">
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
             topics:
                 - name: /pp_geofence_test
-                  timeout: $(arg duration)
+                  timeout: 15
                   negative: False
         </rosparam>
     </test>
+    </group>
+
+    <group unless="$(arg is_cut)">
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+        <rosparam>
+            topics:
+                - name: /pp_geofence_test
+                  timeout: 15
+                  negative: True
+        </rosparam>
+    </test>
+    </group>
+
 </launch>
