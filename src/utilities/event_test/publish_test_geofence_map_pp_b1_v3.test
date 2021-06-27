@@ -21,7 +21,7 @@
         <rosparam>
             topics:
                 - name: /pp_geofence_test
-                  timeout: 15
+                  timeout: 5
                   negative: False
         </rosparam>
     </test>
@@ -32,7 +32,7 @@
         <rosparam>
             topics:
                 - name: /pp_geofence_test
-                  timeout: 15
+                  timeout: 5
                   negative: True
         </rosparam>
     </test>
