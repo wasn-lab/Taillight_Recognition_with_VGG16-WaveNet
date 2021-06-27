@@ -481,7 +481,7 @@ int main(int argc, char** argv)
 
   ros::Subscriber PedCrossGeofenceSub = n.subscribe("/PedCross/Alert", 1, callbackPP_PedCross);
   std::cout << "Input Source: PEDCROSS" << std::endl;
-  ros::Subscriber MapPPGeofenceSub = n.subscribe("/objects", 1, callbackPP2);
+  ros::Subscriber MapPPGeofenceSub = n.subscribe("/objects/filtered", 1, callbackPP2);
   std::cout << "Input Source: MAP PP" << std::endl;
 
   ros::Subscriber BBoxGeofenceSub;
