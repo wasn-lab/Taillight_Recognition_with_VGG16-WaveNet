@@ -15,7 +15,7 @@
         <rosparam>
             topics:
                 - name: /pp_geofence_test
-                  timeout: 15
+                  timeout: $(arg duration_time)
                   negative: False
         </rosparam>
     </test>
