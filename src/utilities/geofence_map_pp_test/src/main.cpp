@@ -410,7 +410,7 @@ void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, 
           std::cerr << "Please initialize all PointCloud parameters first!" << std::endl;
           return;
         }
-#if EVENT_TEST == 1
+#if EVENT_TEST_DEBUG == 1
         std::cout << "id: " << id_str << " (" << g_target_id << ") #" << std::setw(2) << std::setfill('0') << pp_idx;
         std::cout << " g.getDistance(): " << g.getDistance() << " (3.8~" << std::min(80, pp_distance) << ")"
                   << std::endl;

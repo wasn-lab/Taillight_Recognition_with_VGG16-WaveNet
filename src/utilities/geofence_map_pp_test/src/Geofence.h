@@ -5,6 +5,7 @@
 #include <cmath>
 #include <algorithm>
 
+#define EVENT_TEST_DEBUG 0
 #define EVENT_TEST 1
 #if EVENT_TEST == 1
 #include <std_msgs/Header.h>
