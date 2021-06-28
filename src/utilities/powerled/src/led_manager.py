@@ -8,8 +8,8 @@ from __future__ import print_function
 import os
 import subprocess
 import sys
-import rospy
 import time
+import rospy
 from std_msgs.msg import Bool
 
 MANUAL_DRIVING = 1
@@ -54,6 +54,7 @@ class LEDManager(object):
     def __init__(self):
         self.driving_mode = 0
         self.prev_mode = 0
+        self.last_change_time = 0
 
     def _cb(self, msg):
         """
@@ -70,6 +71,7 @@ class LEDManager(object):
             rospy.logwarn("Receive msg, driving mode is {}, prev mode is {}".format(
                 self.driving_mode, self.prev_mode))
             change_led_text(self.driving_mode)
+            self.last_change_time = time.time()
             ret = 1
         self.prev_mode = self.driving_mode
         return ret
@@ -83,6 +85,13 @@ class LEDManager(object):
         rate = rospy.Rate(1)  # FPS: 1
 
         while not rospy.is_shutdown():
+            cur_time = time.time()
+            # Change LED text unconditionally every 15 seconds.
+            # This avoids miscommunication with LED badger.
+            if cur_time - self.last_change_time >= 15:
+                rospy.logwarn("Change LED text periodically")
+                change_led_text(self.driving_mode)
+                self.last_change_time = cur_time
             rate.sleep()
 
 
