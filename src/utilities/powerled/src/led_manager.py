@@ -8,8 +8,8 @@ from __future__ import print_function
 import os
 import subprocess
 import sys
-import rospy
 import time
+import rospy
 from std_msgs.msg import Bool
 
 MANUAL_DRIVING = 1
@@ -67,7 +67,7 @@ class LEDManager(object):
             self.driving_mode = MANUAL_DRIVING
 
         ret = 0
-        if self.driving_mode != self.prev_mode
+        if self.driving_mode != self.prev_mode:
             rospy.logwarn("Receive msg, driving mode is {}, prev mode is {}".format(
                 self.driving_mode, self.prev_mode))
             change_led_text(self.driving_mode)
