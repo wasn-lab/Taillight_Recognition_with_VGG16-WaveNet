@@ -1,0 +1,4 @@
+src/test/velodyne32.pcd
+src/test/ouster64.pcd
+src/test/lidar_raw_2020-03-10-10-48-39_41_1s.bag
+src/test/lidar_compressed_2020-03-10-10-48-39_41.bag
