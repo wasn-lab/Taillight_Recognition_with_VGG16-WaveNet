@@ -13,6 +13,8 @@
     <run_depend>geometry_msgs</run_depend>
     <build_depend>car_model</build_depend>
     <run_depend>car_model</run_depend>
+    <build_depend>msgs</build_depend>
+    <run_depend>msgs</run_depend>
     <export>
     </export>
 </package>

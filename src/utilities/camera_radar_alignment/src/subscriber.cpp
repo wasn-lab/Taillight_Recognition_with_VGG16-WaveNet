@@ -1,6 +1,7 @@
 #include "UI/QtViewer.h"
 #include "all_header.h"
 #include "projector.h"
+#include "tracker.h"
 #include "ros/ros.h"
 #include "sensor_msgs/PointCloud2.h"
 #include "std_msgs/Header.h"
@@ -37,15 +38,13 @@ std::vector<msgs::PointXYZV> radar_points;
 msgs::DetectedObjectArray camera_objects;
 Eigen::Matrix4f front_top_to_HDL;
 cv::Mat trans_mid;
+ros::Publisher tracking_result_pub;
 ros::Publisher fusion_result_pub;
 ros::Publisher fusion_result_pointcloud_pub;
 
 void callbackCameraObjects(const msgs::DetectedObjectArray& msg)
 {
-  if (!msg.objects.empty())
-  {
     camera_objects = msg;
-  }
 }
 
 void callbackCamera(const sensor_msgs::Image::ConstPtr& msg)
@@ -291,9 +290,59 @@ void detection(int argc, char** argv)
   }
 }
 
+void tracking_test(int argc, char** argv)
+{
+  ros::init(argc, argv, "LidFrontTop_idsXC2_fusion");
+  ros::NodeHandle n;
+
+  image_transport::ImageTransport it(n);
+  image_transport::Subscriber sub_image2 = it.subscribe("/cam/front_bottom_60/detect_image", 1, callbackCamera);
+
+  ros::Subscriber CameraObjectsSub = n.subscribe("/cam_obj/front_bottom_60", 1, callbackCameraObjects);
+
+
+  tracking_result_pub = n.advertise<msgs::DetectedObjectArray>("/cam_obj/front_bottom_60/tracking_result", 1);
+  Tracker tracker;
+  ros::Rate r(10);
+  while (ros::ok())
+  {
+    cv::Mat M_MID_temp;
+    M_MID.copyTo(M_MID_temp);
+    cv::resize(M_MID_temp, M_MID_temp, cv::Size(608, 384), 0, 0, cv::INTER_LINEAR);
+    std::cout << "before tracking: " << camera_objects.objects.size() << std::endl;
+    msgs::DetectedObjectArray tracking_result = tracker.tracking(camera_objects);
+    camera_objects.objects.clear();
+    std::cout << "after tracking: " << tracking_result.objects.size() << std::endl;
+    double u_mag = 608.0 / 1280.0;
+    double v_mag = 384.0 / 720.0;
+    for (std::size_t i = 0; i < tracking_result.objects.size(); i++)
+    {
+      double u = tracking_result.objects.at(i).camInfo[0].u;
+      double v = tracking_result.objects.at(i).camInfo[0].v;
+      double width = tracking_result.objects.at(i).camInfo[0].width;
+      double height = tracking_result.objects.at(i).camInfo[0].height;
+      cv::Point pt1(u * u_mag, v * v_mag);
+      cv::Point pt2((u + width) * u_mag, (v + height) * v_mag);
+      cv::rectangle(M_MID_temp, pt1, pt2, cv::Scalar(0, 0, 255),2,1,0);
+      std::stringstream ss;
+      ss << abs(tracking_result.objects.at(i).camInfo[0].id);
+      string id = ss.str();
+      cv::putText(M_MID_temp, id, cv::Point(u * u_mag, v * v_mag), cv::FONT_HERSHEY_DUPLEX,
+                  0.6,  cv::Scalar(0, 0, 255), 2);
+    }
+    tracking_result_pub.publish(tracking_result);
+    cv::namedWindow("Alignment_view", cv::WINDOW_NORMAL);
+    cv::imshow("Alignment_view", M_MID_temp);
+    cv::waitKey(1);
+
+    r.sleep();
+    ros::spinOnce();
+  }
+}
+
 int main(int argc, char** argv)
 {
-  thread TheadDetection(detection, argc, argv);
+  thread TheadDetection(tracking_test, argc, argv);
   QApplication a(argc, argv);
   QtViewer w;
   w.show();
