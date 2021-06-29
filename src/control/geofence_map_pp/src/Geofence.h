@@ -4,6 +4,7 @@
 #include <string>
 #include <cmath>
 #include <algorithm>
+#include <stdlib.h>
 
 struct Point
 {
@@ -30,10 +31,12 @@ public:
                      double Heading);                  // Update pointcloud, must set before fist execution of Calcuator
   void setPath(const std::vector<Point>& PathPoints);  // Update Path points in absolute coordibate, must set before
                                                        // fist execution of Calcuator
-  int Calculator();                                    // Calculate geofence by currently set Poly and PointCloud
+  int Calculator(int PP_timetick_index_ = 0, double time_threshold = 0, double vehicle_speed = 0);            
+                                                       // Calculate geofence by currently set Poly and PointCloud
 
 private:
   double dist0 = 300.;
+  double arrive_t_threshold = 0;
   std::vector<Point> PathPoints;
   std::vector<double> PathLength;
   std::vector<Point> PointCloud;
@@ -45,4 +48,5 @@ private:
   double Nearest_X;      // Nearest point's (X,Y)
   double Nearest_Y;
   double Boundary;
+  bool PossiblePointofCollision(int PP_index, int minElementIndex, double vehicle_speed, double time_threshold);
 };
