@@ -34,6 +34,7 @@
 #define DEBUG 0  // 0: OFF; 1: ON
 
 int g_input_source = 0;  // 0: PP; 1: VIRTUAL; 2: RADARBOX; 3: NONE
+double time_threshold;
 static double Heading, SLAM_x, SLAM_y, SLAM_z;
 static double current_x, current_y, current_z;
 static Geofence BBox_Geofence(1.2);
@@ -354,6 +355,7 @@ void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, 
   {
     for (const auto& predicted_path : obj.state.predicted_paths)
     {
+      int PP_timetick_index_ = 0;
       for (const auto& forecast : predicted_path.path)
       {
         Point p;
@@ -368,7 +370,7 @@ void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, 
 
         g.setPointCloud(p_vec, false, SLAM_x, SLAM_y, Heading);  // no TF
 
-        if (g.Calculator() == 1)
+        if (g.Calculator(PP_timetick_index_, time_threshold, Ego_speed_ms) == 1)
         {
           std::cerr << "Please initialize all PointCloud parameters first!" << std::endl;
           return;
@@ -388,6 +390,8 @@ void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, 
           }
           pp_stop = 1;
         }
+        // std::cout << PP_timetick_index_ << std::endl; // for debug
+        PP_timetick_index_++;
       }
     }
   }
@@ -420,6 +424,7 @@ int main(int argc, char** argv)
 
   std::string can_name_ = "can1";
   ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
+  ros::param::get(ros::this_node::getName()+"/time_threshold", time_threshold);
 
   ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, callbackPoly);
   ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, callbackLocalizationToVeh);
