@@ -58,6 +58,7 @@ std::mutex g_display_mutex;
 /// ros publisher/subscriber
 std::vector<ros::Publisher> g_bbox_pubs(g_cam_ids.size());
 std::vector<ros::Publisher> g_heartbeat_pubs(g_cam_ids.size());
+std::vector<ros::Publisher> g_cam_heartbeat_pubs(g_cam_ids.size());
 std::vector<ros::Publisher> g_time_info_pubs(g_cam_ids.size());
 ros::Publisher g_lidar_repub;
 ros::Subscriber g_lidar_sub;
@@ -75,6 +76,7 @@ int g_img_size = g_img_w * g_img_h;
 int g_rawimg_size = g_rawimg_w * g_rawimg_h;
 std::vector<cv::Mat> g_mats(g_cam_ids.size());
 std::vector<cv::Mat> g_mats_display(g_cam_ids.size());
+std_msgs::Empty g_empty_msg;
 
 /// object
 std::vector<std::vector<ITRI_Bbox>> g_bboxs(g_cam_ids.size());
@@ -170,6 +172,7 @@ void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
     std_msgs::Header h = msg->header;
     sync_inference(cam_order, h, &g_mats[cam_order], &g_bboxs[cam_order]);
   }
+  g_cam_heartbeat_pubs[cam_order].publish(g_empty_msg);
 }
 
 void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
@@ -184,6 +187,7 @@ void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
     std_msgs::Header h = msg->header;
     sync_inference(cam_order, h, &g_mats[cam_order], &g_bboxs[cam_order]);
   }
+  g_cam_heartbeat_pubs[cam_order].publish(g_empty_msg);
 }
 
 void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
@@ -251,6 +255,8 @@ int main(int argc, char** argv)
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
     g_heartbeat_pubs[cam_order] =
         nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
+    g_cam_heartbeat_pubs[cam_order] =
+        nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/drivenet_sub/heartbeat"), 1);
     g_time_info_pubs[cam_order] =
         nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
   }

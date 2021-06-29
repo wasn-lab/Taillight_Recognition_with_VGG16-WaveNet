@@ -2,7 +2,7 @@
     <include file="$(find localization)/launch/localization.launch" />
     <include file="$(find map_pub)/launch/map_pub.launch" />
 
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/localization_raw_2020-09-24-17-02-06.bag -l /LidarFrontTop/Localization:=/LidarFrontTop/Localization/replay_at_localization">
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/localization_raw_2020-09-24-17-02-06.bag -l ">
     </node>
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>

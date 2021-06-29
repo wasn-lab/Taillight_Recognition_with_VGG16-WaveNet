@@ -24,6 +24,7 @@ bind u encoding utf8 utf8
 defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
+sessionname "adv"
 
 #screen -t reset_time
 #stuff "bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/reset_time.sh^M"
