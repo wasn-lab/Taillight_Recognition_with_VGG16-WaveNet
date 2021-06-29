@@ -103,7 +103,7 @@ __global__ void filter_kernel(const float* box_preds, const float* cls_preds, co
     if (max_index == 0 || max_index == 2)
     {
       class_label = 1;
-      filtered_box[counter*NUM_OUTPUT_BOX_FEATURE + 6] = filtered_box[counter*NUM_OUTPUT_BOX_FEATURE + 6] + M_PI/2;
+      // filtered_box[counter*NUM_OUTPUT_BOX_FEATURE + 6] = filtered_box[counter*NUM_OUTPUT_BOX_FEATURE + 6] + M_PI/2;
       // if (filtered_box[counter*NUM_OUTPUT_BOX_FEATURE+3] > 0.6)
       // {
       //   filtered_box[counter*NUM_OUTPUT_BOX_FEATURE+3] = 0.6;
@@ -289,13 +289,13 @@ void PostprocessCuda::doPostprocessCuda(const float* rpn_box_output, const float
     {
       if(host_filtered_dir[keep_inds[i]] == 0)
       {
-        // out_detection.push_back(host_filtered_box[keep_inds[i]*NUM_OUTPUT_BOX_FEATURE_+6] + M_PI / 2);
-        out_detection.push_back(host_filtered_box[keep_inds[i]*NUM_OUTPUT_BOX_FEATURE_+6] + M_PI );
+        out_detection.push_back(host_filtered_box[keep_inds[i]*NUM_OUTPUT_BOX_FEATURE_+6] + M_PI / 2);
+        // out_detection.push_back(host_filtered_box[keep_inds[i]*NUM_OUTPUT_BOX_FEATURE_+6] + M_PI );
       }
       else
       {
-        // out_detection.push_back(host_filtered_box[keep_inds[i]*NUM_OUTPUT_BOX_FEATURE_+6] - M_PI / 2);
-        out_detection.push_back(host_filtered_box[keep_inds[i]*NUM_OUTPUT_BOX_FEATURE_+6] );
+        out_detection.push_back(host_filtered_box[keep_inds[i]*NUM_OUTPUT_BOX_FEATURE_+6] - M_PI / 2);
+        // out_detection.push_back(host_filtered_box[keep_inds[i]*NUM_OUTPUT_BOX_FEATURE_+6] );
       }
     }
     else
