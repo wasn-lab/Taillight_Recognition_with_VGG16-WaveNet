@@ -24,6 +24,7 @@ bind u encoding utf8 utf8
 defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
+sessionname "adv"
 
 screen -t init_load_monitor
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_load_monitor.sh^M"
@@ -64,9 +65,6 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_dynamic_object_vi
 
 screen -t replay_lidar_data_to_localization
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_replay_lidar_data_to_localization.sh^M"
-
-screen -t replay_on_switch
-stuff "bash /home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_replay_lidar_data_to_localization_switch.sh^M"
 
 screen -t replay_cmpr_pc2
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_replay_cmpr_pc2_to_camera.sh^M"

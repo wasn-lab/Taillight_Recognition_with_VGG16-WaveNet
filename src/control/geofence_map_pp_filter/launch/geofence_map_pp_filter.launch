@@ -1,0 +1,9 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+	<arg name="confidence_threshold" default="0.15"/> <!--filter when lower than threshold-->
+
+	<node pkg="geofence_map_pp_filter" type="geofence_map_pp_filter" name="geofence_map_pp_filter" output="screen" cwd="node" respawn="true"  >
+		<param name="confidence_threshold" value="$(arg confidence_threshold)"/>
+	</node>
+
+</launch>
