@@ -10,9 +10,10 @@ rosparam set /car_model C1
 
 # out-of-the-car setting, used for development.
 rosparam set /fail_safe/should_post_issue 0
+rosparam set /fail_safe/should_notify_backend 0
+rosparam set /fail_safe/should_send_bags 0
 
 gnome-terminal -e "screen -c ${cur_dir}/lidar-lab.screen"
-
 gnome-terminal -e 'ssh -t local "screen -c /home/local/itriadv/src/scripts/bus_env_cbus/localization.screen"'
 gnome-terminal -e "ssh -t camera 'screen -c /home/camera/itriadv/src/scripts/bus_env_cbus/camera.screen'"
 

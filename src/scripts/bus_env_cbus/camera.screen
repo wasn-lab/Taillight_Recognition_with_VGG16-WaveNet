@@ -24,6 +24,7 @@ bind u encoding utf8 utf8
 defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
+sessionname "adv"
 
 # ROS has trouble when dealing multiple nodes concurrently.
 # We first make light-weight load_monitor to successfully connect to master,
@@ -31,8 +32,20 @@ caption always "%n(%t@%H)"
 screen -t init_load_monitor
 stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_load_monitor.sh^M"
 
-screen -t init_camera
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_camera.sh^M"
+screen -t init_drivenet_group_a
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_drivenet_group_a.sh^M"
+
+screen -t init_drivenet_side
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_drivenet_side.sh^M"
+
+screen -t init_drivenet_top
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_drivenet_top.sh^M"
+
+screen -t init_alignment
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_alignment.sh^M"
+
+screen -t init_repub_cam_raw
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_repub_cam_raw.sh^M"
 
 screen -t init_rosbag_sender
 stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_rosbag_sender.sh^M"

@@ -225,7 +225,7 @@ class FailSafeChecker(object):
             if self.debug_mode:
                 # pprint.pprint(sensor_status)
                 pprint.pprint(current_status)
-            if current_status["status"] != OK:
+            if current_status["status"] != OK and self.is_self_driving():
                 self.action_emitter.backup_rosbag(current_status["status_str"])
 
             self.post_issue_if_necessary(current_status)

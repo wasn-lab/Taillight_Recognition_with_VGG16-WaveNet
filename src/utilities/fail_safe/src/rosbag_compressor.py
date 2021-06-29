@@ -6,27 +6,43 @@ Send backup rosbag files to backend.
 """
 from __future__ import print_function
 import time
-import datetime
 import os
-import io
 import subprocess
 import rospy
 
 
+def should_compress_bag(root, filename):
+    if not filename.endswith(".bag"):
+        return False
+    if "backup" not in root:
+        return False
+    return True
+
+
 def decompress_bag(bag_fullpath):
-    cmd = ["gzip", "-d" , bag_fullpath]
+    if not os.path.isfile(bag_fullpath):
+        return
+    cmd = ["gzip", "-d", bag_fullpath]
     subprocess.check_call(cmd)
 
+
 def compress_bag(bag_fullpath):
+    if not os.path.isfile(bag_fullpath):
+        return -1
     if not bag_fullpath.endswith(".bag"):
         return -1
     # 19 is least favorable to the process
     cmd = ["nice", "-n", "19", "gzip", bag_fullpath]
     org_size = os.path.getsize(bag_fullpath)
-    subprocess.check_call(cmd)
     cmpr_file = bag_fullpath + ".gz"
-    cmpr_size = os.path.getsize(cmpr_file)
-    ratio = float(cmpr_size) / org_size
+    ratio = -1
+    try:
+        subprocess.check_call(cmd)
+        cmpr_size = os.path.getsize(cmpr_file)
+        ratio = float(cmpr_size) / org_size
+    except subprocess.CalledProcessError:
+        if os.path.isfile(bag_fullpath) and os.path.isfile(cmpr_file):
+            os.unlink(cmpr_file)
     return ratio
 
 
@@ -47,9 +63,8 @@ class RosbagCompressor(object):
         bags = []
         for root, _dirs, files in os.walk(self.rosbag_dir):
             for filename in files:
-                if not filename.endswith(".bag"):
-                    continue
-                bags.append(os.path.join(root, filename))
+                if should_compress_bag(root, filename):
+                    bags.append(os.path.join(root, filename))
         bags.sort()
         for bag in bags:
             start_time = time.time()
@@ -59,4 +74,4 @@ class RosbagCompressor(object):
             gz_size = os.path.getsize(bag + ".gz") / (1024 * 1024)
             rospy.loginfo(("Done compressing %s, ratio: %.2f, file size: %d MB, "
                            "elapsed_time: %f seconds"),
-                           bag, ratio, gz_size, elapsed_time)
+                          bag, ratio, gz_size, elapsed_time)
