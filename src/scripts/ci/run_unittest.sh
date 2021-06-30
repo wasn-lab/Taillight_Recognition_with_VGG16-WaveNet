@@ -31,8 +31,8 @@ src/utilities/image_compressor/src/test/run_unittest.sh
 src/utilities/image_compressor/src/test/run_publish_test.sh
 src/utilities/pc2_compressor/src/test/run_unittest.sh
 src/utilities/pc2_compressor/src/test/run_publish_test.sh
-src/sensing/itri_lidarnet/lidars_transform/src/test/run_unittest.sh
-src/sensing/itri_lidarnet/lidars_transform/src/test/run_publish_test.sh
+src/sensing/itri_lidarnet/pc_transform/src/test/run_unittest.sh
+src/sensing/itri_lidarnet/pc_transform/src/test/run_publish_test.sh
 
 popd
 
