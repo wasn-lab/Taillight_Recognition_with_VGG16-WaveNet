@@ -33,8 +33,10 @@
 
 #define DEBUG 0  // 0: OFF; 1: ON
 
+#if EVENT_TEST == 1
+std::string g_target_id;
+#endif
 int g_input_source = 0;  // 0: PP; 1: VIRTUAL; 2: RADARBOX; 3: NONE
-double time_threshold;
 static double Heading, SLAM_x, SLAM_y, SLAM_z;
 static double current_x, current_y, current_z;
 static Geofence BBox_Geofence(1.2);
@@ -48,6 +50,9 @@ static int PP_Speed = 0;
 static int PP_Speed_PedCross = 0;
 ros::Publisher PP_geofence_line;
 ros::Publisher PPCloud_pub;
+#if EVENT_TEST == 1
+ros::Publisher pp_geofence_test;
+#endif
 
 tf2_ros::Buffer tf_buffer;
 
@@ -166,6 +171,23 @@ void Plot_geofence(Point temp)
   PP_geofence_line.publish(line_list);
 }
 
+#if EVENT_TEST == 1
+void plotGeofenceTest(const std_msgs::Header& header, const uuid_msgs::UniqueID& id,
+                      const geometry_msgs::Point& pp_point, const double pp_time)
+{
+  msgs::GeoFenceTest gf;
+  gf.header = header;
+  gf.id = id;
+  gf.id_str = g_target_id;
+  gf.pp_point = pp_point;
+  gf.pp_time = pp_time;
+
+  std::cout << "Publish test target" << gf.id_str << " at time " << gf.header.stamp.toNSec() << std::endl;
+
+  pp_geofence_test.publish(gf);
+}
+#endif
+
 void publishPPCloud(const msgs::DetectedObjectArray::ConstPtr& msg, const int numForecastsOfObject)
 {
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
@@ -192,8 +214,7 @@ void publishPPCloud(const msgs::DetectedObjectArray::ConstPtr& msg, const int nu
   PPCloud_pub.publish(msg_pub);
 }
 
-void plotPP(const msgs::DetectedObjectArray::ConstPtr& msg, Geofence& g, int& pp_stop, int& pp_distance,
-            int& pp_speed)
+void plotPP(const msgs::DetectedObjectArray::ConstPtr& msg, Geofence& g, int& pp_stop, int& pp_distance, int& pp_speed)
 {
   for (const auto& obj : msg->objects)
   {
@@ -351,13 +372,27 @@ void publishPPCloud2(const autoware_perception_msgs::DynamicObjectArray::ConstPt
 void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, Geofence& g, int& pp_stop,
              int& pp_distance, int& pp_speed)
 {
+#if EVENT_TEST == 1
+  double pp_interval = 0.5;
+#endif
   for (const auto& obj : msg->objects)
   {
     for (const auto& predicted_path : obj.state.predicted_paths)
     {
-      int PP_timetick_index_ = 0;
+#if EVENT_TEST == 1
+      int pp_idx = 0;
+#endif
       for (const auto& forecast : predicted_path.path)
       {
+#if EVENT_TEST == 1
+        pp_idx++;
+        double pp_time = pp_idx * pp_interval;
+
+        std::string id_str = unique_id::toHexString(obj.id);
+        std::remove(id_str.begin(), id_str.end(), '-');
+        id_str = id_str.substr(0, 4);
+#endif
+
         Point p;
         p.X = forecast.pose.pose.position.x;
         p.Y = forecast.pose.pose.position.y;
@@ -370,11 +405,16 @@ void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, 
 
         g.setPointCloud(p_vec, false, SLAM_x, SLAM_y, Heading);  // no TF
 
-        if (g.Calculator(PP_timetick_index_, time_threshold, Ego_speed_ms) == 1)
+        if (g.Calculator() == 1)
         {
           std::cerr << "Please initialize all PointCloud parameters first!" << std::endl;
           return;
         }
+#if EVENT_TEST_DEBUG == 1
+        std::cout << "id: " << id_str << " (" << g_target_id << ") #" << std::setw(2) << std::setfill('0') << pp_idx;
+        std::cout << " g.getDistance(): " << g.getDistance() << " (3.8~" << std::min(80, pp_distance) << ")"
+                  << std::endl;
+#endif
 
         if (g.getDistance() < 80)
         {
@@ -386,12 +426,16 @@ void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, 
 
             // plot geofence
             Plot_geofence(g.findDirection());
+#if EVENT_TEST == 1
+            if (id_str == g_target_id)
+            {
+              plotGeofenceTest(msg->header, obj.id, forecast.pose.pose.position, pp_time);
+            }
+#endif
             std::cout << "Plot geofence of MAP PP!" << std::endl;
           }
           pp_stop = 1;
         }
-        // std::cout << PP_timetick_index_ << std::endl; // for debug
-        PP_timetick_index_++;
       }
     }
   }
@@ -418,45 +462,51 @@ void callbackPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& m
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "Geofence_Map_PP");
+  ros::init(argc, argv, "geofence_map_pp_test");
+  ros::NodeHandle n("~");
 
-  ros::NodeHandle n;
+#if EVENT_TEST == 1
+  n.getParam("target_id", g_target_id);
+  std::cout << "target_id: " << g_target_id << std::endl;
+#endif
 
   std::string can_name_ = "can1";
-  ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
-  ros::param::get(ros::this_node::getName()+"/time_threshold", time_threshold);
+  ros::param::get(ros::this_node::getName() + "/can_name", can_name_);
 
-  ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, callbackPoly);
-  ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, callbackLocalizationToVeh);
-  ros::Subscriber VI_sub = n.subscribe("veh_info", 1, callbackVehInfo);
-  ros::Subscriber AStarSub = n.subscribe("nav_path_astar_final", 1, callbackAStar);
-  ros::Subscriber current_pose_sub = n.subscribe("current_pose", 1, callbackCurrentPose);
+  ros::Subscriber PCloudGeofenceSub = n.subscribe("/dynamic_path_para", 1, callbackPoly);
+  ros::Subscriber LTVSub = n.subscribe("/localization_to_veh", 1, callbackLocalizationToVeh);
+  ros::Subscriber VI_sub = n.subscribe("/veh_info", 1, callbackVehInfo);
+  ros::Subscriber AStarSub = n.subscribe("/nav_path_astar_final", 1, callbackAStar);
+  ros::Subscriber current_pose_sub = n.subscribe("/current_pose", 1, callbackCurrentPose);
 
-  ros::Subscriber PedCrossGeofenceSub = n.subscribe("PedCross/Alert", 1, callbackPP_PedCross);
+  ros::Subscriber PedCrossGeofenceSub = n.subscribe("/PedCross/Alert", 1, callbackPP_PedCross);
   std::cout << "Input Source: PEDCROSS" << std::endl;
-  ros::Subscriber MapPPGeofenceSub = n.subscribe("objects", 1, callbackPP2);
+  ros::Subscriber MapPPGeofenceSub = n.subscribe("/objects/filtered", 1, callbackPP2);
   std::cout << "Input Source: MAP PP" << std::endl;
 
   ros::Subscriber BBoxGeofenceSub;
 
   if (g_input_source == 0)
   {
-    BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, callbackPP);
+    BBoxGeofenceSub = n.subscribe("/PathPredictionOutput", 1, callbackPP);
     std::cout << "Input Source: PP" << std::endl;
   }
   else if (g_input_source == 1)
   {
-    BBoxGeofenceSub = n.subscribe("abs_virBB_array", 1, callbackPP);
+    BBoxGeofenceSub = n.subscribe("/abs_virBB_array", 1, callbackPP);
     std::cout << "Input Source: VIRTUAL" << std::endl;
   }
   else if (g_input_source == 2)
   {
-    BBoxGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, callbackPP);
+    BBoxGeofenceSub = n.subscribe("/PathPredictionOutput/radar", 1, callbackPP);
     std::cout << "Input Source: RADARBOX" << std::endl;
   }
 
-  PP_geofence_line = n.advertise<visualization_msgs::Marker>("PP_geofence_line", 1);
-  PPCloud_pub = n.advertise<sensor_msgs::PointCloud2>("pp_point_cloud", 1);
+  PP_geofence_line = n.advertise<visualization_msgs::Marker>("/PP_geofence_line", 1);
+  PPCloud_pub = n.advertise<sensor_msgs::PointCloud2>("/pp_point_cloud", 1);
+#if EVENT_TEST == 1
+  pp_geofence_test = n.advertise<msgs::GeoFenceTest>("/pp_geofence_test", 1);
+#endif
 
   tf2_ros::TransformListener tf_listener(tf_buffer);
 
@@ -470,8 +520,7 @@ int main(int argc, char** argv)
   struct sockaddr_can addr;
   struct can_frame frame;
   struct ifreq ifr;
-  const char* ifname = can_name_.c_str();//CAN_INTERFACE_NAME;
-  // std::cout << "cancancancancangeofencemappp : " << can_name_ << std::endl;
+  const char* ifname = can_name_.c_str();  // CAN_INTERFACE_NAME;
   if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
   {
     perror("Error while opening socket");

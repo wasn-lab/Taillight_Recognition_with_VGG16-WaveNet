@@ -114,7 +114,7 @@ void Geofence::setPointCloud(const std::vector<Point>& PointCloud, bool isLocal,
 #endif
 }
 
-int Geofence::Calculator(int PP_timetick_index_, double time_threshold, double vehicle_speed)
+int Geofence::Calculator()
 {
   // Check if all information is initialized
   if (PathPoints.size() < 1)
@@ -129,15 +129,13 @@ int Geofence::Calculator(int PP_timetick_index_, double time_threshold, double v
     return 1;
   }
 
-  // std::cout << "PathPoints.size = " << PathPoints.size() << " PP_timetick_index_ = " << PP_timetick_index_ << std::endl; // for debug
-
   std::vector<double> P_Distance(PointCloud.size(), dist0);  // Distance of every pointcloud (default 100)
   std::vector<double> P_Distance_w(PointCloud.size(),
                                    dist0);  // Distance of every pointcloud in wider range (default 100)
 
   for (size_t i = 0; i < PointCloud.size(); i++)
   {
-    std::vector<double> V_Distance(PathPoints.size(), dist0);  // Vertical diatnce to the path
+    std::vector<double> V_Distance(PathPoints.size(), dist0);  // Vertical distance to the path
 
     for (size_t j = 0; j < PathPoints.size(); j++)
     {
@@ -147,12 +145,12 @@ int Geofence::Calculator(int PP_timetick_index_, double time_threshold, double v
     int minElementIndex = std::min_element(V_Distance.begin(), V_Distance.end()) - V_Distance.begin();
     double minElement = *std::min_element(V_Distance.begin(), V_Distance.end());
 
-    if ((minElement < Boundary) && PossiblePointofCollision(PP_timetick_index_, minElementIndex, vehicle_speed, time_threshold)) 
-    { 
+    if (minElement < Boundary)
+    {
       P_Distance[i] = PathLength[minElementIndex];
     }
 
-    if ((minElement < (Boundary + 0.5)) && PossiblePointofCollision(PP_timetick_index_, minElementIndex, vehicle_speed, time_threshold))
+    if (minElement < (Boundary + 0.5))
     {
       P_Distance_w[i] = PathLength[minElementIndex];
     }
@@ -193,29 +191,4 @@ int Geofence::Calculator(int PP_timetick_index_, double time_threshold, double v
   Farest = *std::max_element(P_Distance.begin(), P_Distance.end());
 
   return 0;
-}
-
-bool Geofence::PossiblePointofCollision(int PP_timetick_index_, int minElementIndex, double vehicle_speed, double time_threshold)
-{ 
-  if (vehicle_speed == 0 && time_threshold == 0)
-  { 
-    std::cout << "Non-mapPP Geofence" << std::endl; 
-    return true;
-  }
-
-  double object_t = 0.5 * PP_timetick_index_;
-  double vehicle_t = (PathLength[minElementIndex] - 10) / vehicle_speed; 
-  std::cout << "PathLength = " << PathLength[minElementIndex] << "vehicle_speed = " << vehicle_speed << std::endl;
-  std::cout << "object_t = "   << object_t << " vehicle_t = " << vehicle_t << " t_difference--------> " << object_t - vehicle_t << std::endl; //for debug
-
-  if (abs(object_t - vehicle_t) <= time_threshold)
-  { 
-    std::cout << "G e o f e n c e ===================== r e m a i n " << std::endl; //for debug
-    return true;
-  }
-  else 
-  {
-    std::cout << "G e o f e n c e ********************* f i l t e r e d " << std::endl; //for debug
-    return false;
-  }
 }
