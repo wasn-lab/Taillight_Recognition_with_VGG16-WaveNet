@@ -3,7 +3,9 @@
 	<!-- declare arg to be passed in -->
 	<!-- 0=fusion, 1=lidar, 2=camera -->
  	<arg name="pp_input_type" default="1"/>
+
 	<arg name="can_name" default="can1"/>
+	<arg name="time_threshold" default="2.0"/>
 
 	<arg name="location_name" default="ITRI"/>
  
@@ -40,6 +42,7 @@
         </node-->
 	<node pkg="geofence_map_pp" type="geofence_map_pp" name="geofence_map_pp" output="screen" cwd="node" respawn="true"  >
 		<param name="can_name" value="$(arg can_name)"/>
+		<param name="time_threshold" value="$(arg time_threshold)"/>
 		<remap from="objects" to="$(arg input_objects)"/>
 	</node>
         <node pkg="control_checker" type="control_checker" name="control_checker" output="screen" cwd="node" respawn="true"  />
