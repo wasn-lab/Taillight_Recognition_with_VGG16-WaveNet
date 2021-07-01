@@ -37,7 +37,7 @@ int g_input_source = 0;  // 0: PP; 1: VIRTUAL; 2: RADARBOX; 3: NONE
 double time_threshold;
 static double Heading, SLAM_x, SLAM_y, SLAM_z;
 static double current_x, current_y, current_z;
-static Geofence BBox_Geofence(1.2);
+static Geofence BBox_Geofence(1.6);
 static Geofence PedCross_Geofence(1.2);
 static double Ego_speed_ms;
 static int PP_Stop = 0;
@@ -356,6 +356,7 @@ void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, 
     for (const auto& predicted_path : obj.state.predicted_paths)
     {
       int PP_timetick_index_ = 0;
+      g.setIntersectPoint(false);
       for (const auto& forecast : predicted_path.path)
       {
         Point p;
@@ -390,7 +391,6 @@ void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, 
           }
           pp_stop = 1;
         }
-        // std::cout << PP_timetick_index_ << std::endl; // for debug
         PP_timetick_index_++;
       }
     }
