@@ -38,6 +38,11 @@ double Geofence::getNearest_Y()
 {
   return Nearest_Y;
 }
+bool Geofence::setIntersectPoint(bool state)
+{ 
+  PPAlreadyIntersected = state;
+  return PPAlreadyIntersected;
+}
 
 Point Geofence::findDirection()
 {
@@ -147,14 +152,22 @@ int Geofence::Calculator(int PP_timetick_index_, double time_threshold, double v
     int minElementIndex = std::min_element(V_Distance.begin(), V_Distance.end()) - V_Distance.begin();
     double minElement = *std::min_element(V_Distance.begin(), V_Distance.end());
 
-    if ((minElement < Boundary) && PossiblePointofCollision(PP_timetick_index_, minElementIndex, vehicle_speed, time_threshold)) 
+    if (minElement < Boundary && !PPAlreadyIntersected)
     { 
-      P_Distance[i] = PathLength[minElementIndex];
+      PPAlreadyIntersected = true;
+      if (PossiblePointofCollision(PP_timetick_index_, minElementIndex, vehicle_speed, time_threshold))
+      {
+        P_Distance[i] = PathLength[minElementIndex];
+      }
     }
 
-    if ((minElement < (Boundary + 0.5)) && PossiblePointofCollision(PP_timetick_index_, minElementIndex, vehicle_speed, time_threshold))
+    if (minElement < Boundary && !PPAlreadyIntersected)
     {
-      P_Distance_w[i] = PathLength[minElementIndex];
+      PPAlreadyIntersected = true;
+      if (PossiblePointofCollision(PP_timetick_index_, minElementIndex, vehicle_speed, time_threshold))
+      {
+        P_Distance_w[i] = PathLength[minElementIndex];
+      }
     }
   }
 
