@@ -1,13 +1,7 @@
-
-注意：在執行以下步驟前，請先檢查白色網路線的另一端是否已插入switch，
-switch 在實驗室白色長桌的層架下層。
-
 1.  中斷camera ipc和車內內網的連線
 ```
 sudo ifconfig enp0s31f6 down
 ```
-
-enp0s31f6 是 B1 車的網路介面卡，若是其他車子，請換成對應的卡號。
 
 2. 確定已成功斷開車內內網
 ```
@@ -18,13 +12,7 @@ ping 192.168.1.200  # （車內的OBU IP)
 要等到Network is Unreachable或Destination Host Unreachable才可以
 
 3. 接上實驗室網路:
-把車庫牆邊那條網路線插到camera ipc裡，此時會從dhcp取得的另一個.1網域的ip，可使用下列指令檢查
-```
-$ ifconfig -a | grep 192.168.1 -B 1
-enp9s0f0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet 192.168.1.245  netmask 255.255.255.0  broadcast 192.168.1.255
-```
-應有類似以上輸出
+把車庫牆邊那條網路線插到camera ipc裡，此時會從dhcp取得的另一個.1網域的ip
 
 4.  確定使用的是實驗室線路:
 ```
@@ -48,4 +36,3 @@ lftp -u your_name nas.itriadv.co
 > cd /bag/竹北HSR/B1
 > mirror -R bag_dir_name
 ```
-
