@@ -62,6 +62,5 @@ install(TARGETS pacmod_interface
 install(
   DIRECTORY
     launch
-    data
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
