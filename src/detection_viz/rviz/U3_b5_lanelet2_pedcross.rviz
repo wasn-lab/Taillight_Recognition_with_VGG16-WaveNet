@@ -434,7 +434,7 @@ Visualization Manager:
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /RadarMarker
