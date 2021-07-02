@@ -20,7 +20,7 @@ ping 192.168.1.200  # （車內的OBU IP)
 3. 接上實驗室網路:
 把車庫牆邊那條網路線插到camera ipc裡，此時會從dhcp取得的另一個.1網域的ip，可使用下列指令檢查
 ```
-ifconfig -a | grep 192.168.1 -B 1
+$ ifconfig -a | grep 192.168.1 -B 1
 enp9s0f0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         inet 192.168.1.245  netmask 255.255.255.0  broadcast 192.168.1.255
 ```
