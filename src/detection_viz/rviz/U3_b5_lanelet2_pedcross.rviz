@@ -649,7 +649,7 @@ Visualization Manager:
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /mileage/status_text/txt
-      Name: MarkerArray
+      Name: Mileage
       Namespaces:
         {}
       Queue Size: 100
