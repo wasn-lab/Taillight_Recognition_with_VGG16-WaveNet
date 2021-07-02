@@ -428,7 +428,7 @@ Visualization Manager:
       Enabled: false
       Name: GridPP
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /PSOutput/markers
       Name: Parking_Slot
       Namespaces:
