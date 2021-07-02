@@ -318,7 +318,7 @@ Visualization Manager:
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /objects/visualization
