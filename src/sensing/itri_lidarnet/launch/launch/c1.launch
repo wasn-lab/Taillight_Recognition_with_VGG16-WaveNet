@@ -23,7 +23,6 @@
 	<arg name="hardware_enable" default="true" />
     
 	<!-- Grabber & Preprocessing -->
-    <arg name="use_oct_compress" default="false" />
 	<arg name="use_filter" default="true" />
 	<arg name="use_roi" default="true" />
 
@@ -31,7 +30,6 @@
 	<arg name="use_old_stitch" default="false"/>
 
 <!-- Parameter ************************************************************* -->
-	<param name="use_oct_compress" value="$(arg use_oct_compress)" />
 
 	<param name="use_filter" value="$(arg use_filter)"/>
 	<param name="use_roi" value="$(arg use_roi)"/>
