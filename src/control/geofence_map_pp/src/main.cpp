@@ -28,10 +28,14 @@
 #include <linux/can/raw.h>
 #include <typeinfo>
 
+//For debug and test
+#include "msgs/GeofencePPDebugInfo.h"
+
 #define CAN_DLC 8
 // #define CAN_INTERFACE_NAME "can1"
 
 #define DEBUG 0  // 0: OFF; 1: ON
+bool isDebugMode = true;
 
 int g_input_source = 0;  // 0: PP; 1: VIRTUAL; 2: RADARBOX; 3: NONE
 double time_threshold;
@@ -46,6 +50,9 @@ static int PP_Distance = 1000;
 static int PP_Distance_PedCross = 1000;
 static int PP_Speed = 0;
 static int PP_Speed_PedCross = 0;
+std::vector<double> speed_time_info(5, 0);
+
+ros::Publisher debug_speed_time_info_pub;
 ros::Publisher PP_geofence_line;
 ros::Publisher PPCloud_pub;
 
@@ -391,6 +398,9 @@ void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, 
           }
           pp_stop = 1;
         }
+        // get speed time info for test
+        g.getSpeedTimeInfo(speed_time_info);
+
         PP_timetick_index_++;
       }
     }
@@ -414,6 +424,19 @@ void callbackPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& m
   PP_Distance = 100;
   PP_Speed = 0;
   plotPP2(msg, BBox_Geofence, PP_Stop, PP_Distance, PP_Speed);  // require TF /map
+
+  if (isDebugMode)
+  {
+    msgs::GeofencePPDebugInfo GPDI;
+    GPDI.header.stamp             = ros::Time::now();
+    GPDI.vehicle_dist_to_geofence = speed_time_info[0];
+    GPDI.vehicle_speed            = speed_time_info[1];
+    GPDI.vehicle_time             = speed_time_info[2];
+    GPDI.object_time              = speed_time_info[3];
+    GPDI.time_difference          = speed_time_info[4];
+
+    debug_speed_time_info_pub.publish(GPDI);
+  }
 }
 
 int main(int argc, char** argv)
@@ -455,6 +478,7 @@ int main(int argc, char** argv)
     std::cout << "Input Source: RADARBOX" << std::endl;
   }
 
+  debug_speed_time_info_pub = n.advertise<msgs::GeofencePPDebugInfo>("/debug/geofence_map_pp/time_speed", 1);
   PP_geofence_line = n.advertise<visualization_msgs::Marker>("PP_geofence_line", 1);
   PPCloud_pub = n.advertise<sensor_msgs::PointCloud2>("pp_point_cloud", 1);
 
