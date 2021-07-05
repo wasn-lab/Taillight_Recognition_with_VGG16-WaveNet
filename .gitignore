@@ -61,3 +61,4 @@ src/sensing/itri_interactive_pp/backup
 ped_output.csv
 src/utilities/pcd-viewer/build*/
 src/utilities/pcd-viewer/.gitignore
+itriadv_install

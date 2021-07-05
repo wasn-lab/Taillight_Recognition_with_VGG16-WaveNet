@@ -48,6 +48,8 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr pc2_msg_to_xyzi(const sensor_msgs::PointClo
     target_cloud->points[p].z = *(float*)(base_addr + offset_z);
     target_cloud->points[p].intensity = *(float*)(base_addr + offset_intensity);
   }
+  target_cloud->width = msg_ptr->width;
+  target_cloud->height = msg_ptr->height;
   pcl_conversions::toPCL(msg_ptr->header, target_cloud->header);
   return target_cloud;
 }
