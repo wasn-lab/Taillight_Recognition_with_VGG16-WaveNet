@@ -48,6 +48,7 @@ std::mutex g_display_mutex;
 /// ros publisher/subscriber
 std::vector<ros::Publisher> g_bbox_pubs(g_cam_ids.size());
 std::vector<ros::Publisher> g_heartbeat_pubs(g_cam_ids.size());
+std::vector<ros::Publisher> g_cam_heartbeat_pubs(g_cam_ids.size());
 std::vector<ros::Publisher> g_time_info_pubs(g_cam_ids.size());
 std::vector<image_transport::Publisher> g_img_pubs(g_cam_ids.size());
 std::vector<msgs::DetectedObjectArray> g_doas;
@@ -63,6 +64,7 @@ int g_img_size = g_img_w * g_img_h;
 int g_rawimg_size = g_rawimg_w * g_rawimg_h;
 std::vector<cv::Mat> g_mats(g_cam_ids.size());
 std::vector<cv::Mat> g_mats_display(g_cam_ids.size());
+std_msgs::Empty g_empty_msg;
 
 /// object
 std::vector<std::vector<ITRI_Bbox>> g_bboxs(g_cam_ids.size());
@@ -156,6 +158,7 @@ void callback_cam_front_top_close_120(const sensor_msgs::Image::ConstPtr& msg)
     std_msgs::Header h = msg->header;
     sync_inference(cam_order, h, &g_mats[cam_order], &g_bboxs[cam_order]);
   }
+  g_cam_heartbeat_pubs[cam_order].publish(g_empty_msg);
 }
 void callback_cam_back_top_120(const sensor_msgs::Image::ConstPtr& msg)
 {
@@ -169,6 +172,7 @@ void callback_cam_back_top_120(const sensor_msgs::Image::ConstPtr& msg)
     std_msgs::Header h = msg->header;
     sync_inference(cam_order, h, &g_mats[cam_order], &g_bboxs[cam_order]);
   }
+  g_cam_heartbeat_pubs[cam_order].publish(g_empty_msg);
 }
 
 void image_publisher(const cv::Mat& image, const std_msgs::Header& header, int cam_order)
@@ -197,7 +201,6 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName() + "/dist_esti_mode", g_dist_est_mode);
 
   std::vector<std::string> cam_topic_names(g_cam_ids.size());
-  std::vector<std::string> cam_raw_topic_names(g_cam_ids.size());
   std::vector<std::string> bbox_topic_names(g_cam_ids.size());
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
   static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_top_close_120,
@@ -206,10 +209,9 @@ int main(int argc, char** argv)
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     cam_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]];
-    cam_raw_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]] + std::string("/raw");
     bbox_topic_names[cam_order] = camera::topics_obj[g_cam_ids[cam_order]];
 
-    cam_subs[cam_order] = nh.subscribe(cam_raw_topic_names[cam_order], 1, f_cam_callbacks[cam_order]);
+    cam_subs[cam_order] = nh.subscribe(cam_topic_names[cam_order], 1, f_cam_callbacks[cam_order]);
 
     if (g_img_result_publish)
     {
@@ -218,6 +220,8 @@ int main(int argc, char** argv)
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
     g_heartbeat_pubs[cam_order] =
         nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
+    g_cam_heartbeat_pubs[cam_order] =
+        nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/drivenet_sub/heartbeat"), 1);
     g_time_info_pubs[cam_order] =
         nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
   }
@@ -250,9 +254,9 @@ int main(int argc, char** argv)
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     /// Wait for all message
-    std::cout << "Wait for input topic " << cam_raw_topic_names[cam_order] << std::endl;
-    ros::topic::waitForMessage<sensor_msgs::Image>(cam_raw_topic_names[cam_order]);
-    std::cout << cam_raw_topic_names[cam_order] << " is ready" << std::endl;
+    std::cout << "Wait for input topic " << cam_topic_names[cam_order] << std::endl;
+    ros::topic::waitForMessage<sensor_msgs::Image>(cam_topic_names[cam_order]);
+    std::cout << cam_topic_names[cam_order] << " is ready" << std::endl;
   }
 
   ros::MultiThreadedSpinner spinner(2);

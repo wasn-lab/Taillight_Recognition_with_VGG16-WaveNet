@@ -447,7 +447,7 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
     // trafficlightstate.id = 402079;
   }
   
-  if (signal_state == 0)
+  if (signal_state == 5)
   {
     // 0:ped red 1:ped green 2:right 3:straight 4:left 5:green 6:yellow 7:red
     std::string light_status_binary = toBinary(light_status);
@@ -504,9 +504,15 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
       trafficlightstate.lamp_states.push_back(lampstate);
     }
   }
-  else
+  else if (signal_state == 2)
   {
     lampstate.type = autoware_perception_msgs::LampState::FLASHING_YELLOW;
+    lampstate.confidence = 0.0;
+    trafficlightstate.lamp_states.push_back(lampstate);
+  }
+  else
+  {
+    lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
     lampstate.confidence = 0.0;
     trafficlightstate.lamp_states.push_back(lampstate);
   }

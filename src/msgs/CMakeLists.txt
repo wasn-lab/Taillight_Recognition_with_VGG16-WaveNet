@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   message_generation
+  uuid_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -74,6 +75,7 @@ generate_messages(
   DEPENDENCIES
   std_msgs  # Or other packages containing msgs
   sensor_msgs
+  uuid_msgs
 )
 
 ################################################
@@ -108,7 +110,13 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES msgs
-  CATKIN_DEPENDS roscpp rospy message_runtime std_msgs sensor_msgs
+  CATKIN_DEPENDS 
+  roscpp 
+  rospy 
+  message_runtime 
+  std_msgs 
+  sensor_msgs
+  uuid_msgs
 #  DEPENDS system_lib
 )
 

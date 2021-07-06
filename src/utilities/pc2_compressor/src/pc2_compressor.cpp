@@ -78,13 +78,54 @@ static sensor_msgs::PointCloud2ConstPtr __decompress(const msgs::CompressedPoint
 
 msgs::CompressedPointCloud2ConstPtr compress_msg(const sensor_msgs::PointCloud2ConstPtr& in_msg, const int32_t fmt)
 {
-  CHECK(fmt >= 0 && fmt < compression_format::nums) << "unsupported format " << fmt;
   return __compress(in_msg, fmt);
 }
 
 sensor_msgs::PointCloud2ConstPtr decompress_msg(const msgs::CompressedPointCloud2ConstPtr& cmpr_msg)
 {
   return __decompress(cmpr_msg);
+}
+
+sensor_msgs::PointCloud2Ptr ouster64_to_xyzir(const sensor_msgs::PointCloud2ConstPtr& msg)
+{
+  // Ouster has 9 fields: x y z intensity t reflectivity ring noise range
+  // We only needs 5 fields: x, y, z, intensity and ring.
+  constexpr int32_t msg_ring_field_idx = 6;
+  constexpr int32_t res_ring_field_idx = 4;
+  sensor_msgs::PointCloud2Ptr res{ new sensor_msgs::PointCloud2 };
+  res->fields.reserve(res_ring_field_idx + 1);
+  for (int32_t i = 0; i < res_ring_field_idx; i++)
+  {
+    res->fields.push_back(msg->fields[i]);
+  }
+  res->fields.push_back(msg->fields[msg_ring_field_idx]);
+
+  res->point_step = 0;
+  for (const auto& field : res->fields)
+  {
+    res->point_step += pcl::getFieldSize(field.datatype);
+  }
+  // dest_front_size = 16 (x, y, z, intensity: 4 bytes each)
+  const int32_t ring_size = pcl::getFieldSize(res->fields[res_ring_field_idx].datatype);
+  const int32_t dest_front_size = res->point_step - ring_size;
+  res->fields[res_ring_field_idx].offset = dest_front_size;
+  const int32_t num_points = msg->width * msg->height;
+  const int32_t msg_ring_field_offset = msg->fields[msg_ring_field_idx].offset;
+  res->data.resize(num_points * res->point_step);
+  for (int32_t i = 0, src_offset = 0, dest_offset = 0; i < num_points;
+       i++, src_offset += msg->point_step, dest_offset += res->point_step)
+  {
+    memcpy(&(res->data[dest_offset]), &(msg->data[src_offset]), dest_front_size);
+    memcpy(&(res->data[dest_offset + dest_front_size]), &(msg->data[src_offset + msg_ring_field_offset]), ring_size);
+  }
+
+  res->header = msg->header;
+  res->width = msg->width;
+  res->height = msg->height;
+  res->is_bigendian = msg->is_bigendian;
+  res->row_step = msg->width * res->point_step;
+  res->is_dense = msg->is_dense;
+  return res;
 }
 
 bool is_equal_pc2(const sensor_msgs::PointCloud2ConstPtr& a, const sensor_msgs::PointCloud2ConstPtr& b)
@@ -117,6 +158,7 @@ bool is_equal_pc2(const sensor_msgs::PointCloud2ConstPtr& a, const sensor_msgs::
     }
   }
 
+#if 0
   if (pc_a.channels.size() != pc_b.channels.size())
   {
     LOG(INFO) << "Inconsitent channels size: pc_a channel=" << pc_a.channels.size()
@@ -154,6 +196,7 @@ bool is_equal_pc2(const sensor_msgs::PointCloud2ConstPtr& a, const sensor_msgs::
       }
     }
   }
+#endif
   return true;
 }
 
@@ -194,8 +237,8 @@ std::string describe(const sensor_msgs::PointCloud2ConstPtr& in_msg)
     field_names.pop_back();
   }
   auto num_points = in_msg->height * in_msg->width;
-  auto is_bigendian = in_msg->is_bigendian ? "true" : "false";
-  auto is_dense = in_msg->is_dense ? "true" : "false";
+  auto is_bigendian = in_msg->is_bigendian != 0u ? "true" : "false";
+  auto is_dense = in_msg->is_dense != 0u ? "true" : "false";
   return "#points: " + std::to_string(num_points) + ", is_bigendian: " + is_bigendian +
          ", point_step: " + std::to_string(in_msg->point_step) + ", row_step: " + std::to_string(in_msg->row_step) +
          ", is_dense: " + is_dense + ", point cloud fields: " + field_names;

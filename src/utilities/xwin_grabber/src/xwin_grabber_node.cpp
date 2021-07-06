@@ -25,12 +25,19 @@
 
 namespace xwin_grabber
 {
+const std::vector<int> JPG_PARAMS{
+  cv::IMWRITE_JPEG_QUALITY,
+  80,
+  cv::IMWRITE_JPEG_OPTIMIZE,
+  1,
+};
 
 XWinGrabberNode::XWinGrabberNode(const std::string&& xwin_title): grabber_(std::move(xwin_title))
 {
   // Set up publishers
   std::string topic = get_output_topic();
   jpg_publisher_ = node_handle_.advertise<sensor_msgs::CompressedImage>(topic + "/jpg", /*queue size=*/1);
+  lidar_zone_jpg_publisher_ = node_handle_.advertise<sensor_msgs::CompressedImage>(topic + "/lidar_zone/jpg", /*queue size=*/1);
   heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(topic + "/heartbeat", /*queue size=*/1);
 
   if (should_publish_raw_image())
@@ -46,29 +53,47 @@ void XWinGrabberNode::streaming_xwin()
   {
     return;
   }
+  publish_lidar_zone_img(img);
+  publish_full_img(img);
+}
 
+void XWinGrabberNode::publish_lidar_zone_img(const cv::Mat& img)
+{
+  constexpr double top_left_x = 0.263;
+  constexpr double top_left_y = 0.06;
+  constexpr double bottom_right_x = 0.992;
+  constexpr double bottom_right_y = 0.676;
+  const int x1 = top_left_x * img.cols;
+  const int y1 = top_left_y * img.rows;
+  const int x2 = bottom_right_x * img.cols;
+  const int y2 = bottom_right_y * img.rows;
+  cv::Rect rect(x1, y1, x2 - x1, y2 - y1);
+  cv::Mat lidar_zone_img = img(rect);
+
+  sensor_msgs::CompressedImagePtr msg{ new sensor_msgs::CompressedImage };
+  msg->data.reserve(lidar_zone_img.total());
+  msg->format = "jpeg";
+  cv::imencode(".jpg", lidar_zone_img, msg->data, JPG_PARAMS);
+  lidar_zone_jpg_publisher_.publish(msg);
+}
+
+void XWinGrabberNode::publish_full_img(cv::Mat& img)
+{
   int32_t org_width = img.cols;
   int32_t org_height = img.rows;
-  if (img.cols > 640)
+  if (img.cols > 1280)
   {
     // resize image
-    const double scale = 640.0 / img.cols;
+    const double scale = 1280.0 / img.cols;
     cv::Mat temp;
     cv::resize(img, temp, cv::Size(), /*width*/scale, /*height*/ scale);
     img = temp;
   }
 
-  std::vector<int> jpg_params{
-    cv::IMWRITE_JPEG_QUALITY,
-    85,
-    cv::IMWRITE_JPEG_OPTIMIZE,
-    1,
-  };
-
   sensor_msgs::CompressedImagePtr msg{ new sensor_msgs::CompressedImage };
   msg->data.reserve(img.total());
   msg->format = "jpeg";
-  cv::imencode(".jpg", img, msg->data, jpg_params);
+  cv::imencode(".jpg", img, msg->data, JPG_PARAMS);
   jpg_publisher_.publish(msg);
 
   if (should_publish_raw_image())
@@ -89,9 +114,8 @@ void XWinGrabberNode::streaming_xwin()
   const uint64_t org_len = img.step[0] * img.rows;
   const uint64_t cmpr_len = msg->data.size();
   LOG_EVERY_N(INFO, 64) << "Image size: " << img.cols << "x" << img.rows << ", original image size:" << org_width << "x"
-                        << org_height << ", jpg quality: " << jpg_params[1] << ", compression rate : " << cmpr_len
+                        << org_height << ", jpg quality: " << JPG_PARAMS[1] << ", compression rate : " << cmpr_len
                         << "/" << org_len << " = " << double(cmpr_len) / org_len;
-  
 }
 
 int XWinGrabberNode::run()
