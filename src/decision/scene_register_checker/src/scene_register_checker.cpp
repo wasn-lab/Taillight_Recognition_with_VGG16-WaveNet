@@ -43,7 +43,9 @@ struct pose_with_header
     std_msgs::Header header;
 };
 pose_with_header nearest_bus_stop;
+pose_with_header nearest_bus_stop_factor;
 pose_with_header nearest_traffic_light;
+pose_with_header nearest_traffic_light_factor;
 
 bool bus_stop_ini = false;
 bool traffic_light_ini = false;
@@ -209,11 +211,12 @@ void stop_reasons_callback(const autoware_planning_msgs::StopReasonArray::ConstP
     if (msg->stop_reasons[i].reason == "\"BusStop\"")
     {
       nearest_bus_stop.header = msg->header;
+      nearest_bus_stop_factor.header = msg->header;
       if (!msg->stop_reasons[i].stop_factors.empty())
       {
-        // nearest_bus_stop.x = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].x;
-        // nearest_bus_stop.y = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].y;
-        // nearest_bus_stop.z = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].z;
+        nearest_bus_stop_factor.x = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].x;
+        nearest_bus_stop_factor.y = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].y;
+        nearest_bus_stop_factor.z = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].z;
         nearest_bus_stop.x = msg->stop_reasons[i].stop_factors[0].stop_pose.position.x;
         nearest_bus_stop.y = msg->stop_reasons[i].stop_factors[0].stop_pose.position.y;
         nearest_bus_stop.z = msg->stop_reasons[i].stop_factors[0].stop_pose.position.z;
@@ -224,11 +227,12 @@ void stop_reasons_callback(const autoware_planning_msgs::StopReasonArray::ConstP
     if (msg->stop_reasons[i].reason == "\"TrafficLight\"")
     {
       nearest_traffic_light.header = msg->header;
+      nearest_traffic_light_factor.header = msg->header;
       if (!msg->stop_reasons[i].stop_factors.empty())
       {
-        // nearest_traffic_light.x = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].x;
-        // nearest_traffic_light.y = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].y;
-        // nearest_traffic_light.z = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].z;
+        nearest_traffic_light_factor.x = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].x;
+        nearest_traffic_light_factor.y = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].y;
+        nearest_traffic_light_factor.z = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].z;
         nearest_traffic_light.x = msg->stop_reasons[i].stop_factors[0].stop_pose.position.x;
         nearest_traffic_light.y = msg->stop_reasons[i].stop_factors[0].stop_pose.position.y;
         nearest_traffic_light.z = msg->stop_reasons[i].stop_factors[0].stop_pose.position.z;
@@ -271,10 +275,37 @@ void stop_reasons_callback(const autoware_planning_msgs::StopReasonArray::ConstP
 //   bus_stop_register_pub.publish(bus_stop_register_);
 // }
 
-void run(msgs::BehaviorSceneRegisterArray& register_array_, pose_with_header nearst_pose, ros::Publisher register_pub, std::string Module)
+double distance_caculator(pose_with_header nearst_pose_, pose current_pose_)
+{
+  double dx = nearst_pose_.x - current_pose_.x;
+  double dy = nearst_pose_.y - current_pose_.y;
+  double theta = std::atan2(dy,dx);
+  if (theta < 0)
+  {
+    theta += 2*RT_PI;
+  }
+  double theta_diff = std::fabs(current_pose_.yaw - theta);
+  if (theta_diff > RT_PI)
+  {
+    theta_diff = 2*RT_PI - theta_diff;
+  }
+  int a;
+  if (theta_diff <= RT_PI/2.0)
+  {
+    a = 1;
+  }
+  else
+  {
+    a = -1;
+  }
+  double distance = a * sqrt((current_pose_.x-nearst_pose_.x)*(current_pose_.x-nearst_pose_.x) + (current_pose_.y-nearst_pose_.y)*(current_pose_.y-nearst_pose_.y));
+  return distance;
+}
+
+void run(msgs::BehaviorSceneRegisterArray& register_array_, pose_with_header nearst_pose, pose_with_header nearst_factor_pose, ros::Publisher register_pub, std::string Module)
 {
   msgs::BehaviorSceneRegister register_;
-
+  double distance_to_factor = 200;
   if (register_array_.registers.empty())
   {
     register_.header.frame_id = "map";
@@ -293,37 +324,37 @@ void run(msgs::BehaviorSceneRegisterArray& register_array_, pose_with_header nea
     if (nearst_pose.x == 0 && nearst_pose.y == 0 && nearst_pose.z == 0)
     {
       register_.Distance = 200;
+      distance_to_factor = distance_caculator(nearst_factor_pose,current_pose);
     }
     else
     {
-      double dx = nearst_pose.x - current_pose.x;
-      double dy = nearst_pose.y - current_pose.y;
-      double theta = std::atan2(dy,dx);
-      if (theta < 0)
-      {
-        theta += 2*RT_PI;
-      }
-      double theta_diff = std::fabs(current_pose.yaw - theta);
-      if (theta_diff > RT_PI)
-      {
-        theta_diff = 2*RT_PI - theta_diff;
-      }
-      int a;
-      if (theta_diff <= RT_PI/2.0)
-      {
-        a = 1;
-      }
-      else
-      {
-        a = -1;
-      }
-      register_.Distance = a * sqrt((current_pose.x-nearst_pose.x)*(current_pose.x-nearst_pose.x) + (current_pose.y-nearst_pose.y)*(current_pose.y-nearst_pose.y));
+      // double dx = nearst_pose.x - current_pose.x;
+      // double dy = nearst_pose.y - current_pose.y;
+      // double theta = std::atan2(dy,dx);
+      // if (theta < 0)
+      // {
+      //   theta += 2*RT_PI;
+      // }
+      // double theta_diff = std::fabs(current_pose.yaw - theta);
+      // if (theta_diff > RT_PI)
+      // {
+      //   theta_diff = 2*RT_PI - theta_diff;
+      // }
+      // int a;
+      // if (theta_diff <= RT_PI/2.0)
+      // {
+      //   a = 1;
+      // }
+      // else
+      // {
+      //   a = -1;
+      // }
+      // register_.Distance = a * sqrt((current_pose.x-nearst_pose.x)*(current_pose.x-nearst_pose.x) + (current_pose.y-nearst_pose.y)*(current_pose.y-nearst_pose.y));
+      register_.Distance = distance_caculator(nearst_pose,current_pose);
+      distance_to_factor = distance_caculator(nearst_factor_pose,current_pose);
     }
-    // if (Module == "traffic_light")
-    // {
-    //   register_.Distance = std::fabs(register_.Distance - 17);
-    // }
-    if (register_.Distance > 40)
+
+    if (distance_to_factor > 100)
     {
       register_.StopZone = 0;
     }
@@ -355,9 +386,9 @@ void current_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& PSmsg)
   if (busstop_txt_ini)
   {
     // bus_stop_();
-    run(bus_stop_register_array_, nearest_bus_stop, bus_stop_register_pub, "bus_stop");
+    run(bus_stop_register_array_, nearest_bus_stop, nearest_bus_stop_factor, bus_stop_register_pub, "bus_stop");
   }
-  run(traffic_light_register_array_, nearest_traffic_light, traffic_light_register_pub, "traffic_light");
+  run(traffic_light_register_array_, nearest_traffic_light, nearest_traffic_light_factor, traffic_light_register_pub, "traffic_light");
 }
 
 int main(int argc, char** argv)
