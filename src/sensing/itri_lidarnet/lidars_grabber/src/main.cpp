@@ -437,11 +437,11 @@ int main(int argc, char** argv)
 
   // subscriber
   ros::Subscriber sub_LidarFrontLeft =
-      n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontLeft/Raw", 1, cloud_cb_LidarFrontLeft);
+      n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontLeft/Raw/xyzir", 1, cloud_cb_LidarFrontLeft);
   ros::Subscriber sub_LidarFrontRight =
-      n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontRight/Raw", 1, cloud_cb_LidarFrontRight);
+      n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontRight/Raw/xyzir", 1, cloud_cb_LidarFrontRight);
   ros::Subscriber sub_LidarFrontTop =
-      n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontTop/Raw", 1, cloud_cb_LidarFrontTop);
+      n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontTop/Raw/xyzir", 1, cloud_cb_LidarFrontTop);
 
   // publisher
   g_pub_LidarFrontLeft = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontLeft", 1);
