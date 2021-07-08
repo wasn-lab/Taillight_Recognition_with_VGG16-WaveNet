@@ -39,8 +39,7 @@ TEST(format_test, test_SensorMsgs_to_XYZIR)
 {
   auto msg_ptr = get_msg_ptr();
   auto cloud_ptr = get_cloud_ptr();
-  auto res_ptr = SensorMsgs_to_XYZIR(*msg_ptr, lidar::Hardware::Ouster);
-  auto& res = *res_ptr;
+  auto res = SensorMsgs_to_XYZIR(*msg_ptr, lidar::Hardware::Ouster);
   EXPECT_EQ(res.points.size(), cloud_ptr->points.size());
   for (size_t idx = 0; idx < res.points.size(); idx++)
   {
