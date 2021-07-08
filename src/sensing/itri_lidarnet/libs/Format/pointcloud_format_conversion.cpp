@@ -1,10 +1,9 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include "pointcloud_format_conversion.h"
 
-pcl::PointCloud<pcl::PointXYZIR>::Ptr SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2& cloud_msg, lidar::Hardware /*brand*/)
+pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2& cloud_msg, lidar::Hardware /*brand*/)
 {
-  pcl::PointCloud<pcl::PointXYZIR>::Ptr cloud_ptr{new pcl::PointCloud<pcl::PointXYZIR>};
-  auto& cloud = *cloud_ptr;
+  pcl::PointCloud<pcl::PointXYZIR> cloud;
 
   // Get the field structure of this point cloud
   int point_bytes = cloud_msg.point_step;
@@ -62,7 +61,7 @@ pcl::PointCloud<pcl::PointXYZIR>::Ptr SensorMsgs_to_XYZIR(const sensor_msgs::Poi
 
   pcl_conversions::toPCL(cloud_msg.header, cloud.header);
 
-  return cloud_ptr;
+  return cloud;
 }
 
 //----------------------RGB
