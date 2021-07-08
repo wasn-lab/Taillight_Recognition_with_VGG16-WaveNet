@@ -67,14 +67,14 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
 
     //-------------------------- sensor_msg to pcl XYZIR
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
-    pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
+    pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring;
 
 #if CAR_MODEL_IS_B1_V2
-    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Velodyne);
+    input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Velodyne);
 #elif CAR_MODEL_IS_B1_V3
-    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
+    input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
 #elif CAR_MODEL_IS_C1
-    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
+    input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
 #else
     #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
@@ -152,14 +152,14 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
       cout << "[Right->Gbr]: " << diff_time << "ms" << endl;
     }
 
-    pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
+    pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring;
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
 #if CAR_MODEL_IS_B1_V2
-    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Velodyne);
+    input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Velodyne);
 #elif CAR_MODEL_IS_B1_V3
-    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
+    input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
 #elif CAR_MODEL_IS_C1
-    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
+    input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
 #else
     #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
@@ -237,8 +237,8 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
     }
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
-    pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
-    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
+    pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring;
+    input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
 
     // Ring Filter
     if (g_use_filter)
@@ -437,11 +437,11 @@ int main(int argc, char** argv)
 
   // subscriber
   ros::Subscriber sub_LidarFrontLeft =
-      n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontLeft/Raw", 1, cloud_cb_LidarFrontLeft);
+      n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontLeft/Raw/xyzir", 1, cloud_cb_LidarFrontLeft);
   ros::Subscriber sub_LidarFrontRight =
-      n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontRight/Raw", 1, cloud_cb_LidarFrontRight);
+      n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontRight/Raw/xyzir", 1, cloud_cb_LidarFrontRight);
   ros::Subscriber sub_LidarFrontTop =
-      n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontTop/Raw", 1, cloud_cb_LidarFrontTop);
+      n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontTop/Raw/xyzir", 1, cloud_cb_LidarFrontTop);
 
   // publisher
   g_pub_LidarFrontLeft = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontLeft", 1);
