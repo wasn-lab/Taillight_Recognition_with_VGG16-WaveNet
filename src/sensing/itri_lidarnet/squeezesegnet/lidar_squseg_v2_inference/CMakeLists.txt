@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_squseg_v2_inference)
 
+message("${PROJECT_NAME} is no longer used.")
+return()
 ######################
 ##       CUDA       ##
 ######################

@@ -507,7 +507,7 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
   else if (signal_state == 2)
   {
     lampstate.type = autoware_perception_msgs::LampState::FLASHING_YELLOW;
-    lampstate.confidence = 0.0;
+    lampstate.confidence = confidence;
     trafficlightstate.lamp_states.push_back(lampstate);
   }
   else

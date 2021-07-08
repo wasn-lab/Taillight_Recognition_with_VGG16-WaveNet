@@ -3,8 +3,9 @@
 	<!-- declare arg to be passed in -->
 	<!-- 0=fusion, 1=lidar, 2=camera -->
  	<arg name="pp_input_type" default="1"/>
+
 	<arg name="can_name" default="can1"/>
-	<arg name="time_threshold" default="4.0"/>
+	<arg name="time_threshold" default="2.0"/>
 
 	<arg name="location_name" default="ITRI"/>
  

@@ -25,6 +25,7 @@ public:
   double getObjSpeed();
   double getNearest_X();
   double getNearest_Y();
+  bool setIntersectPoint(bool state);
   Point findDirection();
 
   void setPointCloud(const std::vector<Point>& PointCloud, bool isLocal, double SLAM_x, double SLAM_y,
@@ -33,10 +34,12 @@ public:
                                                        // fist execution of Calcuator
   int Calculator(int PP_timetick_index_ = 0, double time_threshold = 0, double vehicle_speed = 0);            
                                                        // Calculate geofence by currently set Poly and PointCloud
+  void getSpeedTimeInfo(std::vector<double>& speed_time_info);
+                                                       // For testing
+  
 
 private:
   double dist0 = 300.;
-  double arrive_t_threshold = 0;
   std::vector<Point> PathPoints;
   std::vector<double> PathLength;
   std::vector<Point> PointCloud;
@@ -48,5 +51,13 @@ private:
   double Nearest_X;      // Nearest point's (X,Y)
   double Nearest_Y;
   double Boundary;
+  bool PPAlreadyIntersected = false;
   bool PossiblePointofCollision(int PP_index, int minElementIndex, double vehicle_speed, double time_threshold);
+
+  ///////////////////for testing/////////////////////
+  double vehicle_dist_to_geofence;  
+  double vehicle_speed;
+  double vehicle_time;
+  double object_time;
+  double time_difference;
 };

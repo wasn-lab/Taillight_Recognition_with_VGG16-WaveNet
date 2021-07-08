@@ -46,6 +46,11 @@ add_executable(powerled src/powerled.c)
 add_dependencies(powerled ${catkin_EXPORTED_TARGETS})
 target_link_libraries(powerled ${catkin_LIBRARIES})
 
+install(TARGETS powerled
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 #############
 ## Install ##

@@ -160,7 +160,7 @@ bool TrafficLightModule::modifyPathVelocity(
   {
     if (!getHighestConfidenceTrafficLightState(traffic_lights, tl_state_)) 
     {
-      // Don't stop when FALSHING_YELLOW or TIMEOUT as discussed at #508
+      // Don't stop when TIMEOUT as discussed at #508
       return true;
     }
 
@@ -235,7 +235,7 @@ bool TrafficLightModule::modifyPathVelocity(
     {
       /* get stop point and stop factor */
       autoware_planning_msgs::StopFactor stop_factor;
-      stop_factor.stop_pose = debug_data_.first_stop_pose;
+      // stop_factor.stop_pose = debug_data_.first_stop_pose;
       stop_factor.stop_factor_points = debug_data_.traffic_light_points;
       planning_utils::appendStopReason(stop_factor, stop_reason);
       return true;
@@ -316,6 +316,11 @@ bool TrafficLightModule::isStopRequired(
     return false;
   }
 
+  if (hasLamp(tl_state, autoware_perception_msgs::LampState::FLASHING_YELLOW)) {
+    std::cout << "FLASHING_YELLOW !" << std::endl;
+    return false;
+  }
+
   return true;
 }
 
@@ -354,11 +359,11 @@ bool TrafficLightModule::getHighestConfidenceTrafficLightState(
       continue;
     }
 
-    if (
-      tl_state.lamp_states.front().type == autoware_perception_msgs::LampState::FLASHING_YELLOW) {
-      reason = "LampStateFlashingYellow";
-      continue;
-    }
+    // if (
+    //   tl_state.lamp_states.front().type == autoware_perception_msgs::LampState::FLASHING_YELLOW) {
+    //   reason = "LampStateFlashingYellow";
+    //   continue;
+    // }
 
     if (highest_confidence < tl_state.lamp_states.front().confidence) {
       highest_confidence = tl_state.lamp_states.front().confidence;

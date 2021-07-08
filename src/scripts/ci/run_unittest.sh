@@ -27,14 +27,15 @@ set -x
 src/car_model/south_bridge/run_unittest.sh
 src/utilities/fail_safe/src/run_unittest.sh
 src/utilities/powerled/src/run_unittest.sh
-src/utilities/image_compressor/src/test/run_unittest.sh
+#src/utilities/image_compressor/src/test/run_unittest.sh
 src/utilities/image_compressor/src/test/run_publish_test.sh
 src/utilities/pc2_compressor/src/test/run_unittest.sh
 src/utilities/pc2_compressor/src/test/run_publish_test.sh
-src/sensing/itri_lidarnet/lidars_transform/src/test/run_unittest.sh
-src/sensing/itri_lidarnet/lidars_transform/src/test/run_publish_test.sh
+src/sensing/itri_lidarnet/pc_transform/src/test/run_unittest.sh
+src/sensing/itri_lidarnet/pc_transform/src/test/run_publish_test.sh
 
 popd
 
 echo "ALL done!"
 exit 0
+

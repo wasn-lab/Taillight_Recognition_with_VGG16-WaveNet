@@ -1092,9 +1092,10 @@ void sendROSRun(int argc, char** argv)
       std::string traffic_msg = g_traffic_light_queue.front();
       g_traffic_light_queue.pop();
       msgs::Spat spat;
-      json j0 = json::parse(traffic_msg);
+      std::cout << "traffic_msg: " << traffic_msg << std::endl;
       try
       {
+        json j0 = json::parse(traffic_msg);
         json j1 = j0.at("SPaT_MAP_Info");
         spat.lat = j1.at("Latitude");
         spat.lon = j1.at("Longitude");
@@ -1104,13 +1105,13 @@ void sendROSRun(int argc, char** argv)
         spat.index = j1.at("Index");
         spat.intersection_id = j1.at("intersection_id");
         spat.road_id = j1.at("road_id");
+        //send traffic light
+        RosModuleTraffic::publishTraffic(TOPIC_TRAFFIC, spat);
       } 
       catch(std::exception& e)
       {
         std::cout << "parsing fail: " << e.what() << " "<<std::endl;
       }
-      //send traffic light
-      RosModuleTraffic::publishTraffic(TOPIC_TRAFFIC, spat);
     }
     g_mutex_traffic_light.unlock();
     
