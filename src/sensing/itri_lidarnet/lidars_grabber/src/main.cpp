@@ -7,7 +7,6 @@
 #include "NoiseFilter.h"
 #include "extract_Indices.h"
 #include "pointcloud_format_conversion.h"
-#include "msgs/CompressedPointCloud.h"
 #include <std_msgs/Empty.h>
 #include "car_model.h"
 #include "lidar_hardware.h"
@@ -31,16 +30,7 @@ static ros::Publisher g_pub_LidarFrontRight;
 static ros::Publisher g_pub_LidarFrontTop;
 static ros::Publisher g_pub_LidarAll;
 
-static ros::Publisher g_pub_LidarFrontLeft_Raw_HeartBeat;
-static ros::Publisher g_pub_LidarFrontRight_Raw_HeartBeat;
-static ros::Publisher g_pub_LidarFrontTop_Raw_HeartBeat;
 static ros::Publisher g_pub_LidarAll_HeartBeat;
-
-static ros::Publisher g_pub_LidarFrontTop_Localization;
-
-static ros::Publisher g_pub_LidarFrontLeft_Compress;
-static ros::Publisher g_pub_LidarFrontRight_Compress;
-static ros::Publisher g_pub_LidarFrontTop_Compress;
 
 //--------------------------- Global Variables
 mutex g_L_Lock;
@@ -50,29 +40,19 @@ mutex g_T_Lock;
 StopWatch g_stopWatch_L;
 StopWatch g_stopWatch_R;
 StopWatch g_stopWatch_T;
-StopWatch g_stopWatch_Compressor;
 
 bool g_debug_output = false;
 bool g_use_filter = false;
-bool g_use_oct_compress = false;
 bool g_use_roi = false;
 
 void lidarAll_Pub(int lidarNum);
 
 uint64_t g_all_last_time = 0;
 
-//------------------------ Compressor
-void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros::Publisher output_publisher);
-
 //------------------------------ Callbacks
 void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
   g_L_Lock.lock();
-
-  // -------------------Raw/heartbeat publisher
-  // check heartbeat by subcriber data receiver
-  std_msgs::Empty empty_msg;
-  g_pub_LidarFrontLeft_Raw_HeartBeat.publish(empty_msg);
 
   if (input_cloud->width * input_cloud->height > 100)
   {
@@ -98,14 +78,6 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
 #else
     #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
-
-    //-------------------------- compress thread
-    if (g_use_oct_compress)
-    {
-      thread t_LeftCompressor;
-      t_LeftCompressor = thread{ Compressor, input_cloud_tmp_ring, g_pub_LidarFrontLeft_Compress };
-      t_LeftCompressor.detach();
-    }
 
     //-------------------------- ring filter
     if (g_use_filter)
@@ -169,11 +141,6 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
 {
   g_R_Lock.lock();
 
-  // -------------------Raw/heartbeat publisher
-  // check heartbeat by subcriber data receiver
-  std_msgs::Empty empty_msg;
-  g_pub_LidarFrontRight_Raw_HeartBeat.publish(empty_msg);
-
   if (input_cloud->width * input_cloud->height > 100)
   {
     g_stopWatch_R.reset();
@@ -196,13 +163,6 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
 #else
     #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
-
-    if (g_use_oct_compress)
-    {
-      thread t_RightCompressor;
-      t_RightCompressor = thread{ Compressor, input_cloud_tmp_ring, g_pub_LidarFrontRight_Compress };
-      t_RightCompressor.detach();
-    }
 
     if (g_use_filter)
     {
@@ -265,11 +225,6 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 {
   g_T_Lock.lock();
 
-  // -------------------Raw/heartbeat publisher
-  // check heartbeat by subcriber data receiver
-  std_msgs::Empty empty_msg;
-  g_pub_LidarFrontTop_Raw_HeartBeat.publish(empty_msg);
-
   if (input_cloud->width * input_cloud->height > 100)
   {
     g_stopWatch_T.reset();
@@ -284,26 +239,6 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
     pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
     *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
-
-    if (g_use_oct_compress)
-    {
-      thread t_TopCompressor;
-      t_TopCompressor = thread{ Compressor, input_cloud_tmp_ring, g_pub_LidarFrontTop_Compress };
-      t_TopCompressor.detach();
-    }
-
-    //------------------- For Localization
-    pcl::PointCloud<pcl::PointXYZI>::Ptr localization_cloud(new pcl::PointCloud<pcl::PointXYZI>);
-    pcl::copyPointCloud(*input_cloud_tmp_ring, *localization_cloud);
-#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3
-    *localization_cloud = Transform_CUDA().compute<PointXYZI>(localization_cloud, 0, 0, 0, 0, 0.2, 0);
-#elif CAR_MODEL_IS_C1
-    *localization_cloud = Transform_CUDA().compute<PointXYZI>(localization_cloud, 0, 0, 0, 0.023, 0.21, 0);
-#else
-    #error CORRESPONDING CAR MODEL NOT FOUND.
-#endif
-    pcl_conversions::toPCL(ros::Time::now(), localization_cloud->header.stamp);
-    g_pub_LidarFrontTop_Localization.publish(*localization_cloud);
 
     // Ring Filter
     if (g_use_filter)
@@ -359,57 +294,6 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
     cout << "[T-Gbr]: " << g_stopWatch_T.getTimeSeconds() << 's' << endl;
   }
   g_T_Lock.unlock();
-}
-
-//---------------------------------------------------- Point Cloud Compression Thread
-void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros::Publisher output_publisher)
-{
-  mutex Compressor_Lock;
-  Compressor_Lock.lock();
-  g_stopWatch_Compressor.reset();
-
-  //--------------------------- create compressor
-  pcl::io::compression_Profiles_e compressionProfile = pcl::io::MANUAL_CONFIGURATION;
-  bool showStatistics = false;
-  const double pointResolution_arg = 0.001;
-  const double octreeResolution_arg = 0.001;
-  bool doVoxelGridDownDownSampling_arg = false;
-  const unsigned int iFrameRate_arg = 30;
-  bool doColorEncoding_arg = true;
-  const unsigned char colorBitResolution_arg = 8;
-
-  pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder;
-  PointCloudEncoder =
-      // new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>(compressionProfile, showStatistics);
-      new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>(
-          compressionProfile, showStatistics, pointResolution_arg, octreeResolution_arg,
-          doVoxelGridDownDownSampling_arg, iFrameRate_arg, doColorEncoding_arg, colorBitResolution_arg);
-
-  // compressed stringstream
-  msgs::CompressedPointCloud compressed_pointcloud;
-  std::stringstream compressedData;
-
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_xyzrgb(new pcl::PointCloud<pcl::PointXYZRGB>);
-  *cloud_xyzrgb = XYZIR_to_XYZRGB(input_cloud_tmp_ring);
-
-  PointCloudEncoder->encodePointCloud(cloud_xyzrgb, compressedData);
-  compressed_pointcloud.data = compressedData.str();
-
-  pcl_conversions::fromPCL(input_cloud_tmp_ring->header, compressed_pointcloud.header);
-
-  output_publisher.publish(compressed_pointcloud);
-
-  delete (PointCloudEncoder);
-
-  compressedData.str("");
-  compressedData.clear();
-  //------------------------- end of compress
-
-  if (g_stopWatch_Compressor.getTimeSeconds() > 0.05)
-  {
-    cout << "COMPRESSION DELAY ----------> " << g_stopWatch_Compressor.getTimeSeconds() << 's' << endl;
-  }
-  Compressor_Lock.unlock();
 }
 
 //----------------------------------------------------- Publisher
@@ -511,7 +395,6 @@ int main(int argc, char** argv)
   // check debug mode
   ros::param::get("/debug_output", g_debug_output);
   ros::param::get("/use_filter", g_use_filter);
-  ros::param::get("/use_oct_compress", g_use_oct_compress);
   ros::param::get("/use_roi", g_use_roi);
 
   // check stitching mode
@@ -567,18 +450,7 @@ int main(int argc, char** argv)
   g_pub_LidarAll = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarAll", 1);
 
   // publisher - heartbeat
-  g_pub_LidarFrontLeft_Raw_HeartBeat = n.advertise<std_msgs::Empty>("/LidarFrontLeft/Raw/heartbeat", 1);
-  g_pub_LidarFrontRight_Raw_HeartBeat = n.advertise<std_msgs::Empty>("/LidarFrontRight/Raw/heartbeat", 1);
-  g_pub_LidarFrontTop_Raw_HeartBeat = n.advertise<std_msgs::Empty>("/LidarFrontTop/Raw/heartbeat", 1);
   g_pub_LidarAll_HeartBeat = n.advertise<std_msgs::Empty>("/LidarAll/heartbeat", 1);
-
-  // publisher - localization
-  g_pub_LidarFrontTop_Localization = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontTop/Localization", 1);
-
-  // publisher - compressed
-  g_pub_LidarFrontLeft_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontLeft/Oct_Compressed", 1);
-  g_pub_LidarFrontRight_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontRight/Oct_Compressed", 1);
-  g_pub_LidarFrontTop_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontTop/Oct_Compressed", 1);
 
   thread ThreadDetection_UI(UI, argc, argv);
   thread ThreadDetection_Pub(LidarAll_Publisher, argc, argv);

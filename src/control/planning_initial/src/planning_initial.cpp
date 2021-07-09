@@ -425,6 +425,7 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
 {
   int signal_state = msg->signal_state;
   int light_status = (int)(msg->spat_state);
+  double spat_sec = msg->spat_sec;
   int RoadId = msg->road_id;
   int IntersectionId = msg->intersection_id;
   double confidence = 1.0;
@@ -440,18 +441,25 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
       if (IntersectionId == trafficlight_IntersectionId[i] && RoadId == trafficlight_RoadId[i])
       {
         trafficlightstate.id = trafficlight_Id[i];
+        trafficlightstate.spat_sec = spat_sec;
       }
     }
     // trafficlightstate.id = 402079;
   }
   
-  if (signal_state == 0)
+  if (signal_state == 5)
   {
     // 0:ped red 1:ped green 2:right 3:straight 4:left 5:green 6:yellow 7:red
     std::string light_status_binary = toBinary(light_status);
     // std::cout << "light_status_binary = " << light_status_binary << std::endl;
     // std::cout << "light_status_binary[0] = " << int(light_status_binary[0]) << std::endl;
     // std::cout << "light_status_binary[1] = " << int(light_status_binary[1]) << std::endl;
+    if (light_status == 0) // flashing yellow
+    {
+      lampstate.type = autoware_perception_msgs::LampState::FLASHING_YELLOW;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
     if (light_status_binary[2] == '1') // right
     {
       lampstate.type = autoware_perception_msgs::LampState::RIGHT;
@@ -495,6 +503,12 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
       lampstate.confidence = 0.0;
       trafficlightstate.lamp_states.push_back(lampstate);
     }
+  }
+  else if (signal_state == 2)
+  {
+    lampstate.type = autoware_perception_msgs::LampState::FLASHING_YELLOW;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
   }
   else
   {

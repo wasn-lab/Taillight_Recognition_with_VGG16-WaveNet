@@ -630,7 +630,7 @@ int main(int argc, char** argv)
     ros::Subscriber LidAllSub = n.subscribe("LidarAll/replay_to_localization", 1, callback_LidarAll);
   }
 
-  ros::Subscriber LidFrontTopSub = n.subscribe("LidarFrontTop/Localization/replay_to_localization", 1, callback_LidarFrontTop);
+  ros::Subscriber LidFrontTopSub = n.subscribe("LidarFrontTop/Localization", 1, callback_LidarFrontTop);
   ros::Subscriber LidFrontRightSub = n.subscribe("LidarFrontRight/replay_to_localization", 1, callback_LidarFrontRight);
   ros::Subscriber LidFrontLeftSub = n.subscribe("LidarFrontLeft/replay_to_localization", 1, callback_LidarFrontLeft);
 

@@ -160,7 +160,7 @@ bool TrafficLightModule::modifyPathVelocity(
   {
     if (!getHighestConfidenceTrafficLightState(traffic_lights, tl_state_)) 
     {
-      // Don't stop when UNKNOWN or TIMEOUT as discussed at #508
+      // Don't stop when TIMEOUT as discussed at #508
       return true;
     }
 
@@ -205,7 +205,7 @@ bool TrafficLightModule::modifyPathVelocity(
         if (
           (calcSignedArcLength(input_path, self_pose.pose, stop_line_point) <
            pass_judge_line_distance + planner_data_->base_link2front) &&
-          (3.0 /* =10.8km/h */ < self_twist_ptr->twist.linear.x)) 
+          (10.0 /* =10.8km/h */ < self_twist_ptr->twist.linear.x)) ////////////////////////////////////////////////////// 3.0
         {
           ROS_WARN_THROTTLE(
             1.0, "[traffic_light] vehicle is over stop border (%f m)",
@@ -235,7 +235,7 @@ bool TrafficLightModule::modifyPathVelocity(
     {
       /* get stop point and stop factor */
       autoware_planning_msgs::StopFactor stop_factor;
-      stop_factor.stop_pose = debug_data_.first_stop_pose;
+      // stop_factor.stop_pose = debug_data_.first_stop_pose;
       stop_factor.stop_factor_points = debug_data_.traffic_light_points;
       planning_utils::appendStopReason(stop_factor, stop_reason);
       return true;
@@ -298,19 +298,26 @@ bool TrafficLightModule::isStopRequired(
   // const std::string turn_direction = lane_.attributeOr("turn_direction", "else");
   std::string turn_direction = planner_data_->LRturn;
   std::cout << "turn_direction : " << turn_direction << std::endl;
+  std::cout << "tl_state.spat_sec : " << tl_state.spat_sec << std::endl;
+  std::cout << "planner_param_.tl_countdown_set : " << planner_param_.tl_countdown_set << std::endl;
   if (turn_direction == "else") {
     return true;
   }
 
-  if (turn_direction == "right" && hasLamp(tl_state, autoware_perception_msgs::LampState::RIGHT)) {
+  if (turn_direction == "right" && hasLamp(tl_state, autoware_perception_msgs::LampState::RIGHT) && tl_state.spat_sec >= planner_param_.tl_countdown_set) {
     return false;
   }
 
-  if (turn_direction == "left" && hasLamp(tl_state, autoware_perception_msgs::LampState::LEFT)) {
+  if (turn_direction == "left" && hasLamp(tl_state, autoware_perception_msgs::LampState::LEFT) && tl_state.spat_sec >= planner_param_.tl_countdown_set) {
     return false;
   }
 
-  if (turn_direction == "straight" && hasLamp(tl_state, autoware_perception_msgs::LampState::UP)) {
+  if (turn_direction == "straight" && hasLamp(tl_state, autoware_perception_msgs::LampState::UP) && tl_state.spat_sec >= planner_param_.tl_countdown_set) {
+    return false;
+  }
+
+  if (hasLamp(tl_state, autoware_perception_msgs::LampState::FLASHING_YELLOW)) {
+    std::cout << "FLASHING_YELLOW !" << std::endl;
     return false;
   }
 
@@ -347,11 +354,16 @@ bool TrafficLightModule::getHighestConfidenceTrafficLightState(
     }
 
     if (
-      tl_state.lamp_states.empty() ||
-      tl_state.lamp_states.front().type == autoware_perception_msgs::LampState::UNKNOWN) {
-      reason = "LampStateUnknown";
+      tl_state.lamp_states.empty()) {
+      reason = "LampStateEmpty";
       continue;
     }
+
+    // if (
+    //   tl_state.lamp_states.front().type == autoware_perception_msgs::LampState::FLASHING_YELLOW) {
+    //   reason = "LampStateFlashingYellow";
+    //   continue;
+    // }
 
     if (highest_confidence < tl_state.lamp_states.front().confidence) {
       highest_confidence = tl_state.lamp_states.front().confidence;

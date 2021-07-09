@@ -24,6 +24,7 @@ bind u encoding utf8 utf8
 defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
+sessionname "adv"
 
 # ROS has trouble when dealing multiple nodes concurrently.
 # We first make light-weight load_monitor to successfully connect to master,
@@ -45,3 +46,6 @@ stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_localization_la
 
 screen -t init_up_led_badger.sh
 stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_up_led_badger.sh^M"
+
+screen -t init_lidar_front_top_localization
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_lidar_front_top_localization.sh^M"

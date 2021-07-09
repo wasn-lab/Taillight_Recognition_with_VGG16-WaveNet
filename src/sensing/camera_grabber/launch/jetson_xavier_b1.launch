@@ -9,7 +9,7 @@
     -do_resize=true
     -password nvidia
     -car_driver=true
-    -motion_vector=false
+    -motion_vector=true
     "
     output="screen"
   />

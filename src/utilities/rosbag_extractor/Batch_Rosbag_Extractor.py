@@ -311,22 +311,21 @@ def main():
                                             ) / (fps_inv * 100000000) * fps_inv)
 
                                         read_topic_and_save_camera(
-                                            topic, msg, outdir, filename, timestr, 0, "/cam/front_bottom_60", "a0", "A0")
+                                            topic, msg, outdir, filename, timestr, 0, cam_topics[0], "a0", "A0")
                                         read_topic_and_save_camera(
-                                            topic, msg, outdir, filename, timestr, 1, "/cam/front_top_far_30", "a1", "A1")
+                                            topic, msg, outdir, filename, timestr, 1, cam_topics[1], "a1", "A1")
                                         read_topic_and_save_camera(
-                                            topic, msg, outdir, filename, timestr, 3, "/cam/front_top_close_120", "b0", "B0")
+                                            topic, msg, outdir, filename, timestr, 3, cam_topics[2], "b0", "B0")
                                         read_topic_and_save_camera(
-                                            topic, msg, outdir, filename, timestr, 4, "/cam/right_front_60", "b1", "B1")
+                                            topic, msg, outdir, filename, timestr, 4, cam_topics[3], "b1", "B1")
                                         read_topic_and_save_camera(
-                                            topic, msg, outdir, filename, timestr, 5, "/cam/right_back_60", "b2", "B2")
+                                            topic, msg, outdir, filename, timestr, 5, cam_topics[4], "b2", "B2")
                                         read_topic_and_save_camera(
-                                            topic, msg, outdir, filename, timestr, 6, "/cam/left_front_60", "c0", "C0")
-
+                                            topic, msg, outdir, filename, timestr, 6, cam_topics[5], "c0", "C0")
                                         read_topic_and_save_camera(
-                                            topic, msg, outdir, filename, timestr, 7, "/cam/left_back_60", "c1", "C1")
+                                            topic, msg, outdir, filename, timestr, 7, cam_topics[6], "c1", "C1")
                                         read_topic_and_save_camera(
-                                            topic, msg, outdir, filename, timestr, 8, "/cam/back_top_120", "c2", "C2")
+                                            topic, msg, outdir, filename, timestr, 8, cam_topics[7], "c2", "C2")
 
                                     if topic == "/RadFront":
                                         if fps_input == 1:
