@@ -12,6 +12,16 @@ struct Point
   double Y;
   double Speed;
   double Direction;
+
+  Point& operator=(const Point& a)
+    {
+        X=a.X;
+        Y=a.Y;
+        Speed=a.Speed;
+        Direction=a.Direction;
+
+        return *this;
+    }
 };
 
 class Geofence
