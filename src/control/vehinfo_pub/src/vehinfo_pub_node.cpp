@@ -132,87 +132,87 @@ void processFrame(const struct can_frame& frame, msgs::VehInfo &msg) {
         }
         break;
 
-        case 0x310:
-        {
-                short path1_to_v_x_tmp;
-                short path1_to_v_y_tmp;
-                short path2_to_v_x_tmp;
-                short path2_to_v_y_tmp;
+        // case 0x310:
+        // {
+        //         short path1_to_v_x_tmp;
+        //         short path1_to_v_y_tmp;
+        //         short path2_to_v_x_tmp;
+        //         short path2_to_v_y_tmp;
 
 
-                path1_to_v_x_tmp = frame.data[0] | frame.data[1]<< 8;
-                path1_to_v_y_tmp = frame.data[2] | frame.data[3] << 8;
-                path2_to_v_x_tmp = frame.data[4] | frame.data[5]<< 8;
-                path2_to_v_y_tmp = frame.data[6] | frame.data[7] << 8;
+        //         path1_to_v_x_tmp = frame.data[0] | frame.data[1]<< 8;
+        //         path1_to_v_y_tmp = frame.data[2] | frame.data[3] << 8;
+        //         path2_to_v_x_tmp = frame.data[4] | frame.data[5]<< 8;
+        //         path2_to_v_y_tmp = frame.data[6] | frame.data[7] << 8;
 
 
-                msg.path1_to_v_x = path1_to_v_x_tmp/100;
-                msg.path1_to_v_y = path1_to_v_y_tmp/100;
-                msg.path1_to_v_x = path2_to_v_x_tmp/100;
-                msg.path1_to_v_y = path2_to_v_y_tmp/100;
+        //         msg.path1_to_v_x = path1_to_v_x_tmp/100;
+        //         msg.path1_to_v_y = path1_to_v_y_tmp/100;
+        //         msg.path1_to_v_x = path2_to_v_x_tmp/100;
+        //         msg.path1_to_v_y = path2_to_v_y_tmp/100;
 
 
-                std::cout << "Got 0x310:" <<
-                "path1_to_v_x: " << msg.path1_to_v_x <<  " " <<
-                "path1_to_v_y: " << msg.path1_to_v_y <<  " " <<
-                "path2_to_v_x: " << msg.path2_to_v_x <<  " " <<
-                "path2_to_v_y: " << msg.path2_to_v_y <<  " " <<std::endl;
-        }
-        break;
-        case 0x311:
-        {
-                short path3_to_v_x_tmp;
-                short path3_to_v_y_tmp;
-                short path4_to_v_x_tmp;
-                short path4_to_v_y_tmp;
+        //         std::cout << "Got 0x310:" <<
+        //         "path1_to_v_x: " << msg.path1_to_v_x <<  " " <<
+        //         "path1_to_v_y: " << msg.path1_to_v_y <<  " " <<
+        //         "path2_to_v_x: " << msg.path2_to_v_x <<  " " <<
+        //         "path2_to_v_y: " << msg.path2_to_v_y <<  " " <<std::endl;
+        // }
+        // break;
+        // case 0x311:
+        // {
+        //         short path3_to_v_x_tmp;
+        //         short path3_to_v_y_tmp;
+        //         short path4_to_v_x_tmp;
+        //         short path4_to_v_y_tmp;
 
 
-                path3_to_v_x_tmp = frame.data[0] | frame.data[1]<< 8;
-                path3_to_v_y_tmp = frame.data[2] | frame.data[3] << 8;
-                path4_to_v_x_tmp = frame.data[4] | frame.data[5]<< 8;
-                path4_to_v_y_tmp = frame.data[6] | frame.data[7] << 8;
+        //         path3_to_v_x_tmp = frame.data[0] | frame.data[1]<< 8;
+        //         path3_to_v_y_tmp = frame.data[2] | frame.data[3] << 8;
+        //         path4_to_v_x_tmp = frame.data[4] | frame.data[5]<< 8;
+        //         path4_to_v_y_tmp = frame.data[6] | frame.data[7] << 8;
 
 
-                msg.path3_to_v_x = path3_to_v_x_tmp/100;
-                msg.path3_to_v_y = path3_to_v_y_tmp/100;
-                msg.path4_to_v_x = path4_to_v_x_tmp/100;
-                msg.path4_to_v_y = path4_to_v_y_tmp/100;
+        //         msg.path3_to_v_x = path3_to_v_x_tmp/100;
+        //         msg.path3_to_v_y = path3_to_v_y_tmp/100;
+        //         msg.path4_to_v_x = path4_to_v_x_tmp/100;
+        //         msg.path4_to_v_y = path4_to_v_y_tmp/100;
 
 
-                std::cout << "Got 0x311:" <<
-                "path3_to_v_x: " << msg.path3_to_v_x <<  " " <<
-                "path3_to_v_y: " << msg.path3_to_v_y <<  " " <<
-                "path4_to_v_x: " << msg.path4_to_v_x <<  " " <<
-                "path4_to_v_y: " << msg.path4_to_v_y <<  " " <<std::endl;
-        }
-        break;
-        case 0x312:
-        {
-                short path5_to_v_x_tmp;
-                short path5_to_v_y_tmp;
-                short path6_to_v_x_tmp;
-                short path6_to_v_y_tmp;
+        //         std::cout << "Got 0x311:" <<
+        //         "path3_to_v_x: " << msg.path3_to_v_x <<  " " <<
+        //         "path3_to_v_y: " << msg.path3_to_v_y <<  " " <<
+        //         "path4_to_v_x: " << msg.path4_to_v_x <<  " " <<
+        //         "path4_to_v_y: " << msg.path4_to_v_y <<  " " <<std::endl;
+        // }
+        // break;
+        // case 0x312:
+        // {
+        //         short path5_to_v_x_tmp;
+        //         short path5_to_v_y_tmp;
+        //         short path6_to_v_x_tmp;
+        //         short path6_to_v_y_tmp;
 
 
-                path5_to_v_x_tmp = frame.data[0] | frame.data[1]<< 8;
-                path5_to_v_y_tmp = frame.data[2] | frame.data[3] << 8;
-                path6_to_v_x_tmp = frame.data[4] | frame.data[5]<< 8;
-                path6_to_v_y_tmp = frame.data[6] | frame.data[7] << 8;
+        //         path5_to_v_x_tmp = frame.data[0] | frame.data[1]<< 8;
+        //         path5_to_v_y_tmp = frame.data[2] | frame.data[3] << 8;
+        //         path6_to_v_x_tmp = frame.data[4] | frame.data[5]<< 8;
+        //         path6_to_v_y_tmp = frame.data[6] | frame.data[7] << 8;
 
 
-                msg.path5_to_v_x = path5_to_v_x_tmp/100;
-                msg.path5_to_v_y = path5_to_v_y_tmp/100;
-                msg.path6_to_v_x = path6_to_v_x_tmp/100;
-                msg.path6_to_v_y = path6_to_v_y_tmp/100;
+        //         msg.path5_to_v_x = path5_to_v_x_tmp/100;
+        //         msg.path5_to_v_y = path5_to_v_y_tmp/100;
+        //         msg.path6_to_v_x = path6_to_v_x_tmp/100;
+        //         msg.path6_to_v_y = path6_to_v_y_tmp/100;
 
 
-                std::cout << "Got 0x312:" <<
-                "path5_to_v_x: " << msg.path5_to_v_x <<  " " <<
-                "path5_to_v_y: " << msg.path5_to_v_y <<  " " <<
-                "path6_to_v_x: " << msg.path6_to_v_x <<  " " <<
-                "path6_to_v_y: " << msg.path6_to_v_y <<  " " <<std::endl;
-        }
-        break;
+        //         std::cout << "Got 0x312:" <<
+        //         "path5_to_v_x: " << msg.path5_to_v_x <<  " " <<
+        //         "path5_to_v_y: " << msg.path5_to_v_y <<  " " <<
+        //         "path6_to_v_x: " << msg.path6_to_v_x <<  " " <<
+        //         "path6_to_v_y: " << msg.path6_to_v_y <<  " " <<std::endl;
+        // }
+        // break;
 
 
         default:
@@ -250,12 +250,12 @@ int main(int argc, char **argv)
         filter[3].can_id   = 0x304;
         filter[3].can_mask = CAN_SFF_MASK;
 
-        filter[4].can_id   = 0x310;
-        filter[4].can_mask = CAN_SFF_MASK;
-        filter[5].can_id   = 0x311;
-        filter[5].can_mask = CAN_SFF_MASK;
-        filter[6].can_id   = 0x312;
-        filter[6].can_mask = CAN_SFF_MASK;
+        // filter[4].can_id   = 0x310;
+        // filter[4].can_mask = CAN_SFF_MASK;
+        // filter[5].can_id   = 0x311;
+        // filter[5].can_mask = CAN_SFF_MASK;
+        // filter[6].can_id   = 0x312;
+        // filter[6].can_mask = CAN_SFF_MASK;
 
         int cnt = 0;
 
@@ -317,7 +317,7 @@ int main(int argc, char **argv)
             msg.header.frame_id = "vehinfo";
             msg.header.seq = seq++;
 
-            for (int i =0; i < 7; i++)
+            for (int i =0; i < 4; i++)
             {
                     nbytes = read(s, &frame, sizeof(frame));
                     processFrame(frame, msg);
