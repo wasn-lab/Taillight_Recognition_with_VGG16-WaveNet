@@ -8,6 +8,7 @@
   <arg name="only_known_objects" default="true"/>
   <!-- Set label_scale to 2.5 for large view -->
   <arg name="label_scale" default="1.0"/>
+  <arg name="accel_text" default="false"/>
 
   <node pkg="dynamic_object_visualization" type="dynamic_object_visualizer_node" name="$(anon dynamic_object_visualization)" output="screen">
     <remap from="input" to="$(arg input)"/>
@@ -15,6 +16,7 @@
     <param name="with_feature" value="$(arg with_feature)"/>
     <param name="only_known_objects" value="$(arg only_known_objects)"/>
     <param name="label_scale" value="$(arg label_scale)"/>
+    <param name="accel_text" value="$(arg accel_text)"/>
   </node>
 
 </launch>
