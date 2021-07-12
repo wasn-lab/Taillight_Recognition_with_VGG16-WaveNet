@@ -46,7 +46,7 @@ private:  // ros
 
   bool only_known_objects_;
   double label_scale_;
-  bool accel_text_;
+  bool show_accel_;
   std::vector<std_msgs::ColorRGBA> colors_;
 
 public:

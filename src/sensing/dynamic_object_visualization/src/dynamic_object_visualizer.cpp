@@ -35,7 +35,7 @@ DynamicObjectVisualizer::DynamicObjectVisualizer() : nh_(""), private_nh_("~")
   private_nh_.param<bool>("with_feature", with_feature, true);
   private_nh_.param<bool>("only_known_objects", only_known_objects_, true);
   private_nh_.param<double>("label_scale", label_scale_, 1.0);
-  private_nh_.param<bool>("accel_text", accel_text_, false);
+  private_nh_.param<bool>("show_accel", show_accel_, false);
   if (with_feature)
     sub_ = nh_.subscribe("input", 1, &DynamicObjectVisualizer::dynamicObjectWithFeatureCallback, this);
   else
@@ -190,7 +190,7 @@ void DynamicObjectVisualizer::dynamicObjectCallback(
                              std::pow(input_msg->objects.at(i).state.twist_covariance.twist.linear.z, 2));
       marker.text += "\n" + std::to_string(int(vel * 3.6)) + std::string("[km/h]");
     }
-    if (accel_text_ && input_msg->objects.at(i).state.acceleration_reliable)
+    if (show_accel_ && input_msg->objects.at(i).state.acceleration_reliable)
     {
       double accel = std::sqrt(std::pow(input_msg->objects.at(i).state.acceleration_covariance.accel.linear.x, 2) +
                                std::pow(input_msg->objects.at(i).state.acceleration_covariance.accel.linear.y, 2) +
@@ -248,7 +248,7 @@ void DynamicObjectVisualizer::dynamicObjectCallback(
   }
 
   // acceleration
-  if (accel_text_)
+  if (show_accel_)
   {
     for (size_t i = 0; i < input_msg->objects.size(); ++i)
     {
