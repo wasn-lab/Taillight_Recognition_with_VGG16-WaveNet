@@ -248,43 +248,46 @@ void DynamicObjectVisualizer::dynamicObjectCallback(
   }
 
   // acceleration
-  for (size_t i = 0; i < input_msg->objects.size(); ++i)
+  if (accel_text_)
   {
-    if (!input_msg->objects.at(i).state.acceleration_reliable)
+    for (size_t i = 0; i < input_msg->objects.size(); ++i)
     {
-      continue;
-    }
-    if (only_known_objects_)
-    {
-      if (input_msg->objects.at(i).semantic.type == autoware_perception_msgs::Semantic::UNKNOWN)
+      if (!input_msg->objects.at(i).state.acceleration_reliable)
+      {
         continue;
+      }
+      if (only_known_objects_)
+      {
+        if (input_msg->objects.at(i).semantic.type == autoware_perception_msgs::Semantic::UNKNOWN)
+          continue;
+      }
+      visualization_msgs::Marker marker;
+      marker.header = input_msg->header;
+      marker.id = i;
+      marker.type = visualization_msgs::Marker::LINE_LIST;
+      marker.ns = std::string("acceleration");
+      marker.scale.x = line_width;
+      marker.action = visualization_msgs::Marker::MODIFY;
+      marker.pose = input_msg->objects.at(i).state.pose_covariance.pose;
+      geometry_msgs::Point point;
+      point.x = 0.0;
+      point.y = 0;
+      point.z = 0;
+      marker.points.push_back(point);
+      point.x = input_msg->objects.at(i).state.acceleration_covariance.accel.linear.x;
+      point.y = input_msg->objects.at(i).state.acceleration_covariance.accel.linear.y;
+      point.z = input_msg->objects.at(i).state.acceleration_covariance.accel.linear.z;
+      marker.points.push_back(point);
+
+      marker.lifetime = ros::Duration(0.2);
+      marker.color.a = 0.999;  // Don't forget to set the alpha!
+      // wheat color
+      marker.color.r = 0.961;
+      marker.color.g = 0.871;
+      marker.color.b = 0.702;
+
+      output.markers.push_back(marker);
     }
-    visualization_msgs::Marker marker;
-    marker.header = input_msg->header;
-    marker.id = i;
-    marker.type = visualization_msgs::Marker::LINE_LIST;
-    marker.ns = std::string("acceleration");
-    marker.scale.x = line_width;
-    marker.action = visualization_msgs::Marker::MODIFY;
-    marker.pose = input_msg->objects.at(i).state.pose_covariance.pose;
-    geometry_msgs::Point point;
-    point.x = 0.0;
-    point.y = 0;
-    point.z = 0;
-    marker.points.push_back(point);
-    point.x = input_msg->objects.at(i).state.acceleration_covariance.accel.linear.x;
-    point.y = input_msg->objects.at(i).state.acceleration_covariance.accel.linear.y;
-    point.z = input_msg->objects.at(i).state.acceleration_covariance.accel.linear.z;
-    marker.points.push_back(point);
-
-    marker.lifetime = ros::Duration(0.2);
-    marker.color.a = 0.999;  // Don't forget to set the alpha!
-    // wheat color
-    marker.color.r = 0.961;
-    marker.color.g = 0.871;
-    marker.color.b = 0.702;
-
-    output.markers.push_back(marker);
   }
 
   // path
