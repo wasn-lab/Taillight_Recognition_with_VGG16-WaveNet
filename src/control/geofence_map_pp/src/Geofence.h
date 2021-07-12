@@ -60,4 +60,5 @@ private:
   double vehicle_time;
   double object_time;
   double time_difference;
+  int filter_state = 0;
 };
