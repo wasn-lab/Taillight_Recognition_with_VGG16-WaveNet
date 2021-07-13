@@ -485,10 +485,10 @@ int main(int argc, char **argv)
                     printf("from_dspace : Read %d bytes\n", nbytes);
                     std::cout << "index : " << index << std::endl;
                     ProcessFrame(frame, Publisher);
-                    auto a = filter_[i].can_id;
+                    auto tmp = filter_[i].can_id;
                     filter_[i].can_id = filter_[NumOfReceiveID-index-1].can_id;
-                    filter_[NumOfReceiveID-index-1].can_id = a;
-                    std::cout << "a = " << a << std::endl;
+                    filter_[NumOfReceiveID-index-1].can_id = tmp;
+                    std::cout << "tmp = " << tmp << std::endl;
                     index++;
                     break;
                 }
