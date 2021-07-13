@@ -475,7 +475,7 @@ int main(int argc, char** argv)
       Geofence_PC.publish(Geofence_temp);
       double PCloud_Geofence_dis = 300;  // PCloud_Geofence.getDistance();
       Point PCloud_Geofence_findDirection;
-      if ((PCloud_Geofence_lastdis - PCloud_Geofence.getDistance())/PCloud_Geofence_lastdis > 0.2 && PCloud_Geofence_count < 3)
+      if ((PCloud_Geofence_lastdis - PCloud_Geofence.getDistance())/PCloud_Geofence_lastdis > 0.2 && PCloud_Geofence_count < 5)
       {
         PCloud_Geofence_dis = PCloud_Geofence_lastdis;
         PCloud_Geofence_findDirection = PCloud_Geofence_findDirection_last;
