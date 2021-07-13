@@ -54,14 +54,16 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
 		msg_temp.Dspace_Flag07 = frame.data[6];
 		msg_temp.Dspace_Flag08 = frame.data[7];
 
-	    cout << " Flag01: " << msg_temp.Dspace_Flag01 << endl;
-	    cout << " Flag02: " << msg_temp.Dspace_Flag02 << endl;
-	    cout << " Flag03: " << msg_temp.Dspace_Flag03 << endl;
-	    cout << " Flag04: " << msg_temp.Dspace_Flag04 << endl;
-	    cout << " Flag05: " << msg_temp.Dspace_Flag05 << endl;
-	    cout << " Flag06: " << msg_temp.Dspace_Flag06 << endl;
-	    cout << " Flag07: " << msg_temp.Dspace_Flag07 << endl;
-	    cout << " Flag08: " << msg_temp.Dspace_Flag08 << endl;
+	    // cout << " Flag01: " << msg_temp.Dspace_Flag01 << endl;
+	    // cout << " Flag02: " << msg_temp.Dspace_Flag02 << endl;
+	    // cout << " Flag03: " << msg_temp.Dspace_Flag03 << endl;
+	    // cout << " Flag04: " << msg_temp.Dspace_Flag04 << endl;
+	    // cout << " Flag05: " << msg_temp.Dspace_Flag05 << endl;
+	    // cout << " Flag06: " << msg_temp.Dspace_Flag06 << endl;
+	    // cout << " Flag07: " << msg_temp.Dspace_Flag07 << endl;
+	    // cout << " Flag08: " << msg_temp.Dspace_Flag08 << endl;
+
+        std::cout << "Got 0x601" << endl;
 
 	    Publisher[0].publish(msg_temp);
 	    return 1;
@@ -80,14 +82,16 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
 		msg_temp.Dspace_Flag07 = frame.data[6];
 		msg_temp.Dspace_Flag08 = frame.data[7];
 
-	    cout << " Flag01: " << msg_temp.Dspace_Flag01 << endl;
-	    cout << " Flag02: " << msg_temp.Dspace_Flag02 << endl;
-	    cout << " Flag03: " << msg_temp.Dspace_Flag03 << endl;
-	    cout << " Flag04: " << msg_temp.Dspace_Flag04 << endl;
-	    cout << " Flag05: " << msg_temp.Dspace_Flag05 << endl;
-	    cout << " Flag06: " << msg_temp.Dspace_Flag06 << endl;
-	    cout << " Flag07: " << msg_temp.Dspace_Flag07 << endl;
-	    cout << " Flag08: " << msg_temp.Dspace_Flag08 << endl;
+	    // cout << " Flag01: " << msg_temp.Dspace_Flag01 << endl;
+	    // cout << " Flag02: " << msg_temp.Dspace_Flag02 << endl;
+	    // cout << " Flag03: " << msg_temp.Dspace_Flag03 << endl;
+	    // cout << " Flag04: " << msg_temp.Dspace_Flag04 << endl;
+	    // cout << " Flag05: " << msg_temp.Dspace_Flag05 << endl;
+	    // cout << " Flag06: " << msg_temp.Dspace_Flag06 << endl;
+	    // cout << " Flag07: " << msg_temp.Dspace_Flag07 << endl;
+	    // cout << " Flag08: " << msg_temp.Dspace_Flag08 << endl;
+
+        std::cout << "Got 0x602" << endl;
 
 	    Publisher[1].publish(msg_temp);
 	    return 1;
@@ -106,14 +110,16 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
 		msg_temp.Dspace_Flag07 = frame.data[6];
 		msg_temp.Dspace_Flag08 = frame.data[7];
 
-	    cout << " Flag01: " << msg_temp.Dspace_Flag01 << endl;
-	    cout << " Flag02: " << msg_temp.Dspace_Flag02 << endl;
-	    cout << " Flag03: " << msg_temp.Dspace_Flag03 << endl;
-	    cout << " Flag04: " << msg_temp.Dspace_Flag04 << endl;
-	    cout << " Flag05: " << msg_temp.Dspace_Flag05 << endl;
-	    cout << " Flag06: " << msg_temp.Dspace_Flag06 << endl;
-	    cout << " Flag07: " << msg_temp.Dspace_Flag07 << endl;
-	    cout << " Flag08: " << msg_temp.Dspace_Flag08 << endl;
+	    // cout << " Flag01: " << msg_temp.Dspace_Flag01 << endl;
+	    // cout << " Flag02: " << msg_temp.Dspace_Flag02 << endl;
+	    // cout << " Flag03: " << msg_temp.Dspace_Flag03 << endl;
+	    // cout << " Flag04: " << msg_temp.Dspace_Flag04 << endl;
+	    // cout << " Flag05: " << msg_temp.Dspace_Flag05 << endl;
+	    // cout << " Flag06: " << msg_temp.Dspace_Flag06 << endl;
+	    // cout << " Flag07: " << msg_temp.Dspace_Flag07 << endl;
+	    // cout << " Flag08: " << msg_temp.Dspace_Flag08 << endl;
+
+        std::cout << "Got 0x603" << endl;
 
 	    Publisher[2].publish(msg_temp);
 	    return 1;
@@ -132,8 +138,9 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
 		msg_temp.Dspace_Flag07 = frame.data[6];
 		msg_temp.Dspace_Flag08 = frame.data[7];
 
-	    cout << " Next Stop: " << msg_temp.Dspace_Flag01 << endl;
-	    cout << " Stop status: " << msg_temp.Dspace_Flag02 << endl;
+	    // cout << " Next Stop: " << msg_temp.Dspace_Flag01 << endl;
+	    // cout << " Stop status: " << msg_temp.Dspace_Flag02 << endl;
+        std::cout << "Got 0x610" << endl;
 	    Publisher[5].publish(msg_temp);
 	    return 1;
 	}
@@ -146,10 +153,10 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
 	    msgs::Flag_Info msg_temp;
         speed_kph.data = frame.data[0];
         Publisher[6].publish(speed_kph);
-        cout << "speed_kph: " << speed_kph.data << endl;
+        // cout << "speed_kph: " << speed_kph.data << endl;
         speed_ms.data = speed_kph.data/3.6;
         Publisher[7].publish(speed_ms);
-        cout << "speed_ms: " << speed_ms.data << endl;
+        // cout << "speed_ms: " << speed_ms.data << endl;
         double steer_angle_fb;
 		msg_temp.Dspace_Flag01 = frame.data[0];
 		msg_temp.Dspace_Flag02 = frame.data[1] / 10.0;
@@ -160,6 +167,7 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
 		msg_temp.Dspace_Flag06 = frame.data[6];
 		msg_temp.Dspace_Flag07 = frame.data[7];
 	    Publisher[3].publish(msg_temp);
+        std::cout << "Got 0x351" << endl;
 	    return 1;
 	}
     break;
@@ -371,7 +379,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "from_dspace");
     ros::NodeHandle n;
 
-    std::string can_name_ = "can1";
+    std::string can_name_ = "can0";
     ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
 
 	ros::Publisher Publisher[NumOfTopic];
@@ -452,12 +460,42 @@ int main(int argc, char **argv)
         //msg123.header.stamp = ros::Time::now();
         //msg123.header.frame_id = "dynamicpath";
         //msg123.header.seq = seq++;
-        for (int i =0; i <NumOfReceiveID; i++)
+
+
+        // for (int i =0; i <NumOfReceiveID; i++)
+        // {
+        //     nbytes = read(s, &frame, sizeof(struct can_frame));
+        //     printf("from_dspace : Read %d bytes\n", nbytes);
+        //     ProcessFrame(frame, Publisher);
+        // }
+
+        int index = 0;
+        struct can_filter filter_[NumOfReceiveID];
+        for (int i=0; i < NumOfReceiveID; i++)
+        {
+            filter_[i] = filter[i];
+        }
+        while (index < NumOfReceiveID)
         {
             nbytes = read(s, &frame, sizeof(struct can_frame));
-            printf("from_dspace : Read %d bytes\n", nbytes);
-            ProcessFrame(frame, Publisher);
+            for (int i=0; i < (NumOfReceiveID-index); i++)
+            {
+                if (frame.can_id == filter_[i].can_id)
+                {
+                    printf("from_dspace : Read %d bytes\n", nbytes);
+                    std::cout << "index : " << index << std::endl;
+                    ProcessFrame(frame, Publisher);
+                    auto a = filter_[i].can_id;
+                    filter_[i].can_id = filter_[NumOfReceiveID-index-1].can_id;
+                    filter_[NumOfReceiveID-index-1].can_id = a;
+                    std::cout << "a = " << a << std::endl;
+                    index++;
+                    break;
+                }
+            }
+            // index++;
         }
+        std::cout << "--------------" << std::endl;
         Publisher_Backend.publish(msg_Backend);
         //vehinfo_pub.publish(msg_VehInfo);
         rate.sleep();
