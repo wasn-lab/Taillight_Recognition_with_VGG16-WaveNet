@@ -221,18 +221,31 @@ bool Geofence::PossiblePointofCollision(int PP_timetick_index_, int minElementIn
   vehicle_time    = vehicle_dist_to_geofence / vehicle_speed_; 
   object_time     = 0.5 * PP_timetick_index_;
   time_difference = object_time - vehicle_time;
+  filter_state    = 0;
 
   std::cout << "Dist_to_geofence = " << vehicle_dist_to_geofence << " Vehicle_speed = " << vehicle_speed << std::endl;
   std::cout << "Object_time = "      << object_time              << " Vehicle_time = "  << vehicle_time 
             << " Time_difference--------> " << time_difference << std::endl;
 
-  if (abs(time_difference) <= time_threshold)
+  //use narrow threshold (1/2) if the ego-vehicle arrives earlier than the object
+  if (-time_threshold < time_difference && time_difference < time_threshold/2) 
   { 
-    std::cout << "G e o f e n c e ===================== r e m a i n e d" << std::endl; //for debug
-    return true;
+    if (vehicle_time <= abs(time_difference))
+    { 
+      filter_state = 2;
+      std::cout << "G e o f e n c e ********************* f i l t e r e d " << std::endl; //for debug
+      return false;
+    }
+    else 
+    { 
+      filter_state = 0;
+      std::cout << "G e o f e n c e ===================== r e m a i n e d" << std::endl; //for debug
+      return true;
+    }
   }
   else 
-  {
+  { 
+    filter_state = 1;
     std::cout << "G e o f e n c e ********************* f i l t e r e d " << std::endl; //for debug
     return false;
   }
@@ -245,4 +258,5 @@ void Geofence::getSpeedTimeInfo(std::vector<double>& speed_time_info)
   speed_time_info[2] = vehicle_time;
   speed_time_info[3] = object_time;
   speed_time_info[4] = time_difference;
+  speed_time_info[5] = filter_state;
 }
