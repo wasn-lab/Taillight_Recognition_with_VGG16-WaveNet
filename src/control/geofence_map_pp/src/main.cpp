@@ -50,7 +50,7 @@ static int PP_Distance = 1000;
 static int PP_Distance_PedCross = 1000;
 static int PP_Speed = 0;
 static int PP_Speed_PedCross = 0;
-std::vector<double> speed_time_info(5, 0);
+std::vector<double> speed_time_info(6, 0);
 
 ros::Publisher debug_speed_time_info_pub;
 ros::Publisher PP_geofence_line;
@@ -434,6 +434,7 @@ void callbackPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& m
     GPDI.vehicle_time             = speed_time_info[2];
     GPDI.object_time              = speed_time_info[3];
     GPDI.time_difference          = speed_time_info[4];
+    GPDI.filter_state             = speed_time_info[5];
 
     debug_speed_time_info_pub.publish(GPDI);
   }

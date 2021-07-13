@@ -33,6 +33,10 @@ PedestrianTracker::PedestrianTracker(const ros::Time& time, const autoware_perce
   , pos_filter_gain_(0.2)
   , filtered_vx_(0.0)
   , filtered_vy_(0.0)
+  , last_filtered_vx_(0.0)
+  , last_filtered_vy_(0.0)
+  , estimated_ax_(0.0)
+  , estimated_ay_(0.0)
   , v_filter_gain_(0.6)
   , area_filter_gain_(0.8)
   , last_measurement_posx_(object.state.pose_covariance.pose.position.x)
@@ -101,11 +105,15 @@ bool PedestrianTracker::measure(const autoware_perception_msgs::DynamicObject& o
                          ((object.state.pose_covariance.pose.position.y - last_measurement_posy_) / dt) * vel_scale;
       v_filter_gain_ = std::min(0.9, v_filter_gain_ + 0.05);
     }
+
+    // estimate acceleration
+    estimated_ax_ = (filtered_vx_ - last_filtered_vx_) / dt;
+    estimated_ay_ = (filtered_vy_ - last_filtered_vy_) / dt;
+    last_filtered_vx_ = filtered_vx_;
+    last_filtered_vy_ = filtered_vy_;
   }
 
   // pos x, pos y
-  // filtered_posx_ = object.state.pose_covariance.pose.position.x;
-  // filtered_posy_ = object.state.pose_covariance.pose.position.y;
   last_measurement_posx_ = object.state.pose_covariance.pose.position.x;
   last_measurement_posy_ = object.state.pose_covariance.pose.position.y;
   filtered_posx_ =
@@ -123,39 +131,33 @@ bool PedestrianTracker::getEstimatedDynamicObject(const ros::Time& time,
   object = object_;
   object.id = unique_id::toMsg(getUUID());
   object.semantic.type = getType();
+
+  // fill: position
   double dt = (time - last_update_time_).toSec();
   if (dt < 0.0)
     dt = 0.0;
 
-  object.state.pose_covariance.pose.position.x = filtered_posx_;
-  object.state.pose_covariance.pose.position.y = filtered_posy_;
-  object.state.pose_covariance.pose.position.x += filtered_vx_ * dt;
-  object.state.pose_covariance.pose.position.y += filtered_vy_ * dt;
+  object.state.pose_covariance.pose.position.x = filtered_posx_ + filtered_vx_ * dt;
+  object.state.pose_covariance.pose.position.y = filtered_posy_ + filtered_vy_ * dt;
 
   object.state.orientation_reliable = false;
 
+  // fill: velocity
   double roll, pitch, yaw;
   tf2::Quaternion quaternion;
   tf2::fromMsg(object.state.pose_covariance.pose.orientation, quaternion);
   tf2::Matrix3x3(quaternion).getRPY(roll, pitch, yaw);
+
   object.state.twist_covariance.twist.linear.x = filtered_vx_ * std::cos(-yaw) - filtered_vy_ * std::sin(-yaw);
   object.state.twist_covariance.twist.linear.y = filtered_vx_ * std::sin(-yaw) + filtered_vy_ * std::cos(-yaw);
 
   object.state.twist_reliable = true;
 
+  // fill: acceleration
+  object.state.acceleration_covariance.accel.linear.x = estimated_ax_;
+  object.state.acceleration_covariance.accel.linear.y = estimated_ay_;
+
+  object.state.acceleration_reliable = true;
+
   return true;
 }
-
-// geometry_msgs::Point PedestrianTracker::getPosition(const ros::Time &time)
-// {
-//     geometry_msgs::Point position;
-//     position.x = filtered_posx_;
-//     position.y = filtered_posy_;
-//     position.z = object_.state.pose_covariance.pose.position.z;
-//     return position;
-// }
-
-// double PedestrianTracker::getArea()
-// {
-//     return filtered_area_;
-// }

@@ -4,4 +4,4 @@ float64 vehicle_speed
 float64 vehicle_time
 float64 object_time
 float64 time_difference
-
+float64 filter_state

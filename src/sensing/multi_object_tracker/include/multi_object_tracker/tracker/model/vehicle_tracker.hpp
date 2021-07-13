@@ -36,6 +36,10 @@ private:
   double pos_filter_gain_;
   double filtered_vx_;
   double filtered_vy_;
+  double last_filtered_vx_;
+  double last_filtered_vy_;
+  double estimated_ax_;
+  double estimated_ay_;
   double v_filter_gain_;
   double filtered_area_;
   double area_filter_gain_;
