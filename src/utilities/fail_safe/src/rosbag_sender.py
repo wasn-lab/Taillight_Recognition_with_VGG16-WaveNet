@@ -135,6 +135,7 @@ class RosbagSender(object):
         ftp_cmds = [
             u"set ssl:verify-certificate no",
             u"set net:limit-total-rate 0:{}".format(self.upload_rate),
+            u"set sftp:auto-confirm yes",
             u"open -p {} -u {},{} {}".format(self.port, self.user_name, self.password, self.fqdn),
         ]
         ymd = get_bag_yymmdd(bag)  # backup dir name in backend
