@@ -510,7 +510,7 @@ void* run_yolo(void* /*unused*/)
         m_display[cam_order] = *mat_srcs_tmp[cam_order];
       }
 
-      tmp_b_bx = g_dist_est.MergeBbox(tmp_b_bx);
+      // tmp_b_bx = g_dist_est.MergeBbox(tmp_b_bx);
       msgs::DetectedObject det_obj;
       std::vector<std::future<msgs::DetectedObject>> pool;
 
