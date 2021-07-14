@@ -57,6 +57,7 @@ public:
   {
     double stop_margin;
     double tl_state_timeout;
+    double tl_countdown_set;
   };
 
 public:

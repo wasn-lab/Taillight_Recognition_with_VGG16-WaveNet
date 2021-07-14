@@ -1,0 +1,3 @@
+<launch>
+  <node name="msg_recorder" pkg="msg_recorder" type="msg_recorder.py" args="-A --NO_KEY_IN" respawn="true" />
+</launch>

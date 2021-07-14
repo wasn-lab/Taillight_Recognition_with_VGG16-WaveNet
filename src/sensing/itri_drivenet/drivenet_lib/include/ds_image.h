@@ -14,18 +14,23 @@ class DsImage
 public:
   DsImage();
   ~DsImage();
-  void init(int inputW, int inputH);
-  float* preprocessing(const cv::Mat& srcImg, const int& inputH, const int& inputW);
-  float* preprocessing(const cv::Mat& srcImg, const int& inputH, const int& inputW, int input_resize);
+  void init(int inputW, int input);
+  void init(int inputW, int inputH, const std::vector<int>& crop_size);
+  float* preprocessing(const cv::Mat& srcImg, const int inputH, const int inputW);
+  float* preprocessing(const cv::Mat& srcImg, const int inputH, const int inputW, int input_resize);
+  float* preprocessing(const cv::Mat& srcImg, const int inputH, const int inputW, int input_resize, int crop_size,
+                       int crop_offset);
 
 private:
   DriveNet_npp::NPPResizer* resizer;
 
+  int cam_number = 0;
   int dummy = 0;
   int BGROrder[3];
   Npp8u pixelArr[3];
   NppiSize nppSizeNet;
   NppiSize nppSizeResize;
+  std::vector<NppiSize> nppSizeCrop;
 
   Npp8u* srcImg_npp8u_ptr;
   Npp8u* ResizeImg_npp8u_ptr;
@@ -33,6 +38,7 @@ private:
   float* RGBImg_32f_ptr;
   float* CHWImg_32f_ptr;
   // Npp8u* dst;
+  std::vector<Npp8u*> CropImg_npp8u_ptrs;
   Npp8u* LetterBoxImg_npp8u_ptr;  // letterboxed Image given to the network as input
 
   cv::Mat Img8UC3;

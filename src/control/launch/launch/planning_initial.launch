@@ -11,9 +11,10 @@
   <arg name="left_waylength" default="6" />
 
   <arg name="use_virtual_objects" default="false" />
+  <arg name="location_name" default="ITRI"/>
 
   <!--tf rear_wheel-->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 -3.5 0 0 0  /base_link /rear_wheel"/>
 
   <!-- planning initial node -->
   <node pkg="planning_initial" type="planning_initial" name="planning_initial" output="screen" cwd="node" respawn="true">
@@ -23,6 +24,7 @@
 	<remap from="input/objects" to="$(arg input/objects_topic)" />
 	<remap from="output/traffic_light" to="$(arg output/traffic_light)" />
         <param name="use_virtual_objects" value="$(arg use_virtual_objects)" />
+        <param name="location_name" value="$(arg location_name)" />
   </node>
   
   <!-- Grid map fusion pub node-->

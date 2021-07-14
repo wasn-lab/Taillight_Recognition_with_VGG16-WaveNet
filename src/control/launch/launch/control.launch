@@ -3,9 +3,13 @@
 	<!-- declare arg to be passed in -->
 	<!-- 0=fusion, 1=lidar, 2=camera -->
  	<arg name="pp_input_type" default="1"/>
+
 	<arg name="can_name" default="can1"/>
+	<arg name="time_threshold" default="2.0"/>
 
-
+	<arg name="location_name" default="ITRI"/>
+ 
+	<arg name="input_objects" default="objects/filtered"/>
 
 	<!-- nodes -->
 	<node pkg="from_dspace" type="from_dspace" name="from_dspace" output="screen" cwd="node" respawn="true"  >
@@ -17,14 +21,18 @@
 	<node pkg="to_dspace" type="bus_stop_info" name="bus_stop_info" output="screen" cwd="node" respawn="true"  >
 		<param name="can_name" value="$(arg can_name)"/>
 	</node>
-	<node pkg="trimble_grabber" type="trimble_grabber" name="trimble_grabber" output="screen" cwd="node" respawn="true"  />
+	<node pkg="trimble_grabber" type="trimble_grabber" name="trimble_grabber" output="screen" cwd="node" respawn="true"  >
+		<param name="location_name" value="$(arg location_name)"/>
+	</node>
 	<node pkg="vehinfo_pub" type="vehinfo_pub" name="vehinfo_pub" output="screen" cwd="node" respawn="true"  >
 		<param name="can_name" value="$(arg can_name)"/>
 	</node>
 	<node pkg="lidar_location_send" type="lidar_location_send" name="lidar_location_send" output="screen" cwd="node" respawn="true"  >
 		<param name="can_name" value="$(arg can_name)"/>
 	</node>
-	<node pkg="lidarxyz2lla" type="lidarxyz2lla_node" name="lidarxyz2lla_node" output="screen" cwd="node" respawn="true"  />
+	<node pkg="lidarxyz2lla" type="lidarxyz2lla_node" name="lidarxyz2lla_node" output="screen" cwd="node" respawn="true"  >
+		<param name="location_name" value="$(arg location_name)"/>
+	</node>
 	<node pkg="geofence" type="geofence" name="geofence" output="screen" cwd="node" respawn="true"  >
 		<param name="can_name" value="$(arg can_name)"/>
 	</node>
@@ -34,10 +42,14 @@
         </node-->
 	<node pkg="geofence_map_pp" type="geofence_map_pp" name="geofence_map_pp" output="screen" cwd="node" respawn="true"  >
 		<param name="can_name" value="$(arg can_name)"/>
+		<param name="time_threshold" value="$(arg time_threshold)"/>
+		<remap from="objects" to="$(arg input_objects)"/>
 	</node>
         <node pkg="control_checker" type="control_checker" name="control_checker" output="screen" cwd="node" respawn="true"  />
+
 	<!--node pkg="mm_tp" type="mm_tp" name="mm_tp" output="screen" cwd="node" respawn="true"  >
 		<param name="Path_flag" value="0" type="int"/>
 	</node-->
+	<include file="$(find geofence_map_pp_filter)/launch/geofence_map_pp_filter.launch"/>
 
 </launch>

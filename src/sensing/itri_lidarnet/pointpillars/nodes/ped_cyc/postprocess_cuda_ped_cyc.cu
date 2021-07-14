@@ -22,7 +22,7 @@
 //headers in local files
 #include "lidar_point_pillars/ped_cyc/postprocess_cuda_ped_cyc.h"
 
-__global__ void filter_kernel(const float* box_preds, const float* cls_preds, const float* dir_preds, const int* anchor_mask, float* dummy,
+__global__ void filter_kernel(const float* box_preds, const float* cls_preds, const float* dir_preds, const int* anchor_mask, float* dummy, float* dummy1,
                               const float* dev_anchors_px, const float* dev_anchors_py, const float* dev_anchors_pz,
                               const float* dev_anchors_dx, const float* dev_anchors_dy, const float* dev_anchors_dz, const float* dev_anchors_ro,
                               float* filtered_box, float* filtered_score, int* filtered_label, int* filtered_dir, float* box_for_nms, int* filter_count,
@@ -44,23 +44,30 @@ __global__ void filter_kernel(const float* box_preds, const float* cls_preds, co
 
     //decode network output
     float diagonal = sqrtf(dev_anchors_dx[tid]*dev_anchors_dx[tid] + dev_anchors_dy[tid]*dev_anchors_dy[tid]);
-    float box_px;
-    if (dev_anchors_px[tid] < 1)
-    {
-      // printf("%f\n", dummy[tid]);
-      box_px =  dev_anchors_px[tid]; // box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 1] * diagonal +
-    }
-    else
-    {
-      // printf("%f\n", dummy[tid]);
-      box_px = box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 1] * diagonal + dev_anchors_px[tid];
-    }
-    float box_py = box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 3] * diagonal + dev_anchors_py[tid];
-    float box_pz = box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 5] * dev_anchors_dz[tid] + za;
-    float box_dx = expf(box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 7]) * dev_anchors_dx[tid];
-    float box_dy = expf(box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 9]) * dev_anchors_dy[tid];
-    float box_dz = expf(box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 11]) * dev_anchors_dz[tid];
-    float box_ro = box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 13] + dev_anchors_ro[tid];
+    float box_px, box_py, box_pz, box_dx, box_dy, box_dz, box_ro;
+    // if (dev_anchors_px[tid] < 1)
+    // {
+    //   // printf("%f\n", dummy[tid]);
+    //   // box_px =  dev_anchors_px[tid]; // box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 1] * diagonal +
+    //   box_px = box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 1] * diagonal + dev_anchors_px[tid];
+    // }
+    // else
+    // {
+    //   // printf("%f\n", dummy[tid]);
+    //   box_px = box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 1] * diagonal + dev_anchors_px[tid];
+    // }
+    // box_py = box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 3] * diagonal + dev_anchors_py[tid];
+    box_px = dev_anchors_px[tid];
+    box_py = dev_anchors_py[tid];
+    // box_pz = box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 5] * dev_anchors_dz[tid] + za;
+    box_dx = expf(box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 7]) * dev_anchors_dx[tid];
+    box_dy = expf(box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 9]) * dev_anchors_dy[tid];
+    box_dz = expf(box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 11]) * dev_anchors_dz[tid];
+    box_pz = box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 5] * dev_anchors_dz[tid] + za;
+    // box_dx = dev_anchors_dx[tid];
+    // box_dy = dev_anchors_dy[tid];
+    // box_dz = dev_anchors_dz[tid];
+    box_ro = box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 13] + dev_anchors_ro[tid];
 
     box_pz = box_pz - box_dz/2;
 
@@ -96,6 +103,7 @@ __global__ void filter_kernel(const float* box_preds, const float* cls_preds, co
     if (max_index == 0 || max_index == 2)
     {
       class_label = 1;
+      // filtered_box[counter*NUM_OUTPUT_BOX_FEATURE + 6] = filtered_box[counter*NUM_OUTPUT_BOX_FEATURE + 6] + M_PI/2;
       // if (filtered_box[counter*NUM_OUTPUT_BOX_FEATURE+3] > 0.6)
       // {
       //   filtered_box[counter*NUM_OUTPUT_BOX_FEATURE+3] = 0.6;
@@ -104,7 +112,8 @@ __global__ void filter_kernel(const float* box_preds, const float* cls_preds, co
     else
     {
       class_label = 2;
-      box_dy = expf(box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 9]) * 0.8;
+      // box_dy = expf(box_preds[tid*NUM_OUTPUT_BOX_FEATURE*2 + 9]) * 0.8;
+      box_dy = 0.8;
       filtered_box[counter*NUM_OUTPUT_BOX_FEATURE + 4] = box_dy;
       // if (filtered_box[counter*NUM_OUTPUT_BOX_FEATURE+3] > 0.6)
       // {
@@ -212,14 +221,14 @@ NUM_OUTPUT_BOX_FEATURE_(NUM_OUTPUT_BOX_FEATURE)
 }
 
 void PostprocessCuda::doPostprocessCuda(const float* rpn_box_output, const float* rpn_cls_output, const float* rpn_dir_output,
-        int* dev_anchor_mask, float* dummy, const float* dev_anchors_px, const float* dev_anchors_py, const float* dev_anchors_pz,
+        int* dev_anchor_mask, float* dummy, float* dummy1, const float* dev_anchors_px, const float* dev_anchors_py, const float* dev_anchors_pz,
         const float* dev_anchors_dx, const float* dev_anchors_dy, const float* dev_anchors_dz, const float* dev_anchors_ro,
         float* dev_filtered_box, float* dev_filtered_score, int* dev_filtered_label, int* dev_filtered_dir, float* dev_box_for_nms, int* dev_filter_count,
         std::vector<int>& out_label, std::vector<float>& out_detection)
 {
 
   filter_kernel<<<NUM_ANCHOR_X_INDS_*NUM_ANCHOR_R_INDS_, NUM_ANCHOR_Y_INDS_>>>
-                                (rpn_box_output, rpn_cls_output, rpn_dir_output, dev_anchor_mask, dummy,
+                                (rpn_box_output, rpn_cls_output, rpn_dir_output, dev_anchor_mask, dummy, dummy1,
                                 dev_anchors_px, dev_anchors_py, dev_anchors_pz,
                                 dev_anchors_dx, dev_anchors_dy, dev_anchors_dz, dev_anchors_ro,
                                 dev_filtered_box, dev_filtered_score, dev_filtered_label, dev_filtered_dir, dev_box_for_nms, dev_filter_count,
@@ -281,10 +290,12 @@ void PostprocessCuda::doPostprocessCuda(const float* rpn_box_output, const float
       if(host_filtered_dir[keep_inds[i]] == 0)
       {
         out_detection.push_back(host_filtered_box[keep_inds[i]*NUM_OUTPUT_BOX_FEATURE_+6] + M_PI / 2);
+        // out_detection.push_back(host_filtered_box[keep_inds[i]*NUM_OUTPUT_BOX_FEATURE_+6] + M_PI );
       }
       else
       {
         out_detection.push_back(host_filtered_box[keep_inds[i]*NUM_OUTPUT_BOX_FEATURE_+6] - M_PI / 2);
+        // out_detection.push_back(host_filtered_box[keep_inds[i]*NUM_OUTPUT_BOX_FEATURE_+6] );
       }
     }
     else

@@ -24,6 +24,7 @@ bind u encoding utf8 utf8
 defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
+sessionname "adv"
 
 # ROS has trouble when dealing multiple nodes concurrently.
 # We first make light-weight load_monitor to successfully connect to master,
@@ -31,15 +32,20 @@ caption always "%n(%t@%H)"
 screen -t init_load_monitor
 stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_load_monitor.sh^M"
 
+screen -t init_edge_detection
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_edge_detection.sh^M"
+
 screen -t tmp_init_planning_all_lanelet2
-stuff "/home/localization/itriadv/src/scripts/bus_env/local/tmp_init_planning_all_lanelet2.sh^M"
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_planning_all_lanelet2.sh^M"
 
 screen -t tmp_init_map_lanelet2
-stuff "/home/localization/itriadv/src/scripts/bus_env/local/tmp_init_map_lanelet2.sh^M"
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_map_lanelet2.sh^M"
 
 screen -t tmp_init_localization_lanelet2
-stuff "/home/localization/itriadv/src/scripts/bus_env/local/tmp_init_localization_lanelet2.sh^M"
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_localization_lanelet2.sh^M"
 
-screen -t init_localization_supervision
-stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_localization_supervision.sh^M"
+screen -t init_up_led_badger.sh
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_up_led_badger.sh^M"
 
+screen -t init_lidar_front_top_localization
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_lidar_front_top_localization.sh^M"

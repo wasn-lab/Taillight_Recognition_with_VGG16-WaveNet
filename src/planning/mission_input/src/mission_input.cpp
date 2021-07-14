@@ -13,7 +13,8 @@ ros::Publisher checkpoint_publisher;
 ros::Publisher initial_point_publisher;
 
 int ORGS = 0;
-int route_choose = 1;
+std::string route_choose_ = "01";
+std::string location_name_ = "ITRI";
 
 double seg_x[2000] = {};
 double seg_y[2000] = {};
@@ -67,64 +68,72 @@ double (&SEG_Z)[size_readtmp],double (&ORI_X)[size_readtmp],double (&ORI_Y)[size
     }
 }
 
-void Ini_route_01_bytxt()
-{
-  std::string fpname = ros::package::getPath("mission_input");
-  std::string fpname_s = fpname + "/data/ITRI_route_01.txt"; // full route
+// void Ini_route_01_bytxt()
+// {
+//   std::string fpname = ros::package::getPath("mission_input");
+//   std::string fpname_s = fpname + "/data/ITRI_route_01.txt"; // full route
 
-  read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
-}
+//   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
+// }
 
-void Ini_route_02_bytxt()
-{
-  std::string fpname = ros::package::getPath("mission_input");
-  std::string fpname_s = fpname + "/data/ITRI_route_02.txt"; // full route - pass 51
+// void Ini_route_02_bytxt()
+// {
+//   std::string fpname = ros::package::getPath("mission_input");
+//   std::string fpname_s = fpname + "/data/ITRI_route_02.txt"; // full route - pass 51
 
-  read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
-}
+//   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
+// }
 
-void Ini_route_03_bytxt()
-{
-  std::string fpname = ros::package::getPath("mission_input");
-  std::string fpname_s = fpname + "/data/ITRI_route_03.txt"; // full route - pass 51 - end 14
+// void Ini_route_03_bytxt()
+// {
+//   std::string fpname = ros::package::getPath("mission_input");
+//   std::string fpname_s = fpname + "/data/ITRI_route_03.txt"; // full route - pass 51 - end 14
 
-  read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
-}
+//   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
+// }
 
-void Ini_route_04_bytxt()
-{
-  std::string fpname = ros::package::getPath("mission_input");
-  std::string fpname_s = fpname + "/data/ITRI_route_04.txt"; // full route - pass 51 - end 14
+// void Ini_route_04_bytxt()
+// {
+//   std::string fpname = ros::package::getPath("mission_input");
+//   std::string fpname_s = fpname + "/data/ITRI_route_04.txt"; // full route - pass 51 - end 14
 
-  read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
-}
+//   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
+// }
 
-void Ini_route_05_bytxt()
-{
-  std::string fpname = ros::package::getPath("mission_input");
-  std::string fpname_s = fpname + "/data/ITRI_route_05.txt"; // full route - pass 51 - end 14
+// void Ini_route_05_bytxt()
+// {
+//   std::string fpname = ros::package::getPath("mission_input");
+//   std::string fpname_s = fpname + "/data/ITRI_route_05.txt"; // full route - pass 51 - end 14
 
-  read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
-}
+//   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
+// }
+
+// void Ini_route_bytxt()
+// {
+//   std::string fpname = ros::package::getPath("mission_input");
+//   std::string fpname_s = fpname + "/data/ITRI_route_0" + std::to_string(route_choose_) + ".txt";
+//   std::cout << "--------" << fpname_s << std::endl;
+//   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
+// }
 
 void Ini_route_bytxt()
 {
-  std::string fpname = ros::package::getPath("mission_input");
-  std::string fpname_s = fpname + "/data/ITRI_route_0" + std::to_string(route_choose) + ".txt";
-  std::cout << "--------" << fpname_s << std::endl;
+  std::string fpname = ros::package::getPath("planning_initial");
+  std::string fpname_s = fpname + "/data/" + location_name_ + "/route/" + location_name_ + "_route_" + route_choose_ + ".txt";
+  std::cout << "Ini_route_bytxt : " << fpname_s << std::endl;
   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
 }
 
-void Ini_shalun_route_bytxt(int route_choose_)
-{
-  route_choose_ = route_choose_ - 100;
-  std::string fpname = ros::package::getPath("mission_input");
-  std::string fpname_s = fpname + "/data/Shalun_route_0" + std::to_string(route_choose_) + ".txt";
+// void Ini_shalun_route_bytxt(int route_choose__)
+// {
+//   route_choose__ = route_choose__ - 100;
+//   std::string fpname = ros::package::getPath("mission_input");
+//   std::string fpname_s = fpname + "/data/Shalun_route_0" + std::to_string(route_choose__) + ".txt";
   
-  std::cout << "--------" << fpname_s << std::endl;
+//   std::cout << "--------" << fpname_s << std::endl;
 
-  read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
-}
+//   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
+// }
 
 void Ini_busstop_bytxt()
 {
@@ -246,34 +255,34 @@ void offline_realtime_goal_setting()
 {
   if (ORGS == 0)
   {
-    // if (route_choose == 1)
+    // if (route_choose_ == 1)
     // {
     //   Ini_route_01_bytxt();
     // }
-    // else if (route_choose == 2)
+    // else if (route_choose_ == 2)
     // {
     //   Ini_route_02_bytxt();
     // }
-    // else if (route_choose == 3)
+    // else if (route_choose_ == 3)
     // {
     //   Ini_route_03_bytxt();
     // }
-    // else if (route_choose == 4)
+    // else if (route_choose_ == 4)
     // {
     //   Ini_route_04_bytxt();
     // }
-    // else if (route_choose == 5)
+    // else if (route_choose_ == 5)
     // {
     //   Ini_route_05_bytxt();
     // }
-    if (route_choose < 100)
-    {
+    // if (route_choose_ < 100)
+    // {
       Ini_route_bytxt();
-    }
-    else
-    {
-      Ini_shalun_route_bytxt(route_choose);
-    }
+    // }
+    // else
+    // {
+    //   Ini_shalun_route_bytxt(route_choose_);
+    // }
     get_initial_point();
     get_goal_point();
     get_checkpoint_point();
@@ -338,7 +347,9 @@ int main(int argc, char** argv)
   ros::NodeHandle node;
 
   ros::param::get(ros::this_node::getName()+"/ORGS", ORGS);
-  ros::param::get(ros::this_node::getName()+"/route_choose", route_choose);
+  ros::param::get(ros::this_node::getName()+"/route_choose", route_choose_);
+  ros::param::get(ros::this_node::getName()+"/location_name", location_name_);
+
   ros::Subscriber busstopinfo = node.subscribe("/BusStop/Info", 1, busstopinfoCallback);
   ros::Subscriber current_pose_sub = node.subscribe("rear_current_pose", 1, CurrentPoseCallback);
   initial_point_publisher = node.advertise<geometry_msgs::PoseStamped>("/initialpose_offline", 10, true);

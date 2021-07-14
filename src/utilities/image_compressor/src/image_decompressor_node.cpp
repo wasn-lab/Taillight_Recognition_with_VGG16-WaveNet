@@ -22,10 +22,7 @@ void ImageDecompressorNode::callback(const sensor_msgs::CompressedImageConstPtr&
 void ImageDecompressorNode::publish(const sensor_msgs::CompressedImageConstPtr& msg)
 {
   auto decmpr_msg_ptr = decompress_msg(msg);
-  {
-    std::lock_guard<std::mutex> lk(mu_publisher_);
-    publisher_.publish(decmpr_msg_ptr);
-  }
+  publisher_.publish(decmpr_msg_ptr);
 }
 
 static bool is_topic_published(const std::string& topic)
@@ -80,8 +77,7 @@ void ImageDecompressorNode::run()
 {
   CHECK(set_subscriber() == EXIT_SUCCESS);
   CHECK(set_publisher() == EXIT_SUCCESS);
-  set_use_threading(false);
-  ros::AsyncSpinner spinner(/*thread_count*/1);
+  ros::AsyncSpinner spinner(/*thread_count*/ 1);
   spinner.start();
   ros::Rate r(1);
   while (ros::ok())

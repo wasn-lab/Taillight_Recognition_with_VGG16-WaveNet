@@ -10,6 +10,7 @@
 
 ros::Publisher enable_avoid_pub;
 ros::Publisher overtake_over_pub;
+ros::Publisher enable_lane_change_by_obstacle_pub;
 
 #define RT_PI 3.14159265358979323846
 
@@ -20,6 +21,8 @@ double project_dis = 100;
 
 bool lane_event_enable_overtake = true;
 bool disable_lane_event_ = false;
+
+bool lane_change_ready_ = false;
 
 void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
 {
@@ -57,20 +60,43 @@ void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
     overtake_over.data = 0;
   }
 
-  if (!lane_event_enable_overtake && project_dis < 0.5)
-  {
-    overtake_over.data = 1;
-  }
+  // if (!lane_event_enable_overtake && project_dis < 0.5)
+  // {
+  //   overtake_over.data = 1;
+  // }
   
   overtake_over_pub.publish(overtake_over);
 }
+
+void lanechangereadyCallback(const std_msgs::Bool& msg)
+{
+  lane_change_ready_ = msg.data;
+}
+
+// void avoidstatesubCallback(const msgs::Flag_Info& msg)
+// {
+//   double avoid_state_index_ = msg.Dspace_Flag03;
+//   // std::cout << "avoid_state_index_ : " << avoid_state_index_ << std::endl;
+//   std_msgs::Bool enable_avoidance;// = false;
+//   // std::cout << "force_disable_avoidance_ : " << force_disable_avoidance_ << std::endl;
+//   if (avoid_state_index_ == 1 && !force_disable_avoidance_)
+//   {
+//     enable_avoidance.data = true;
+//   }
+//   else
+//   {
+//     enable_avoidance.data = false;
+//   }
+//   enable_avoidance_ = enable_avoidance.data;
+//   enable_avoid_pub.publish(enable_avoidance);
+// }
 
 void avoidstatesubCallback(const msgs::Flag_Info& msg)
 {
   double avoid_state_index_ = msg.Dspace_Flag03;
   // std::cout << "avoid_state_index_ : " << avoid_state_index_ << std::endl;
   std_msgs::Bool enable_avoidance;// = false;
-  std::cout << "force_disable_avoidance_ : " << force_disable_avoidance_ << std::endl;
+  // std::cout << "force_disable_avoidance_ : " << force_disable_avoidance_ << std::endl;
   if (avoid_state_index_ == 1 && !force_disable_avoidance_)
   {
     enable_avoidance.data = true;
@@ -80,7 +106,7 @@ void avoidstatesubCallback(const msgs::Flag_Info& msg)
     enable_avoidance.data = false;
   }
   enable_avoidance_ = enable_avoidance.data;
-  enable_avoid_pub.publish(enable_avoidance);
+  enable_lane_change_by_obstacle_pub.publish(enable_avoidance);
 }
 
 void overshootorigdisCallback(const std_msgs::Float64& msg)
@@ -114,6 +140,8 @@ int main(int argc, char** argv)
   ros::Subscriber obstacle_dis_1_sub = node.subscribe("Geofence_original", 1, obsdisbaseCallback);
   ros::Subscriber veh_overshoot_orig_dis_sub = node.subscribe("veh_overshoot_orig_dis", 1, overshootorigdisCallback);
   ros::Subscriber lane_event_sub = node.subscribe("lane_event", 1, laneeventCallback);
+  ros::Subscriber lanechangeready_sub = node.subscribe("/planning/scenario_planning/lane_driving/lane_change_ready", 1, lanechangereadyCallback);
+  enable_lane_change_by_obstacle_pub = node.advertise<std_msgs::Bool>("/planning/scenario_planning/lane_driving/obstacle_lane_change_approval", 10, true);
   enable_avoid_pub = node.advertise<std_msgs::Bool>("/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/enable_avoidance", 10, true);
   overtake_over_pub = node.advertise<std_msgs::Int32>("avoidpath_reach_goal", 10, true);
 

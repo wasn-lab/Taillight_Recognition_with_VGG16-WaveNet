@@ -104,23 +104,8 @@ class RosbagSender(object):
         else:
             self.rosbag_backup_dir = rosbag_backup_dir
 
-    def _delete_old_bags_if_necessary(self, bags):
-        for bag in bags:
-            if not _should_delete_bag(bag):
-                continue
-
-            for filename in [bag, _get_stamp_filename(bag)]:
-                if not os.path.isfile(filename):
-                    continue
-                rospy.logwarn("rm %s", filename)
-                if self.debug_mode:
-                    rospy.logwarn("Debug mode: do not actually rm %s", filename)
-                else:
-                    os.unlink(filename)
-
     def send_bags(self, bags):
         bags.sort()
-        self._delete_old_bags_if_necessary(bags)
 
         for bag in bags:
             _, bag_base_name = os.path.split(bag)
@@ -150,6 +135,7 @@ class RosbagSender(object):
         ftp_cmds = [
             u"set ssl:verify-certificate no",
             u"set net:limit-total-rate 0:{}".format(self.upload_rate),
+            u"set sftp:auto-confirm yes",
             u"open -p {} -u {},{} {}".format(self.port, self.user_name, self.password, self.fqdn),
         ]
         ymd = get_bag_yymmdd(bag)  # backup dir name in backend

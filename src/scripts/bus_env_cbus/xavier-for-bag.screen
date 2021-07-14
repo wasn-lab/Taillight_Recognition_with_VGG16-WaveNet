@@ -1,0 +1,45 @@
+# ctrl+a q unblock scrolling
+altscreen on # erase screen when quit apps
+defutf8 on
+defc1 off # treat input chars 128 ~ 159 as control functions
+defflow on
+activity "activity in %n (%t)"
+bell_msg "bell in %n (%t)"
+vbell on
+startup_message off
+nethack on
+shell $SHELL
+defscrollback 100000
+
+# using Ctrl+Left & Ctrl+Right
+bindkey ^[[1;5D prev
+bindkey ^[[1;5C next
+bindkey \033[D prev
+bindkey \033[C next
+
+# encoding
+defencoding utf8
+bind b encoding big5 utf8
+bind u encoding utf8 utf8
+defbce on # erase background with current bg color
+cjkwidth off
+caption always "%n(%t@%H)"
+sessionname "adv"
+
+#screen -t reset_time
+#stuff "bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/reset_time.sh^M"
+
+# ROS has trouble when dealing multiple nodes concurrently.
+# We first make light-weight load_monitor to successfully connect to master,
+# and then bring up other nodes.
+screen -t init_load_monitor
+stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_load_monitor.sh^M"
+
+screen -t init_control_new_lanelet2
+stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_control_new_lanelet2.sh^M"
+
+screen -t init_radar
+stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_radar.sh^M"
+
+#screen -t init_camera
+#stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_camera.sh^M"

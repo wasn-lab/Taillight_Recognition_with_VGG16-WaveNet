@@ -1,11 +1,25 @@
 if (CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
 
-  set(TEST_BAG "auto_record_2020-03-10-10-48-39_41.bag")
+  set(TEST_BAG "camera_raw_2021-02-25-15-53-00_77.bag")
   catkin_download_test_data(${TEST_BAG}
     "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
     DESTINATION ${Project_SOURCE_DIR}/bags
-    MD5 d15fa88484359d004aec43ec10ec43d0
+    MD5 563baab43a945a286039be37711a26ec
+  )
+
+  set(TEST_BAG "alignment_auto_record_2021-04-22-23-13-32_27.bag")
+  catkin_download_test_data(${TEST_BAG}
+    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
+    DESTINATION ${Project_SOURCE_DIR}/bags
+    MD5 a94bf732bd48ac0aea72ef3bbf1a36bb
+  )
+
+  set(TEST_BAG "pedcross_2021-05-06-13-36-41_0_filtered.bag")
+  catkin_download_test_data(${TEST_BAG}
+    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
+    DESTINATION ${Project_SOURCE_DIR}/bags
+    MD5 24776ea8220a63d60ae1bd32eb73ddb7
   )
 
   set(TEST_BAG "auto_record_2020-04-14-16-41-15_89.bag")
