@@ -55,6 +55,7 @@ class LEDManager(object):
         self.driving_mode = 0
         self.prev_mode = 0
         self.last_change_time = 0
+        self.change_periodically = False
 
     def _cb(self, msg):
         """
@@ -88,7 +89,7 @@ class LEDManager(object):
             cur_time = time.time()
             # Change LED text unconditionally every 15 seconds.
             # This avoids miscommunication with LED badger.
-            if cur_time - self.last_change_time >= 15:
+            if self.change_periodically and cur_time - self.last_change_time >= 15:
                 rospy.logwarn("Change LED text periodically")
                 change_led_text(self.driving_mode)
                 self.last_change_time = cur_time
