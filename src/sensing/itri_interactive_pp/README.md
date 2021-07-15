@@ -1,3 +1,7 @@
+# IPP environment setup
+1. execute ipp installation program
+bash install_pytorch.sh
+
 # itri_interactive_pp execution method
 1. first source environment :
 source devel/setup.bash
