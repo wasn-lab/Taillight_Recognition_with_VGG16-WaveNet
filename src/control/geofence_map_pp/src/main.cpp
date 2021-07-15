@@ -376,6 +376,8 @@ void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, 
         p_vec.reserve(1);
         p_vec.push_back(p);
 
+        g.setObjectWidth(obj.shape.dimensions.y);
+
         g.setPointCloud(p_vec, false, SLAM_x, SLAM_y, Heading);  // no TF
 
         if (g.Calculator(PP_timetick_index_, time_threshold, Ego_speed_ms) == 1)
