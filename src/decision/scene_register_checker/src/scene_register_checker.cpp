@@ -358,9 +358,17 @@ void run(msgs::BehaviorSceneRegisterArray& register_array_, pose_with_header nea
     {
       register_.StopZone = 0;
     }
-    else
+    else if (distance_to_factor <= 100 && distance_to_factor > 50)
     {
       register_.StopZone = 1;
+    }
+    else if (distance_to_factor <= 50 && distance_to_factor > 20)
+    {
+      register_.StopZone = 2;
+    }
+    else
+    {
+      register_.StopZone = 3;
     }
   }
   register_pub.publish(register_);
