@@ -131,6 +131,7 @@
 /PathPredictionOutput/radar
 /RadarMarker
 /Geofence_PC
+/control/lateral_cumulativoffset
 
 
 
@@ -191,6 +192,7 @@
 
 #
 /PP_geofence_line
+/debug/geofence_map_pp/time_speed
 /Geofence_line # marker
 /gnss_speed_data
 /gnss2local_data
