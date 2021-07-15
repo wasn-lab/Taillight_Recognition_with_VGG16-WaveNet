@@ -35,6 +35,7 @@ DynamicObjectVisualizer::DynamicObjectVisualizer() : nh_(""), private_nh_("~")
   private_nh_.param<bool>("with_feature", with_feature, true);
   private_nh_.param<bool>("only_known_objects", only_known_objects_, true);
   private_nh_.param<double>("label_scale", label_scale_, 1.0);
+  private_nh_.param<bool>("show_accel", show_accel_, false);
   if (with_feature)
     sub_ = nh_.subscribe("input", 1, &DynamicObjectVisualizer::dynamicObjectWithFeatureCallback, this);
   else
@@ -184,13 +185,17 @@ void DynamicObjectVisualizer::dynamicObjectCallback(
     marker.text = label + ":" + id_str.substr(0, 4);
     if (input_msg->objects.at(i).state.twist_reliable)
     {
-      double vel = std::sqrt(input_msg->objects.at(i).state.twist_covariance.twist.linear.x *
-                                 input_msg->objects.at(i).state.twist_covariance.twist.linear.x +
-                             input_msg->objects.at(i).state.twist_covariance.twist.linear.y *
-                                 input_msg->objects.at(i).state.twist_covariance.twist.linear.y +
-                             input_msg->objects.at(i).state.twist_covariance.twist.linear.z *
-                                 input_msg->objects.at(i).state.twist_covariance.twist.linear.z);
-      marker.text = marker.text + "\n" + std::to_string(int(vel * 3.6)) + std::string("[km/h]");
+      double vel = std::sqrt(std::pow(input_msg->objects.at(i).state.twist_covariance.twist.linear.x, 2) +
+                             std::pow(input_msg->objects.at(i).state.twist_covariance.twist.linear.y, 2) +
+                             std::pow(input_msg->objects.at(i).state.twist_covariance.twist.linear.z, 2));
+      marker.text += "\n" + std::to_string(int(vel * 3.6)) + std::string("[km/h]");
+    }
+    if (show_accel_ && input_msg->objects.at(i).state.acceleration_reliable)
+    {
+      double accel = std::sqrt(std::pow(input_msg->objects.at(i).state.acceleration_covariance.accel.linear.x, 2) +
+                               std::pow(input_msg->objects.at(i).state.acceleration_covariance.accel.linear.y, 2) +
+                               std::pow(input_msg->objects.at(i).state.acceleration_covariance.accel.linear.z, 2));
+      marker.text += "\n" + std::to_string(int(accel * 12960)) + std::string("[km/h²]");
     }
     marker.action = visualization_msgs::Marker::MODIFY;
     marker.pose = input_msg->objects.at(i).state.pose_covariance.pose;
@@ -240,6 +245,49 @@ void DynamicObjectVisualizer::dynamicObjectCallback(
     marker.color.b = 0.0;
 
     output.markers.push_back(marker);
+  }
+
+  // acceleration
+  if (show_accel_)
+  {
+    for (size_t i = 0; i < input_msg->objects.size(); ++i)
+    {
+      if (!input_msg->objects.at(i).state.acceleration_reliable)
+      {
+        continue;
+      }
+      if (only_known_objects_)
+      {
+        if (input_msg->objects.at(i).semantic.type == autoware_perception_msgs::Semantic::UNKNOWN)
+          continue;
+      }
+      visualization_msgs::Marker marker;
+      marker.header = input_msg->header;
+      marker.id = i;
+      marker.type = visualization_msgs::Marker::LINE_LIST;
+      marker.ns = std::string("acceleration");
+      marker.scale.x = line_width;
+      marker.action = visualization_msgs::Marker::MODIFY;
+      marker.pose = input_msg->objects.at(i).state.pose_covariance.pose;
+      geometry_msgs::Point point;
+      point.x = 0.0;
+      point.y = 0;
+      point.z = 0;
+      marker.points.push_back(point);
+      point.x = input_msg->objects.at(i).state.acceleration_covariance.accel.linear.x;
+      point.y = input_msg->objects.at(i).state.acceleration_covariance.accel.linear.y;
+      point.z = input_msg->objects.at(i).state.acceleration_covariance.accel.linear.z;
+      marker.points.push_back(point);
+
+      marker.lifetime = ros::Duration(0.2);
+      marker.color.a = 0.999;  // Don't forget to set the alpha!
+      // wheat color
+      marker.color.r = 0.961;
+      marker.color.g = 0.871;
+      marker.color.b = 0.702;
+
+      output.markers.push_back(marker);
+    }
   }
 
   // path
