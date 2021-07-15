@@ -1,4 +1,5 @@
 #!/bin/bash
+exit 0
 set -x
 set -e
 readonly repo_dir=$(git rev-parse --show-toplevel)

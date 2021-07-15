@@ -38,6 +38,10 @@ VehicleTracker::VehicleTracker(const ros::Time& time, const autoware_perception_
   , pos_filter_gain_(0.2)
   , filtered_vx_(0.0)
   , filtered_vy_(0.0)
+  , last_filtered_vx_(0.0)
+  , last_filtered_vy_(0.0)
+  , estimated_ax_(0.0)
+  , estimated_ay_(0.0)
   , v_filter_gain_(0.4)
   , area_filter_gain_(0.8)
   , last_measurement_posx_(object.state.pose_covariance.pose.position.x)
@@ -193,11 +197,15 @@ bool VehicleTracker::measure(const autoware_perception_msgs::DynamicObject& obje
     double vel = std::cos(filtered_yaw_) * filtered_vx_ + std::sin(filtered_yaw_) * filtered_vy_;
     filtered_vx_ = std::cos(filtered_yaw_) * vel;
     filtered_vy_ = std::sin(filtered_yaw_) * vel;
+
+    // estimate acceleration
+    estimated_ax_ = (filtered_vx_ - last_filtered_vx_) / dt;
+    estimated_ay_ = (filtered_vy_ - last_filtered_vy_) / dt;
+    last_filtered_vx_ = filtered_vx_;
+    last_filtered_vy_ = filtered_vy_;
   }
 
   // pos x, pos y
-  // filtered_posx_ = object.state.pose.pose.position.x;
-  // filtered_posy_ = object.state.pose.pose.position.y;
   last_measurement_posx_ = object.state.pose_covariance.pose.position.x;
   last_measurement_posy_ = object.state.pose_covariance.pose.position.y;
   filtered_posx_ =
@@ -215,6 +223,7 @@ bool VehicleTracker::getEstimatedDynamicObject(const ros::Time& time, autoware_p
   object.id = unique_id::toMsg(getUUID());
   object.semantic.type = getType();
 
+  // fill: heading
   if (object.shape.type == autoware_perception_msgs::Shape::BOUNDING_BOX)
   {
     double roll, pitch, yaw;
@@ -224,20 +233,27 @@ bool VehicleTracker::getEstimatedDynamicObject(const ros::Time& time, autoware_p
     tf2::Quaternion filtered_quaternion;
     filtered_quaternion.setRPY(roll, pitch, filtered_yaw_);
     object.state.pose_covariance.pose.orientation = tf2::toMsg(filtered_quaternion);
+
     object.state.orientation_reliable = is_fixed_yaw_;
   }
+
+  // fill: dimension
   if (is_fixed_dim_ && object.shape.type == autoware_perception_msgs::Shape::BOUNDING_BOX)
   {
     object.shape.dimensions.x = filtered_dim_x_;
     object.shape.dimensions.y = filtered_dim_y_;
   }
 
+  // fill: position
   object.state.pose_covariance.pose.position.x = filtered_posx_;
   object.state.pose_covariance.pose.position.y = filtered_posy_;
+
   double dt = (time - last_update_time_).toSec();
   if (dt < 0.0)
     dt = 0.0;
+
   double vel = std::cos(filtered_yaw_) * filtered_vx_ + std::sin(filtered_yaw_) * filtered_vy_;
+
   if (vel < 0.0 && !is_fixed_yaw_)
   {
     object.state.pose_covariance.pose.position.x += std::cos(filtered_yaw_ + M_PI) * std::fabs(vel) * dt;
@@ -249,10 +265,12 @@ bool VehicleTracker::getEstimatedDynamicObject(const ros::Time& time, autoware_p
     object.state.pose_covariance.pose.position.y += std::sin(filtered_yaw_) * std::max(vel, 0.0) * dt;
   }
 
+  // fill: velocity
   double roll, pitch, yaw;
   tf2::Quaternion quaternion;
   tf2::fromMsg(object.state.pose_covariance.pose.orientation, quaternion);
   tf2::Matrix3x3(quaternion).getRPY(roll, pitch, yaw);
+
   if (object.shape.type == autoware_perception_msgs::Shape::BOUNDING_BOX)
   {
     object.state.twist_covariance.twist.linear.x = filtered_vx_ * std::cos(-yaw) - filtered_vy_ * std::sin(-yaw);
@@ -277,19 +295,11 @@ bool VehicleTracker::getEstimatedDynamicObject(const ros::Time& time, autoware_p
 
   object.state.twist_reliable = true;
 
+  // fill: acceleration
+  object.state.acceleration_covariance.accel.linear.x = estimated_ax_;
+  object.state.acceleration_covariance.accel.linear.y = estimated_ay_;
+
+  object.state.acceleration_reliable = true;
+
   return true;
 }
-
-// geometry_msgs::Point VehicleTracker::getPosition(const ros::Time &time)
-// {
-//     geometry_msgs::Point position;
-//     position.x = filtered_posx_;
-//     position.y = filtered_posy_;
-//     position.z = object_.state.pose_covariance.pose.position.z;
-//     return position;
-// }
-
-// double VehicleTracker::getArea()
-// {
-//     return filtered_area_;
-// }
