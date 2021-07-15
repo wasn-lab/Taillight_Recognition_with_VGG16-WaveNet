@@ -26,6 +26,7 @@ public:
   double getNearest_X();
   double getNearest_Y();
   bool setIntersectPoint(bool state);
+  void setObjectWidth(double obj_width);
   Point findDirection();
 
   void setPointCloud(const std::vector<Point>& PointCloud, bool isLocal, double SLAM_x, double SLAM_y,
@@ -51,6 +52,7 @@ private:
   double Nearest_X;      // Nearest point's (X,Y)
   double Nearest_Y;
   double Boundary;
+  double ObjWidth;
   bool PPAlreadyIntersected = false;
   bool PossiblePointofCollision(int PP_index, int minElementIndex, double vehicle_speed, double time_threshold);
 
