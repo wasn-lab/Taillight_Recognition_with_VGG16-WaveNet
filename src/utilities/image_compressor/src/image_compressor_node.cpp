@@ -8,8 +8,9 @@
 
 namespace image_compressor
 {
-ImageCompressorNode::ImageCompressorNode() : num_compression_(0), latency_wrt_raw_in_ms_(0)
+ImageCompressorNode::ImageCompressorNode() : num_compression_(0), latency_wrt_raw_in_ms_(0), quality_(get_quality())
 {
+  CHECK(quality_ >= 1 && quality_ <= 100);
 }
 ImageCompressorNode::~ImageCompressorNode() = default;
 
@@ -20,7 +21,7 @@ void ImageCompressorNode::callback(const sensor_msgs::ImageConstPtr& msg)
 
 void ImageCompressorNode::publish(const sensor_msgs::ImageConstPtr& msg)
 {
-  auto cmpr_msg_ptr = compress_msg(msg);
+  auto cmpr_msg_ptr = compress_msg(msg, compression_format::jpg, quality_);
   num_compression_ += 1;
 
   publisher_.publish(cmpr_msg_ptr);

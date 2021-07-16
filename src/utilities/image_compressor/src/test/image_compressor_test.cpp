@@ -41,7 +41,7 @@ static void init_test_data()
     EXPECT_EQ(g_msg_ptr->header.frame_id, "test");
     EXPECT_EQ(g_msg_ptr->width, 608);
     EXPECT_EQ(g_msg_ptr->height, 384);
-    EXPECT_EQ(g_msg_ptr->data.size(), 608*384*3);
+    EXPECT_EQ(g_msg_ptr->data.size(), 608 * 384 * 3);
   }
 }
 
@@ -69,7 +69,8 @@ TEST(ImageCompressorTest, cmpr_msg_jpg)
 TEST(ImageCompressorTest, cmpr_msg_jpg_perf)
 {
   init_test_data();
-  for (int i = 0; i < NUM_PERF_LOOPS; i++){
+  for (int i = 0; i < NUM_PERF_LOOPS; i++)
+  {
     auto cmpr_img_ptr = image_compressor::compress_msg(g_msg_ptr);
   }
 }
@@ -78,7 +79,8 @@ TEST(ImageCompressorTest, decmpr_msg_jpg_perf)
 {
   init_test_data();
   sensor_msgs::CompressedImageConstPtr cmpr_msg_ptr = image_compressor::compress_msg(g_msg_ptr);
-  for (int i = 0; i < NUM_PERF_LOOPS; i++){
+  for (int i = 0; i < NUM_PERF_LOOPS; i++)
+  {
     auto decmpr_msg_ptr = image_compressor::decompress_msg(cmpr_msg_ptr);
   }
 }
@@ -107,7 +109,8 @@ TEST(ImageCompressorTest, cmpr_msg_png)
 TEST(ImageCompressorTest, cmpr_msg_png_perf)
 {
   init_test_data();
-  for (int i = 0; i < NUM_PERF_LOOPS; i++){
+  for (int i = 0; i < NUM_PERF_LOOPS; i++)
+  {
     auto cmpr_img_ptr = image_compressor::compress_msg(g_msg_ptr, image_compressor::compression_format::png);
   }
 }
@@ -117,20 +120,18 @@ TEST(ImageCompressorTest, decmpr_msg_png_perf)
   init_test_data();
   sensor_msgs::CompressedImageConstPtr cmpr_msg_ptr =
       image_compressor::compress_msg(g_msg_ptr, image_compressor::compression_format::png);
-  for (int i = 0; i < NUM_PERF_LOOPS; i++){
+  for (int i = 0; i < NUM_PERF_LOOPS; i++)
+  {
     auto decmpr_msg_ptr = image_compressor::decompress_msg(cmpr_msg_ptr);
   }
 }
 
-
-
 TEST(ImageCompressorTest, compress_by_jpg_1)
 {
   init_test_data();
-  image_compressor::set_verbose(true);
   std::vector<uint8_t> cmpr_data;
-  image_compressor::compress_by_jpg(g_img, cmpr_data);
-  image_compressor::set_verbose(false);
+  const int32_t quality = 85;
+  image_compressor::compress(g_img, cmpr_data, image_compressor::compression_format::jpg, quality);
 
   cv::Mat decmpr_img;
   int ret = image_compressor::decompress(cmpr_data, decmpr_img);
@@ -143,11 +144,12 @@ TEST(ImageCompressorTest, compress_by_jpg_perf)
 {
   init_test_data();
   std::vector<uint8_t> cmpr_data;
-  LOG(INFO) << "run " << NUM_PERF_LOOPS << " iterations";
+
+  const int32_t quality = 85;
   for (int i = 0; i < NUM_PERF_LOOPS; i++)
   {
     cmpr_data.clear();
-    image_compressor::compress_by_jpg(g_img, cmpr_data);
+    image_compressor::compress(g_img, cmpr_data, image_compressor::compression_format::jpg, quality);
   }
 }
 
@@ -155,8 +157,8 @@ TEST(ImageCompressorTest, decompress_jpg_perf)
 {
   init_test_data();
   std::vector<uint8_t> cmpr_data;
-  image_compressor::compress_by_jpg(g_img, cmpr_data);
-  LOG(INFO) << "run " << NUM_PERF_LOOPS << " iterations";
+  const int32_t quality = 85;
+  image_compressor::compress(g_img, cmpr_data, image_compressor::compression_format::jpg, quality);
   for (int i = 0; i < NUM_PERF_LOOPS; i++)
   {
     cv::Mat decmpr_img;
@@ -168,9 +170,8 @@ TEST(ImageCompressorTest, compress_by_png_1)
 {
   init_test_data();
   std::vector<uint8_t> cmpr_data;
-  image_compressor::set_verbose(true);
-  image_compressor::compress_by_png(g_img, cmpr_data);
-  image_compressor::set_verbose(false);
+  const int32_t quality = 1;
+  image_compressor::compress(g_img, cmpr_data, image_compressor::compression_format::png, quality);
 
   cv::Mat decmpr_img;
   int ret = image_compressor::decompress(cmpr_data, decmpr_img);
@@ -191,11 +192,11 @@ TEST(ImageCompressorTest, compress_by_png_perf)
 {
   init_test_data();
   std::vector<uint8_t> cmpr_data;
-  LOG(INFO) << "run " << NUM_PERF_LOOPS << " iterations";
+  const int32_t quality = 1;
   for (int i = 0; i < NUM_PERF_LOOPS; i++)
   {
     cmpr_data.clear();
-    image_compressor::compress_by_png(g_img, cmpr_data);
+    image_compressor::compress(g_img, cmpr_data, image_compressor::compression_format::png, quality);
   }
 }
 
@@ -203,8 +204,8 @@ TEST(ImageCompressorTest, decompress_png_perf)
 {
   init_test_data();
   std::vector<uint8_t> cmpr_data;
-  image_compressor::compress_by_png(g_img, cmpr_data);
-  LOG(INFO) << "run " << NUM_PERF_LOOPS << " iterations";
+  const int32_t quality = 1;
+  image_compressor::compress(g_img, cmpr_data, image_compressor::compression_format::png, quality);
   for (int i = 0; i < NUM_PERF_LOOPS; i++)
   {
     cv::Mat decmpr_img;
