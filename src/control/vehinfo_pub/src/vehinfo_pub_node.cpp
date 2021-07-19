@@ -240,7 +240,7 @@ int main(int argc, char **argv)
         ros::Publisher vehinfo_pub = nodeHandle1.advertise<msgs::VehInfo>("veh_info", 1);
         int rc;
         int s;
-        struct can_filter filter[7];
+        struct can_filter filter[4];
         filter[0].can_id   = 0x301;
         filter[0].can_mask = CAN_SFF_MASK;
         filter[1].can_id   = 0x302;
