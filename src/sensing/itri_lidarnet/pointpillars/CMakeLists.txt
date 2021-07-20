@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_point_pillars)
 
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
+
 # set flags for CUDA availability
 option(CUDA_AVAIL "CUDA available" OFF)
 find_package(CUDA)
@@ -66,8 +69,6 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     std_msgs
     #autoware_pointpillars_msgs
   )
-  set(CMAKE_CXX_STANDARD 11)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
   catkin_package(
     CATKIN_DEPENDS
