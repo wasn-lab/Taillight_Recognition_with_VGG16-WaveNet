@@ -7,5 +7,6 @@ uint8 RIGHT=5
 uint8 UP=6
 uint8 DOWN=7
 uint8 FLASHING_YELLOW=8
+uint8 PHASE_COMPENSATION=9
 uint32 type
 float32 confidence
