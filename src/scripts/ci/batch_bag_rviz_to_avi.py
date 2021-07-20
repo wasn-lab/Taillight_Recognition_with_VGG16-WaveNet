@@ -7,7 +7,7 @@ import subprocess
 import datetime
 from bag_jpgs_to_avi import _save_avi
 
-_TMP_DIR = "/dev/shm"
+_TMP_DIR = "/tmp"
 
 def _get_avi_full_path(bag_full_path):
     path, filename = os.path.split(bag_full_path)
