@@ -43,6 +43,7 @@ public:
   void init(const autoware_planning_msgs::Route & route);
   void updateState();
   autoware_planning_msgs::PathWithLaneId getPath() const;
+  State getCurrentState() const;
   Status getStatus() const;
 
 private:
