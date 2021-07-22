@@ -35,6 +35,8 @@ std::string can_name_ = "can1";
 #define can_id_start  0x000
 const double NumOfID = 5;
 
+double lane_change_state = 0;
+
 using namespace std;
 
 void chatterCallback_01(const msgs::DetectedObjectArray::ConstPtr& msg)
@@ -546,10 +548,16 @@ void chatterCallback_09(const std_msgs::Bool::ConstPtr& msg)
 	frame.can_dlc = CAN_DLC;
 	frame.can_id  = 0x067;
 	frame.data[0] = (short int)(msg->data);
+	frame.data[1] = (short int)(lane_change_state);
 	nbytes = write(s, &frame, sizeof(struct can_frame));
 	close(s);
 	printf("Wrote %d bytes\n", nbytes);
 	//Close the SocketCAN
+}
+
+void chatterCallback_10(const std_msgs::Float64::ConstPtr& msg)
+{
+	lane_change_state = msg->data;
 }
 
 int main(int argc, char **argv)
@@ -568,6 +576,7 @@ int main(int argc, char **argv)
   ros::Subscriber dSPACE_subscriber_07 = n.subscribe("/bus_stop_register_info", 1, chatterCallback_07);
   ros::Subscriber dSPACE_subscriber_08 = n.subscribe("/traffic_light_register_info", 1, chatterCallback_08);
   ros::Subscriber dSPACE_subscriber_09 = n.subscribe("/control/end_path_flag", 1, chatterCallback_09);
+  ros::Subscriber dSPACE_subscriber_10 = n.subscribe("/planning/scenario_planning/lane_driving/lane_change_state", 1, chatterCallback_10);
   ros::spin();
   return 0;
 }
