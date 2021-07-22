@@ -8,32 +8,26 @@
 
 namespace image_compressor
 {
-ImageCompressorNode::ImageCompressorNode() : num_compression_(0)
+ImageCompressorNode::ImageCompressorNode() : num_compression_(0), latency_wrt_raw_in_ms_(0), quality_(get_quality())
 {
+  CHECK(quality_ >= 1 && quality_ <= 100);
 }
 ImageCompressorNode::~ImageCompressorNode() = default;
 
 void ImageCompressorNode::callback(const sensor_msgs::ImageConstPtr& msg)
 {
-  num_compression_ += 1;
-  if (image_compressor::use_threading())
-  {
-    std::thread t(&ImageCompressorNode::publish, this, msg);
-    t.detach();
-  }
-  else
-  {
-    publish(msg);
-  }
+  publish(msg);
 }
 
 void ImageCompressorNode::publish(const sensor_msgs::ImageConstPtr& msg)
 {
-  auto cmpr_msg_ptr = compress_msg(msg);
-  {
-    std::lock_guard<std::mutex> lk(mu_publisher_);
-    publisher_.publish(cmpr_msg_ptr);
-  }
+  auto cmpr_msg_ptr = compress_msg(msg, compression_format::jpg, quality_);
+  num_compression_ += 1;
+
+  publisher_.publish(cmpr_msg_ptr);
+  ros::Time now = ros::Time::now();
+  latency_wrt_raw_in_ms_ = (now.sec - msg->header.stamp.sec) * 1000 + (now.nsec - msg->header.stamp.nsec) / 1000000;
+
   heartbeat_publisher_.publish(std_msgs::Empty{});
 }
 
@@ -56,7 +50,8 @@ int ImageCompressorNode::set_subscriber()
     {
       LOG(INFO) << topic << " is ready";
       done = true;
-    } else
+    }
+    else
     {
       LOG(INFO) << "Wait for input topic " << topic;
     }
@@ -91,7 +86,8 @@ void ImageCompressorNode::run()
   ros::Rate r(1);
   while (ros::ok())
   {
-    LOG(INFO) << "compress " << image_compressor::get_input_topic() << " in 1s: " << num_compression_;
+    LOG(INFO) << publisher_.getTopic() << ": fps " << num_compression_ << ", latency " << latency_wrt_raw_in_ms_
+              << " ms.";
     if (num_compression_ == 0)
     {
       subscriber_.shutdown();

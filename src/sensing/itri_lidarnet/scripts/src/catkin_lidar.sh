@@ -15,7 +15,7 @@ edge_node="edge_detection;"
 local_node="localization;map_pub;ndt_gpu;cuda_downsample;"
 
 ssn_node="lidars_preprocessing;lidar_squseg_inference;lidar_squseg_v2_inference;output_results_by_dbscan;"
-compression_node="raw_points_processor;lidars_decoder;"
+compression_node="lidars_decoder;"
 
 #------ main
 PS3='Enter Car Type: '

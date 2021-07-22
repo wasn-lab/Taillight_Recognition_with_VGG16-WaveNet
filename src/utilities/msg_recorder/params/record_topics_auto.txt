@@ -47,6 +47,33 @@
 /cam/right_back_60/jpg
 /cam/right_front_60/jpg
 /cam/back_top_120/jpg
+#---- motion vector
+/cam/front_bottom_60/motion_vector_msg
+/cam/front_top_close_120/motion_vector_msg
+/cam/front_top_far_30/motion_vector_msg
+/cam/left_back_60/motion_vector_msg
+/cam/left_front_60/motion_vector_msg
+/cam/right_back_60/motion_vector_msg
+/cam/right_front_60/motion_vector_msg
+/cam/back_top_120/motion_vector_msg
+#---- camera grabber heartbeat
+/cam/front_bottom_60/heartbeat
+/cam/front_top_close_120/heartbeat
+/cam/front_top_far_30/heartbeat
+/cam/left_back_60/heartbeat
+/cam/left_front_60/heartbeat
+/cam/right_back_60/heartbeat
+/cam/right_front_60/heartbeat
+/cam/back_top_120/heartbeat
+#---- drivenet subscriber heartbeat
+/cam/front_bottom_60/drivenet_sub/heartbeat
+/cam/front_top_close_120/drivenet_sub/heartbeat
+/cam/front_top_far_30/drivenet_sub/heartbeat
+/cam/left_back_60/drivenet_sub/heartbeat
+/cam/left_front_60/drivenet_sub/heartbeat
+/cam/right_back_60/drivenet_sub/heartbeat
+/cam/right_front_60/drivenet_sub/heartbeat
+/cam/back_top_120/drivenet_sub/heartbeat
 
 # Image with 2D bbox
 # /cam/F_right/detect_image
@@ -104,6 +131,7 @@
 /PathPredictionOutput/radar
 /RadarMarker
 /Geofence_PC
+/control/lateral_cumulativoffset
 
 
 
@@ -164,6 +192,7 @@
 
 #
 /PP_geofence_line
+/debug/geofence_map_pp/time_speed
 /Geofence_line # marker
 /gnss_speed_data
 /gnss2local_data
