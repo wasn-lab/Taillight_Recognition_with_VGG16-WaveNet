@@ -2,6 +2,7 @@
 # All rights reserved.
 from __future__ import print_function
 import configparser
+import traceback
 import json
 import pprint
 import rospy
@@ -16,7 +17,8 @@ from system_load_checker import SystemLoadChecker
 from action_emitter import ActionEmitter
 from status_level import OK, WARN, ERROR, FATAL, STATUS_CODE_TO_STR
 from sb_param_utils import get_vid
-from issue_reporter import IssueReporter, generate_issue_description
+from issue_reporter import (IssueReporter, generate_issue_description,
+                            generate_crash_description)
 from timestamp_utils import get_timestamp_mot
 
 _MQTT_FAIL_SAFE_TOPIC = "/fail_safe"  # To be removed in the future
@@ -210,33 +212,49 @@ class FailSafeChecker(object):
                 current_status["status"], current_status["status_str"], current_status["timestamp"])
             self.issue_reporter.post_issue(summary, desc)
 
+    def __run(self):
+        for module in self.latched_modules:
+            self.modules[module].update_latched_message()
+        current_status = self.get_current_status()
+        sensor_status = self._get_all_sensor_status()
+
+        rospy.logwarn("status: %s -- %s",
+                      STATUS_CODE_TO_STR[current_status["status"]],
+                      current_status["status_str"])
+        if self.debug_mode:
+            # pprint.pprint(sensor_status)
+            pprint.pprint(current_status)
+        if current_status["status"] != OK and self.is_self_driving():
+            self.action_emitter.backup_rosbag(current_status["status_str"])
+
+        self.post_issue_if_necessary(current_status)
+        current_status_json = json.dumps(current_status)
+        self.mqtt_client.publish(_MQTT_FAIL_SAFE_TOPIC, current_status_json)
+        self.mqtt_client.publish(_MQTT_FAIL_SAFE_STATUS_TOPIC, current_status_json)
+        self.fail_safe_status_publisher.publish(current_status_json)
+        self.sensor_status_publisher.publish(json.dumps(sensor_status))
+        self.self_driving_mode_publisher.publish(Bool(self.is_self_driving()))
+
+        if self.warn_count + self.error_count > 0:
+            rospy.logwarn("warn_count: %d, error_count: %d",
+                          self.warn_count, self.error_count)
+
+    def __report_fail_safe_crash(self, exc_str):
+        rospy.logwarn("Fail safe crashed! report to JiRA")
+        rospy.logwarn(exc_str)
+        summary = "[Auto Report] Fail-Safe: Unexpected Crash"
+        desc = generate_crash_description(exc_str)
+        self.issue_reporter.post_issue(summary, desc)
+
     def run(self):
         """Send out aggregated info to backend server every second."""
         rate = rospy.Rate(1)
         while not rospy.is_shutdown():
-            for module in self.latched_modules:
-                self.modules[module].update_latched_message()
-            current_status = self.get_current_status()
-            sensor_status = self._get_all_sensor_status()
-
-            rospy.logwarn("status: %s -- %s",
-                          STATUS_CODE_TO_STR[current_status["status"]],
-                          current_status["status_str"])
-            if self.debug_mode:
-                # pprint.pprint(sensor_status)
-                pprint.pprint(current_status)
-            if current_status["status"] != OK and self.is_self_driving():
-                self.action_emitter.backup_rosbag(current_status["status_str"])
-
-            self.post_issue_if_necessary(current_status)
-            current_status_json = json.dumps(current_status)
-            self.mqtt_client.publish(_MQTT_FAIL_SAFE_TOPIC, current_status_json)
-            self.mqtt_client.publish(_MQTT_FAIL_SAFE_STATUS_TOPIC, current_status_json)
-            self.fail_safe_status_publisher.publish(current_status_json)
-            self.sensor_status_publisher.publish(json.dumps(sensor_status))
-            self.self_driving_mode_publisher.publish(Bool(self.is_self_driving()))
-
-            if self.warn_count + self.error_count > 0:
-                rospy.logwarn("warn_count: %d, error_count: %d",
-                              self.warn_count, self.error_count)
+            try:
+                self.__run()
+            except KeyboardInterrupt:
+                rospy.logwarn("Ctrl-c is pressed, exit.")
+            except Exception:
+                exc_str = traceback.format_exc()
+                self.__report_fail_safe_crash(exc_str)
             rate.sleep()

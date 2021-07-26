@@ -24,11 +24,4 @@ def main():
     checker.run()
 
 if __name__ == "__main__":
-    ctrl_c = False
-    while not ctrl_c:
-        try:
-            main()
-        except KeyboardInterrupt:
-            ctrl_c = True
-        except:
-            print("unexpected exception")
+    main()
