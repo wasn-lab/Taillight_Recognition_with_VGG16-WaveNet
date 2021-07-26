@@ -79,6 +79,7 @@ def backend_sender_func(msg, fps):
 
 
 def occ_sender_func(msg, fps):
+    global G_OCC_FAILURE_COUNT
     status = WARN
     status_str = "No message from /occ_sender/status"
     if msg is not None:
@@ -86,7 +87,7 @@ def occ_sender_func(msg, fps):
             status = OK
             status_str = "FPS: " + str(fps)[:5]
             G_OCC_FAILURE_COUNT = 0
-        else if G_OCC_FAILURE_COUNT == 0:
+        elif G_OCC_FAILURE_COUNT == 0:
             # Packet may not reach OCC due to network issues.
             # If it happens only once, we do not consider it as an unexpected event.
             status = OK
@@ -230,8 +231,10 @@ class Heartbeat(object):
         if not self.latch:
             rospy.logwarn("%s: subscribe %s with type %s",
                           self.module_name, self.topic, message_type)
-            self.subscriber = rospy.Subscriber(self.topic,
-                get_message_type_by_str(self.message_type), self.heartbeat_cb)
+            self.subscriber = rospy.Subscriber(
+                self.topic,
+                get_message_type_by_str(self.message_type),
+                self.heartbeat_cb)
         else:
             rospy.logwarn("%s: subscribe latched %s with type %s",
                           self.module_name, self.topic, message_type)
@@ -251,8 +254,10 @@ class Heartbeat(object):
         if fps == 0 and self.subscriber is not None:
             rospy.logwarn("Publisher might be down. Reconnect to get topic %s", self.topic)
             self.subscriber.unregister()
-            self.subscriber = rospy.Subscriber(self.topic,
-                get_message_type_by_str(self.message_type), self.heartbeat_cb)
+            self.subscriber = rospy.Subscriber(
+                self.topic,
+                get_message_type_by_str(self.message_type),
+                self.heartbeat_cb)
         return fps
 
     def _update_status(self):
