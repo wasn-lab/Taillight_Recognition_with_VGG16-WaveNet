@@ -11,6 +11,10 @@ from status_level import OK, WARN, ERROR, FATAL, UNKNOWN, OFF, ALARM, NORMAL
 from redzone_def import in_3d_roi
 from timestamp_utils import get_timestamp_mot
 
+
+# Global variable:
+G_OCC_FAILURE_COUNT = 0
+
 def localization_state_func(_msg, fps):
     """localization stability depends on /current_pose"""
     if fps <= 12:
@@ -81,9 +85,17 @@ def occ_sender_func(msg, fps):
         if msg.data:
             status = OK
             status_str = "FPS: " + str(fps)[:5]
+            G_OCC_FAILURE_COUNT = 0
+        else if G_OCC_FAILURE_COUNT == 0:
+            # Packet may not reach OCC due to network issues.
+            # If it happens only once, we do not consider it as an unexpected event.
+            status = OK
+            status_str = "FPS: " + str(fps)[:5]
+            G_OCC_FAILURE_COUNT += 1
         else:
             status = WARN
             status_str = "Cannot send data to OCC. FPS: " + str(fps)[:5]
+            G_OCC_FAILURE_COUNT += 1
 
     return status, status_str
 
