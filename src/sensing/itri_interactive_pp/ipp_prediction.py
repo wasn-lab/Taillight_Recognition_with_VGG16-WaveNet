@@ -1,12 +1,14 @@
 #! ./sandbox/bin/python2.7
 
 # coding=utf-8
-from environment import Environment, Scene, derivative_of, Node
+
+
 from scipy.interpolate import RectBivariateSpline
+from environment import Environment, Scene, derivative_of, Node
+from model.model_registrar import ModelRegistrar
+from model.trajectron import Trajectron
 import utils
 import evaluation
-from model.trajectron import Trajectron
-from model.model_registrar import ModelRegistrar
 from script.ipp_method import output_csvfile
 from script.ipp_class import parameter, buffer_data
 import atexit
@@ -22,31 +24,28 @@ from tf.transformations import euler_from_quaternion
 from tf2_geometry_msgs import PoseStamped
 import tf2_geometry_msgs
 import tf2_ros
-import sys
 import os
 import json
 import torch
 import numpy as np
 import pandas as pd
 import time
-
+import sys
 sys.path.insert(0, "./trajectron")
-
-
 # from script.ipp_method import create_scene, transform_data
 
-seed = 0
-np.random.seed(seed)
-torch.manual_seed(seed)
-if torch.cuda.is_available():
-    torch.cuda.manual_seed_all(seed)
+# seed = 0
+# np.random.seed(seed)
+# torch.manual_seed(seed)
+# if torch.cuda.is_available():
+#     torch.cuda.manual_seed_all(seed)
 
 
 def create_scene(scene_ids, present_id):
     output_node_data = None
     obstacle_id_list = []
     max_timesteps = buffer.buffer_frame['frame_id'].max()
-    scene = Scene(timesteps=max_timesteps + 1, dt=0.5)
+    scene = Scene(timesteps=max_timesteps + 1, dt=frequency)
     for node_id in scene_ids:
         node_frequency_multiplier = 1
         node_df = buffer.buffer_frame[buffer.buffer_frame['node_id'] == node_id]
@@ -106,31 +105,31 @@ def create_scene(scene_ids, present_id):
 
             # print("velocity norm length : ",len(np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1)))
             # print('acceleration norm length : ',len(np.linalg.norm(np.stack((ax, ay), axis=-1), axis=-1)))
+            if output_csv:
+                output_dict = {
+                    ('node', 'id'): node_id,
+                    ('frame', 'id'): buffer.get_attribute("current_frame"),
+                    ('position', 'x'): x[-1],
+                    ('position', 'y'): y[-1],
+                    ('velocity', 'x'): vx[-1],
+                    ('velocity', 'y'): vy[-1],
+                    ('velocity', 'norm'): np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1)[-1],
+                    ('acceleration', 'x'): ax[-1],
+                    ('acceleration', 'y'): ay[-1],
+                    ('acceleration', 'norm'): np.linalg.norm(np.stack((ax, ay), axis=-1), axis=-1)[-1],
+                    ('heading', 'x'): heading_x[-1],
+                    ('heading', 'y'): heading_y[-1],
+                    ('heading', 'angle'): heading[-1],
+                    ('heading', 'radian'): derivative_of(heading, scene.dt, radian=True)[-1]
+                }
 
-            output_dict = {
-                ('node', 'id'): node_id,
-                ('frame', 'id'): buffer.get_attribute("current_frame"),
-                ('position', 'x'): x[-1],
-                ('position', 'y'): y[-1],
-                ('velocity', 'x'): vx[-1],
-                ('velocity', 'y'): vy[-1],
-                ('velocity', 'norm'): np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1)[-1],
-                ('acceleration', 'x'): ax[-1],
-                ('acceleration', 'y'): ay[-1],
-                ('acceleration', 'norm'): np.linalg.norm(np.stack((ax, ay), axis=-1), axis=-1)[-1],
-                ('heading', 'x'): heading_x[-1],
-                ('heading', 'y'): heading_y[-1],
-                ('heading', 'angle'): heading[-1],
-                ('heading', 'radian'): derivative_of(heading, scene.dt, radian=True)[-1]
-            }
+                output_node_data = pd.DataFrame(
+                    output_dict, columns=buffer.output_data_column, index=[0])
 
-            output_node_data = pd.DataFrame(
-                output_dict, columns=buffer.output_data_column, index=[0])
-
-            # print("output_node_data type : ",type(output_node_data))
-            # print("output_node_data value : ",output_node_data)
-            # print('output_dict : ', output_dict)
-            buffer.update_predict_frame(output_node_data)
+                # print("output_node_data type : ",type(output_node_data))
+                # print("output_node_data value : ",output_node_data)
+                # print('output_dict : ', output_dict)
+                buffer.update_predict_frame(output_node_data)
         else:
             data_dict = {('position', 'x'): x,
                          ('position', 'y'): y,
@@ -152,7 +151,8 @@ def create_scene(scene_ids, present_id):
     return scene
 
 
-def transform_data(data, tf_map, tf_buffer, rospy):
+def transform_data(data):
+    global tf_buffer
     heading_data = []
     present_id_list = []
     for obj in data.objects:
@@ -280,12 +280,11 @@ def transform_data(data, tf_map, tf_buffer, rospy):
 
 
 def predict(data):
-    global args, tf_map, tf_buffer
     timer = []
 
     print('Current time : ', buffer.get_attribute("current_frame"))
     present_id_list, mask_id_list = transform_data(
-        data, tf_map, tf_buffer, rospy)
+        data)
     # ros parameter
     obj_cnt = len(present_id_list) + len(mask_id_list)
     buffer.add_frame_length(len(present_id_list) + len(mask_id_list))
@@ -427,7 +426,8 @@ if __name__ == '__main__':
           loading_model_part
           frame_length for refreshing buffer
         ===================== '''
-    global buffer, past_obj, frame_length, args, tf_map, short_mem
+
+    global buffer, past_obj, frame_length
     print('Loading model...')
     args = parameter()
     eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
@@ -449,14 +449,16 @@ if __name__ == '__main__':
     output_csv = rospy.get_param(
         '/object_path_prediction/output_csv')
 
+    frequency = 0.1
     if delay_node == 1:
         input_topic = '/IPP/delay_Alert'
+        frequency = 0.5
     elif input_source == 1:
         input_topic = '/Tracking2D/front_bottom_60'
-    elif input_source == 3:
-        input_topic = '/Tracking3D'
-    else:
+    elif input_source == 2:
         input_topic = '/PathPredictionOutput'
+    else:
+        input_topic = '/Tracking3D'
 
     args.set_params(input_topic, prediction_horizon, show_log)
     past_obj = []
@@ -467,6 +469,7 @@ if __name__ == '__main__':
     #     print(i,heading, math.degrees(heading))
     # info = "frame_id" + "," + "type" + "," + "node_id" + "," + "robot" + "," + "x" + "," + "y" + "," + "z" + "," + "length" + "," + "width" + "," + "height" + "," + "heading"
     # print info
+
     try:
         listener_ipp()
     except rospy.ROSInterruptException:

@@ -5,12 +5,6 @@ import tf2_ros
 from msgs.msg import DetectedObjectArray
 import time
 
-prev = rospy.Time()
-count = 0
-past_obj = []
-tf_buffer = None
-tf_listener = None
-
 
 def publish_msg(data):
     global prev, count
@@ -40,7 +34,6 @@ def publish_msg(data):
 
 
 def listener_ipp():
-    global tf_buffer, tf_listener
     if input_source == 1:
         rospy.Subscriber(
             '/Tracking2D/front_bottom_60',
@@ -62,7 +55,9 @@ def listener_ipp():
 
 
 if __name__ == '__main__':
-    global input_source
+    global prev, count
+    count = 0
+    prev = rospy.Time()
     rospy.init_node('ipp_delay_data')
     input_source = rospy.get_param('/filter/input_topic')
     try:
