@@ -6,6 +6,8 @@ import math
 import pandas as pd
 import numpy as np
 import csv
+import sys
+sys.path.insert(0, "./trajectron")
 from environment import Environment, Scene, derivative_of, Node
 
 
