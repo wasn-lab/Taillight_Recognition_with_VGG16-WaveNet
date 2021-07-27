@@ -12,6 +12,7 @@ import pandas as pd
 import math
 import atexit
 
+timer = 0
 
 def distance(point1, point2):
     return math.sqrt(
@@ -108,15 +109,13 @@ def listener_vehicle():
     # spin() simply keeps python from exiting until this node is stopped
 
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
-
-    # spin() simply keeps python from exiting until this node is stopped
     tf_listener = tf2_ros.TransformListener(tf_buffer)
 
     rospy.spin()
 
 
 if __name__ == '__main__':
-    global timer, pred_buffer, gt_buffer, id_ade_fde, tf_map
+    global pred_buffer, gt_buffer, id_ade_fde, tf_map
     # pred = prediction, gt = groundtruth
     # pred_buffer = {time: id : [predictions]} (multiple points)
     # gt_buffer = {time : id : [grountruth]} (one point)
@@ -124,7 +123,7 @@ if __name__ == '__main__':
     gt_buffer = dict()
     id_ade_fde = dict()
     # init time counter
-    timer = 0
+    
     rospy.init_node('calculator')
     tf_map = rospy.get_param(
         '/object_path_prediction/tf_map')
