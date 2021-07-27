@@ -29,7 +29,7 @@ coordinates["25"] = [2041.7508, 45329.1698, 64.5103, 2041.4269, 45328.0143, 64.5
 coordinates["26"] = [1852.8168, 45385.4685, 63.4525, 1852.4281, 45384.3333, 63.4525]
 
 rospy.init_node('mileage_listener', anonymous=True)
-marker_pub = rospy.Publisher("/my_marker", MarkerArray, queue_size = 2)
+marker_pub = rospy.Publisher("/traffic_rviz", MarkerArray, queue_size = 2)
 
 def callback(spat):
    print(f"{spat.spat_state}")
