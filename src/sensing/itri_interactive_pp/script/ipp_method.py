@@ -8,6 +8,7 @@ import numpy as np
 import csv
 from environment import Environment, Scene, derivative_of, Node
 
+
 def create_scene(buffer, scene_ids, present_id):
     obstacle_id_list = []
     buffer_data = buffer.buffer_frame
@@ -39,28 +40,30 @@ def create_scene(buffer, scene_ids, present_id):
             v = np.stack((vx, vy), axis=-1)
             v_norm = np.linalg.norm(
                 np.stack((vx, vy), axis=-1), axis=-1, keepdims=True)
-            
-            
-            if np.sum(v_norm, axis = 0)[0]/len(v_norm) < 0.2 and node_id in present_id:
+
+            if np.sum(v_norm, axis=0)[
+                    0] / len(v_norm) < 0.2 and node_id in present_id:
                 # print('v_norm : ',np.sum(v_norm, axis = 0)[0]/len(v_norm))
                 obstacle_id_list.append(int(node_id))
-            
-            heading_v = np.divide(v, v_norm, out=np.zeros_like(v), where=(v_norm > 0.1))
+
+            heading_v = np.divide(
+                v, v_norm, out=np.zeros_like(v), where=(
+                    v_norm > 0.1))
             heading_x = heading_v[:, 0]
             heading_y = heading_v[:, 1]
 
             data_dict = {('position', 'x'): x,
-                            ('position', 'y'): y,
-                            ('velocity', 'x'): vx,
-                            ('velocity', 'y'): vy,
-                            ('velocity', 'norm'): np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1),
-                            ('acceleration', 'x'): ax,
-                            ('acceleration', 'y'): ay,
-                            ('acceleration', 'norm'): np.linalg.norm(np.stack((ax, ay), axis=-1), axis=-1),
-                            ('heading', 'x'): heading_x,
-                            ('heading', 'y'): heading_y,
-                            ('heading', 'angle'): heading,
-                            ('heading', 'radian'): node_df['heading_rad'].values}
+                         ('position', 'y'): y,
+                         ('velocity', 'x'): vx,
+                         ('velocity', 'y'): vy,
+                         ('velocity', 'norm'): np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1),
+                         ('acceleration', 'x'): ax,
+                         ('acceleration', 'y'): ay,
+                         ('acceleration', 'norm'): np.linalg.norm(np.stack((ax, ay), axis=-1), axis=-1),
+                         ('heading', 'x'): heading_x,
+                         ('heading', 'y'): heading_y,
+                         ('heading', 'angle'): heading,
+                         ('heading', 'radian'): node_df['heading_rad'].values}
             node_data = pd.DataFrame(
                 data_dict, columns=buffer.data_columns_vehicle)
             output_node_data = node_data
@@ -68,11 +71,11 @@ def create_scene(buffer, scene_ids, present_id):
             # print('node_data : ',output_node_data)
         else:
             data_dict = {('position', 'x'): x,
-                            ('position', 'y'): y,
-                            ('velocity', 'x'): vx,
-                            ('velocity', 'y'): vy,
-                            ('acceleration', 'x'): ax,
-                            ('acceleration', 'y'): ay}
+                         ('position', 'y'): y,
+                         ('velocity', 'x'): vx,
+                         ('velocity', 'y'): vy,
+                         ('acceleration', 'x'): ax,
+                         ('acceleration', 'y'): ay}
             node_data = pd.DataFrame(
                 data_dict, columns=buffer.data_columns_pedestrian)
 
@@ -85,7 +88,8 @@ def create_scene(buffer, scene_ids, present_id):
         scene.nodes.append(node)
     buffer.update_prev_id(obstacle_id_list)
     return scene
-    
+
+
 def transform_data(buffer, data, tf_map, tf_buffer, rospy):
     present_id_list = []
     for obj in data.objects:
@@ -197,17 +201,15 @@ def transform_data(buffer, data, tf_map, tf_buffer, rospy):
         buffer.update_buffer(node_data)
         present_id_list.append(id)
         # print(id)
-        
-    
+
     # add temp data
     mask_id_list = buffer.add_temp_obstacle(present_id_list)
     # print(present_id_list)
     buffer.refresh_buffer()
     # buffer.add_frame_length(len(present_id_list))
     buffer.add_frame_length(len(present_id_list) + len(mask_id_list))
-    return present_id_list,mask_id_list
+    return present_id_list, mask_id_list
 
-def output_csvfile(data_path,csv_filename,data):
+
+def output_csvfile(data_path, csv_filename, data):
     data.to_csv(data_path + csv_filename)
-
-

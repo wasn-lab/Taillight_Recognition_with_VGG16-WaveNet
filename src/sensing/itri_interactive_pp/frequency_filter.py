@@ -16,8 +16,8 @@ def publish_msg(data):
     global prev, count
     # print('_')
     # if(data.header.stamp - prev).to_sec() > 10:
-        # print('Initialize')
-    
+    # print('Initialize')
+
     # print (data.header.stamp).to_sec()
     if(data.header.stamp - prev).to_sec() > 0.5:
         # print((data.header.stamp - prev).to_sec())
@@ -47,13 +47,17 @@ def listener_ipp():
             DetectedObjectArray,
             publish_msg)
     elif input_source == 2:
-        rospy.Subscriber('/PathPredictionOutput', DetectedObjectArray, publish_msg)
+        rospy.Subscriber(
+            '/PathPredictionOutput',
+            DetectedObjectArray,
+            publish_msg)
     elif input_source == 3:
         rospy.Subscriber('/Tracking3D', DetectedObjectArray, publish_msg)
     else:
         print("Source not found!")
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
-    tf_listener = tf2_ros.TransformListener(tf_buffer)  # spin() simply keeps python from exiting until this node is stopped
+    # spin() simply keeps python from exiting until this node is stopped
+    tf_listener = tf2_ros.TransformListener(tf_buffer)
     rospy.spin()
 
 
