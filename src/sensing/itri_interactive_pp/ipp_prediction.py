@@ -410,12 +410,12 @@ def listener_ipp():
 
 def load_model(model_dir, ts=100):
     global hyperparams
-    model_registrar = ModelRegistrar(model_dir, 'cuda:1')
+    model_registrar = ModelRegistrar(model_dir, 'cuda:0')
     model_registrar.load_models(ts)
     with open(os.path.join(model_dir, 'config.json'), 'r') as config_json:
         hyperparams = json.load(config_json)
 
-    trajectron = Trajectron(model_registrar, hyperparams, None, 'cuda:1')
+    trajectron = Trajectron(model_registrar, hyperparams, None, 'cuda:0')
 
     trajectron.set_environment()
     trajectron.set_annealing_params()
