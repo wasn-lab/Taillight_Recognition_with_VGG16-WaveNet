@@ -43,4 +43,5 @@
     <param name="output_csv" value="$(arg output_csv)" />
   </node>  
   <node pkg="itri_interactive_pp" type="ipp_marker.py" name="object_marker" cwd="node" output="screen" />
+  <node pkg="itri_interactive_pp" type="calculate.py" name="object_calculator" cwd="node" output="screen" />
 </launch>

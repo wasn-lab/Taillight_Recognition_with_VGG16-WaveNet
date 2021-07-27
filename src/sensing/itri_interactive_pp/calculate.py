@@ -12,7 +12,7 @@ import pandas as pd
 import math
 import atexit
 
-timer = 0
+TIMER = 0
 
 def distance(point1, point2):
     return math.sqrt(
@@ -27,8 +27,8 @@ def distance(point1, point2):
 
 
 def record_call_back(data):
-    global timer
-    print("Time : ", timer, " Get Data !")
+    global TIMER
+    print("Time : ", TIMER, " Get Data !")
     id_pred = dict()
     id_gt = dict()
     pred = list()
@@ -56,22 +56,22 @@ def record_call_back(data):
                 y_pred = track_point.position.y
                 pred.append([x_pred, y_pred])
         id_pred[id] = pred
-    pred_buffer[timer] = id_pred
-    gt_buffer[timer] = id_gt
-    timer += 1
+    pred_buffer[TIMER] = id_pred
+    gt_buffer[TIMER] = id_gt
+    TIMER += 1
 
 
 def calculate():
     # calculate part
-    global timer
+    global TIMER
     print('Pred_buffer : ', pred_buffer)
-    for time in range(timer):
+    for time in range(TIMER):
         for id in pred_buffer[time].keys():
             count = 0
             # If our prediction is longer than grountruth ex : bag only 10s we
             # predict 12s result
             time_dist_list = list()
-            max_gt_in_pred = min(timer - time, 10)
+            max_gt_in_pred = min(TIMER - time, 10)
             for i in range(max_gt_in_pred):
                 # check for the value is exist or not (If id switch in future
                 # the id won't exist)
