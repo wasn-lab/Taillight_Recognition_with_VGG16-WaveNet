@@ -6,12 +6,6 @@ from visualization_msgs.msg import MarkerArray
 from geometry_msgs.msg import Point
 import numpy as np
 
-class pose_3d():
-    def __init(x=0, y=0, z=0):
-        self.x = x
-        self.y = y
-        self.z = z
-
    
 class Traffic_Light_Marker_Array:
 
