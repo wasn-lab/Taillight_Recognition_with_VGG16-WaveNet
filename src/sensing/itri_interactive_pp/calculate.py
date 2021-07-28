@@ -1,18 +1,16 @@
 #! ./sandbox/bin/python2.7
 # coding=utf-8
+import math
+import atexit
 import rospy
 import tf2_ros
 import tf2_geometry_msgs
 from tf2_geometry_msgs import PoseStamped
 from std_msgs.msg import String
+import pandas as pdGIT
 from msgs.msg import DetectedObjectArray
 from msgs.msg import DetectedObject
 import time
-import pandas as pd
-import math
-import atexit
-
-TIMER = 0
 
 def distance(point1, point2):
     return math.sqrt(
@@ -27,7 +25,11 @@ def distance(point1, point2):
 
 
 def record_call_back(data):
-    global TIMER
+    if len(pred_buffer.items())==0:
+        TIMER = 0
+    else:
+        TIMER = max(pred_buffer.keys()) + 1
+        
     print("Time : ", TIMER, " Get Data !")
     id_pred = dict()
     id_gt = dict()
@@ -58,13 +60,12 @@ def record_call_back(data):
         id_pred[id] = pred
     pred_buffer[TIMER] = id_pred
     gt_buffer[TIMER] = id_gt
-    TIMER += 1
 
 
 def calculate():
     # calculate part
-    global TIMER
     print('Pred_buffer : ', pred_buffer)
+    Timer = max(pred_buffer.keys())
     for time in range(TIMER):
         for id in pred_buffer[time].keys():
             count = 0
@@ -100,7 +101,6 @@ def calculate():
 def listener_vehicle():
 
     global tf_buffer
-
     rospy.Subscriber(
         '/IPP/Alert',
         DetectedObjectArray,
@@ -115,14 +115,13 @@ def listener_vehicle():
 
 
 if __name__ == '__main__':
-    global pred_buffer, gt_buffer, id_ade_fde, tf_map
+    global pred_buffer, gt_buffer, id_ade_fde
     # pred = prediction, gt = groundtruth
     # pred_buffer = {time: id : [predictions]} (multiple points)
     # gt_buffer = {time : id : [grountruth]} (one point)
     pred_buffer = dict()
     gt_buffer = dict()
     id_ade_fde = dict()
-    # init time counter
     
     rospy.init_node('calculator')
     tf_map = rospy.get_param(

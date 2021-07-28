@@ -7,7 +7,8 @@ import time
 
 
 def publish_msg(data):
-    global prev, count
+    global prev
+    # , count
     # print('_')
     # if(data.header.stamp - prev).to_sec() > 10:
     # print('Initialize')
@@ -15,6 +16,7 @@ def publish_msg(data):
     # print (data.header.stamp).to_sec()
     if(data.header.stamp - prev).to_sec() > 0.5:
         # print((data.header.stamp - prev).to_sec())
+        # clear the previous prediction result
         for obj in data.objects:
             obj.track.forecasts = []
             obj.track.is_ready_prediction = False
@@ -24,13 +26,13 @@ def publish_msg(data):
             DetectedObjectArray,
             queue_size=1)  # /IPP/Alert is TOPIC
         pub.publish(data)
-        count = 0
-    else:
-        count = count + 1
+    #     count = 0
+    # else:
+    #     count = count + 1
 
-    if count >= 10:
-        # print('Restart')
-        prev = rospy.Time()
+    # if count >= 10:
+    #     # print('Restart')
+    #     prev = rospy.Time()
 
 
 def listener_ipp():
@@ -55,8 +57,9 @@ def listener_ipp():
 
 
 if __name__ == '__main__':
-    global prev, count
-    count = 0
+    global prev
+    # ,count
+    # count = 0
     prev = rospy.Time()
     rospy.init_node('ipp_delay_data')
     input_source = rospy.get_param('/filter/input_topic')
