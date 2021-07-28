@@ -45,6 +45,8 @@ private:  // ros
   void initPose(geometry_msgs::Pose& pose);
 
   bool only_known_objects_;
+  double label_scale_;
+  bool show_accel_;
   std::vector<std_msgs::ColorRGBA> colors_;
 
 public:

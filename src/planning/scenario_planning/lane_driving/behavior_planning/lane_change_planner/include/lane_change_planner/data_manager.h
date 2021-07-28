@@ -70,6 +70,7 @@ private:
   autoware_perception_msgs::DynamicObjectArray::ConstPtr perception_ptr_;
   geometry_msgs::TwistStamped::ConstPtr vehicle_velocity_ptr_;
   BoolStamped lane_change_approval_;
+  BoolStamped obstacle_lane_change_approval_;
   BoolStamped force_lane_change_;
   geometry_msgs::PoseStamped self_pose_;
 
@@ -92,6 +93,7 @@ public:
   void velocityCallback(const geometry_msgs::TwistStamped::ConstPtr & input_twist_msg);
   void setLaneChangerParameters(const LaneChangerParameters & parameters);
   void laneChangeApprovalCallback(const std_msgs::Bool & input_approval_msg);
+  void ObstaclelaneChangeApprovalCallback(const std_msgs::Bool & input_approval_msg);
   void forceLaneChangeSignalCallback(const std_msgs::Bool & input_approval_msg);
 
   // getters
@@ -100,6 +102,7 @@ public:
   geometry_msgs::TwistStamped::ConstPtr getCurrentSelfVelocity();
   LaneChangerParameters getLaneChangerParameters();
   bool getLaneChangeApproval();
+  bool getObstacleLaneChangeApproval();
   bool getForceLaneChangeSignal();
 
   bool isDataReady();

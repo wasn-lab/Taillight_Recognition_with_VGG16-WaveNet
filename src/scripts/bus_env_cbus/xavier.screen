@@ -24,6 +24,7 @@ bind u encoding utf8 utf8
 defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
+sessionname "adv"
 
 #screen -t reset_time
 #stuff "bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/reset_time.sh^M"
@@ -35,11 +36,10 @@ screen -t init_load_monitor
 stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_load_monitor.sh^M"
 
 screen -t init_control_new_lanelet2
-stuff "sleep 3; /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_control_new_lanelet2.sh^M"
+stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_control_new_lanelet2.sh^M"
 
 screen -t init_radar
-stuff "sleep 3; /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_radar.sh^M"
+stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_radar.sh^M"
 
 screen -t init_camera
-stuff "sleep 3; /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_camera.sh^M"
-
+stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_camera.sh^M"

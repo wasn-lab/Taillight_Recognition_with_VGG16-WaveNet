@@ -14,6 +14,7 @@ perf.data.old
 tags
 gmon.out
 *.log
+*.bag
 
 # using catkin_make tests to generated data
 *.weights
@@ -52,5 +53,9 @@ src/sensing/deeplab/weights
 src/sensing/itri_interactive_pp/models
 src/sensing/itri_interactive_pp/other
 src/sensing/itri_interactive_pp/sandbox
+src/utilities/data_analysis/data
+src/utilities/pcd_rename/label
+src/utilities/pcd_rename/pcd
+src/utilities/pcd_rename/relation.txt
 src/sensing/itri_interactive_pp/backup
 src/sensing/itri_interactive_pp/Ade_fde.txt

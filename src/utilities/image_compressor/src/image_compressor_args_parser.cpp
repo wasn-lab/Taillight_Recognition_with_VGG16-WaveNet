@@ -7,10 +7,8 @@ namespace image_compressor
 {
 DEFINE_string(input_topic, "", "Input topic name");
 DEFINE_string(output_topic, "", "Output topic name");
-DEFINE_bool(verify, false, "Verify if the compressed data can be restored back");
-DEFINE_bool(verbose, false, "Verbose mode: print more logs for debuggin.");
-DEFINE_bool(use_threading, false, "Use threads to do compression.");
 DEFINE_bool(use_png, false, "Use png compression (10x slower and 8x bigger than jpg, but lossless");
+DEFINE_int32(quality, 85, "Set quality (jpg: 1~100, png:1~10)");
 
 std::string get_input_topic()
 {
@@ -22,34 +20,14 @@ std::string get_output_topic()
   return FLAGS_output_topic;
 }
 
-bool should_verify_decompressed_data()
+int32_t get_quality()
 {
-  return FLAGS_verify;
-}
-
-bool use_threading()
-{
-  return FLAGS_use_threading;
-}
-
-bool is_verbose()
-{
-  return FLAGS_verbose;
-}
-
-void set_verbose(bool mode)
-{
-  FLAGS_verbose = mode;
+  return FLAGS_quality;
 }
 
 compression_format get_compression_format()
 {
   return static_cast<compression_format>(FLAGS_use_png);
-}
-
-void set_use_threading(bool mode)
-{
-  FLAGS_use_threading = mode;
 }
 
 };  // namespace image_compressor

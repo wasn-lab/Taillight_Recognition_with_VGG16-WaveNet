@@ -6,7 +6,7 @@
   <arg name="output_trajectory" />
   <arg name="is_completed" />
 
-  <node pkg="freespace_planner" type="freespace_planner" name="freespace_planner" output="screen">
+  <node pkg="freespace_planner" type="freespace_planner" name="freespace_planner" output="screen" respawn="true">
     <remap from="~input/route" to="$(arg input_route)" />
     <remap from="~input/occupancy_grid" to="$(arg input_occupancy_grid)" />
     <remap from="~input/scenario" to="$(arg input_scenario)" />

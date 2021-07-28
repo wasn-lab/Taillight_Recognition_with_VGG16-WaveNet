@@ -102,6 +102,8 @@ void PointPillarsROS_Car::pubDetectedObject(const std::vector<float>& detections
       cam_info.prob = score;
       cam_info_vector.push_back(cam_info);
       object.camInfo = cam_info_vector;
+
+      // object.score = score;
       
       float center_x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 0];
       float center_y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 1];
@@ -198,8 +200,15 @@ void PointPillarsROS_Car::pubDetectedObject(const std::vector<float>& detections
       // pub
       MsgObjArr.objects.push_back(object);
     }
+    
     pub_objects_.publish(MsgObjArr);
     std::cout << "[PPillars_Car]: " << g_stopWatch_car.getTimeSeconds() << 's' << std::endl;
+  }
+  else
+  {
+    pub_objects_.publish(MsgObjArr);
+    std::cout << "[PPillars_Car]: " << g_stopWatch_car.getTimeSeconds() << 's' << std::endl;
+    std::cout << "[PPillars_Car]: No objects in message array" << std::endl;
   }
 }
 

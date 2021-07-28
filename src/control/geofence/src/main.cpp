@@ -38,18 +38,18 @@
 #include <linux/can/raw.h>
 #include <typeinfo>
 #define CAN_DLC 8
-#define CAN_INTERFACE_NAME "can1"
+// #define CAN_INTERFACE_NAME "can1"
 
 // Specify running mode
 //#define VIRTUAL
 //#define TRACKINGBOX
 
-static Geofence PCloud_Geofence(1.2);
-static Geofence CPoint_Geofence(1.2);
-static Geofence BBox_Geofence(1.2);
+static Geofence PCloud_Geofence(1.5);
+static Geofence CPoint_Geofence(1.5);
+static Geofence BBox_Geofence(1.5);
 static Geofence Radar_Geofence(1.6);
-static Geofence PCloud_Geofence_original(1.2);
-static Geofence Deviate_Geofence(1.2);
+static Geofence PCloud_Geofence_original(1.5);
+static Geofence Deviate_Geofence(1.5);
 static double Heading, SLAM_x, SLAM_y, SLAM_z;
 // static uint Deadend_flag;
 static uint overtake_over_flag;
@@ -57,13 +57,16 @@ ros::Publisher Radar_marker;
 ros::Publisher Geofence_line;
 
 uint PCloud_Geofence_count = 0;
-int PCloud_Geofence_lastdis = 300;
+double PCloud_Geofence_lastdis = 300;
+Point PCloud_Geofence_findDirection_last;
 
 uint Deviate_Geofence_count = 0;
-int Deviate_Geofence_lastdis = 300;
+double Deviate_Geofence_lastdis = 300;
+Point Deviate_Geofence_findDirection_last;
 
 uint CPoint_Geofence_count = 0;
-int CPoint_Geofence_lastdis = 300;
+double CPoint_Geofence_lastdis = 300;
+Point CPoint_Geofence_findDirection_last;
 
 void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg)
 {
@@ -202,7 +205,10 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg)
     size = msg->poses.size();
   }
 
+  std::cout << "size : " << size << std::endl;
+
   double Resolution = 10;
+  int index = 0;
   for (uint i = 1; i < size; i++)
   {
     for (int j = 0; j < Resolution; j++)
@@ -212,8 +218,10 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg)
       Pos.Y = msg->poses[i - 1].pose.position.y +
               j * (1 / Resolution) * (msg->poses[i].pose.position.y - msg->poses[i - 1].pose.position.y);
       Position.push_back(Pos);
+      index ++;
     }
   }
+  std::cout << "index : " << index << std::endl;
   PCloud_Geofence.setPath(Position);
   BBox_Geofence.setPath(Position);
   Radar_Geofence.setPath(Position);
@@ -277,12 +285,15 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
   vector<Point> PointCloud_temp;
   for (size_t i = 0; i < cloud->points.size(); ++i)
   {
-    Point_temp.X = cloud->points[i].x;
-    Point_temp.Y = cloud->points[i].y;
-    // double z = cloud->points[i].z;
-    // int intensity = cloud->points[i].intensity;
-    Point_temp.Speed = 0.0;
-    PointCloud_temp.push_back(Point_temp);
+    if (cloud->points[i].x != 0 || cloud->points[i].y != 0)
+    {
+      Point_temp.X = cloud->points[i].x;
+      Point_temp.Y = cloud->points[i].y;
+      // double z = cloud->points[i].z;
+      // int intensity = cloud->points[i].intensity;
+      Point_temp.Speed = 0.0;
+      PointCloud_temp.push_back(Point_temp);
+    }
   }
   PCloud_Geofence.setPointCloud(PointCloud_temp, true, SLAM_x, SLAM_y, Heading);
   PCloud_Geofence_original.setPointCloud(PointCloud_temp, true, SLAM_x, SLAM_y, Heading);
@@ -383,6 +394,10 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "Geofence");
   ros::NodeHandle n;
+
+  std::string can_name_ = "can1";
+  ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
+
   ros::Subscriber LidAllSub = n.subscribe("ring_edge_point_cloud", 1, callback_LidarAll);
   ros::Subscriber AstarSub = n.subscribe("nav_path_astar_final", 1, astar_callback);
   ros::Subscriber AstarSub_original =
@@ -413,7 +428,8 @@ int main(int argc, char** argv)
   struct sockaddr_can addr;
   struct can_frame frame;
   struct ifreq ifr;
-  const char* ifname = CAN_INTERFACE_NAME;
+  const char* ifname = can_name_.c_str();//CAN_INTERFACE_NAME;
+  // std::cout << "cancancancancangeofence : " << can_name_ << std::endl;
   if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
   {
     perror("Error while opening socket");
@@ -457,22 +473,26 @@ int main(int argc, char** argv)
       std_msgs::Float64 Geofence_temp;
       Geofence_temp.data = PCloud_Geofence.getDistance_w();
       Geofence_PC.publish(Geofence_temp);
-      int PCloud_Geofence_dis = 300;  // PCloud_Geofence.getDistance();
-      if (PCloud_Geofence_lastdis - PCloud_Geofence.getDistance() > 200 && PCloud_Geofence_count < 10)
+      double PCloud_Geofence_dis = 300;  // PCloud_Geofence.getDistance();
+      Point PCloud_Geofence_findDirection;
+      if ((PCloud_Geofence_lastdis - PCloud_Geofence.getDistance())/PCloud_Geofence_lastdis > 0.2 && PCloud_Geofence_count < 5)
       {
         PCloud_Geofence_dis = PCloud_Geofence_lastdis;
+        PCloud_Geofence_findDirection = PCloud_Geofence_findDirection_last;
         PCloud_Geofence_count++;
       }
       else
       {
         PCloud_Geofence_dis = PCloud_Geofence.getDistance();
+        PCloud_Geofence_findDirection = PCloud_Geofence.findDirection();
         PCloud_Geofence_count = 0;
       }
       if (PCloud_Geofence_dis < 80)
       {
-        Plot_geofence(PCloud_Geofence.findDirection());
+        Plot_geofence(PCloud_Geofence_findDirection);
       }
       PCloud_Geofence_lastdis = PCloud_Geofence_dis;
+      PCloud_Geofence_findDirection_last = PCloud_Geofence_findDirection;
     }
     else
     {
@@ -505,22 +525,26 @@ int main(int argc, char** argv)
       frame.data[7] = (short int)(Deviate_Geofence.getNearest_Y() * 10) >> 8;
       nbytes = write(s, &frame, sizeof(struct can_frame));
       printf("Wrote %d bytes\n", nbytes);
-      int Deviate_Geofence_dis = 300;  // Deviate_Geofence.getDistance();
-      if (Deviate_Geofence_lastdis - Deviate_Geofence.getDistance() > 200 && Deviate_Geofence_count < 10)
+      double Deviate_Geofence_dis = 300;  // PCloud_Geofence.getDistance();
+      Point Deviate_Geofence_findDirection;
+      if ((Deviate_Geofence_lastdis - Deviate_Geofence.getDistance())/Deviate_Geofence_lastdis > 0.2 && Deviate_Geofence_count < 5)
       {
         Deviate_Geofence_dis = Deviate_Geofence_lastdis;
+        Deviate_Geofence_findDirection = Deviate_Geofence_findDirection_last;
         Deviate_Geofence_count++;
       }
       else
       {
         Deviate_Geofence_dis = Deviate_Geofence.getDistance();
+        Deviate_Geofence_findDirection = Deviate_Geofence.findDirection();
         Deviate_Geofence_count = 0;
       }
       if (Deviate_Geofence_dis < 80)
       {
-        Plot_geofence(Deviate_Geofence.findDirection());
+        Plot_geofence(Deviate_Geofence_findDirection);
       }
       Deviate_Geofence_lastdis = Deviate_Geofence_dis;
+      Deviate_Geofence_findDirection_last = Deviate_Geofence_findDirection;
     }
     else
     {
@@ -577,22 +601,26 @@ int main(int argc, char** argv)
       frame.data[7] = (short int)(CPoint_Geofence.getNearest_Y() * 10) >> 8;
       nbytes = write(s, &frame, sizeof(struct can_frame));
       printf("Wrote %d bytes\n", nbytes);
-      int CPoint_Geofence_dis = 300;  // CPoint_Geofence.getDistance();
-      if (CPoint_Geofence_lastdis - CPoint_Geofence.getDistance() > 200 && CPoint_Geofence_count < 10)
+      double CPoint_Geofence_dis = 300;  // CPoint_Geofence.getDistance();
+      Point CPoint_Geofence_findDirection;
+      if ((CPoint_Geofence_lastdis - CPoint_Geofence.getDistance())/CPoint_Geofence_lastdis > 0.2 && CPoint_Geofence_count < 5)
       {
         CPoint_Geofence_dis = CPoint_Geofence_lastdis;
+        CPoint_Geofence_findDirection = CPoint_Geofence_findDirection_last;
         CPoint_Geofence_count++;
       }
       else
       {
         CPoint_Geofence_dis = CPoint_Geofence.getDistance();
+        CPoint_Geofence_findDirection = CPoint_Geofence.findDirection();
         CPoint_Geofence_count = 0;
       }
       if (CPoint_Geofence_dis < 80)
       {
-        Plot_geofence_yellow(CPoint_Geofence.findDirection());
+        Plot_geofence(CPoint_Geofence_findDirection);
       }
       CPoint_Geofence_lastdis = CPoint_Geofence_dis;
+      CPoint_Geofence_findDirection_last = CPoint_Geofence_findDirection;
     }
     else
     {

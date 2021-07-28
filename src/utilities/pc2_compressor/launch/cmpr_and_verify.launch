@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="pc2_compressor" type="pc2_compressor_node" name="pc2_compressor_node_front_top" output="screen" cwd="node" respawn="true" args="-input_topic /LidarFrontTop/Raw -output_topic /LidarFrontTop/Compressed -compression_format snappy -verify=true -verbose=true" />
+  <node pkg="pc2_compressor" type="pc2_compressor_node" name="pc2_compressor_node_front_left" output="screen" cwd="node" respawn="true" args="-input_topic /LidarFrontLeft/Raw -output_topic /LidarFrontLeft/Compressed -compression_format snappy -verify=true -verbose=true" />
+  <node pkg="pc2_compressor" type="pc2_compressor_node" name="pc2_compressor_node_front_right" output="screen" cwd="node" respawn="true" args="-input_topic /LidarFrontRight/Raw -output_topic /LidarFrontRight/Compressed -compression_format snappy -verify=true -verbose=true" />
+</launch>

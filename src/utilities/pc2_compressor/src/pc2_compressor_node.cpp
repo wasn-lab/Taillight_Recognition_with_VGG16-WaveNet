@@ -12,6 +12,7 @@
 #include "pc2_args_parser.h"
 #include "pc2_compressor_node.h"
 #include "pc2_compressor.h"
+#include <std_msgs/Empty.h>
 
 namespace pc2_compressor
 {
@@ -59,11 +60,21 @@ void PC2CompressorNode::publish_compressed_pc2(const sensor_msgs::PointCloud2Con
   {
     std::lock_guard<std::mutex> lk(mu_publisher_);
     publisher_.publish(cmpr_msg);
+
+    std_msgs::Empty empty_msg;
+    heartbeat_publisher_.publish(empty_msg);
   }
   else
   {
     publisher_.publish(cmpr_msg);
+
+    std_msgs::Empty empty_msg;
+    heartbeat_publisher_.publish(empty_msg);
   }
+
+  ros::Time now = ros::Time::now();
+  int32_t latency = (now.sec - msg->header.stamp.sec) * 1000 + (now.nsec - msg->header.stamp.nsec) / 1000000;
+  LOG_EVERY_N(INFO, 64) << publisher_.getTopic() << " latency: " << latency << " ms.";
 
   if (pc2_compressor::should_verify_decompressed_data())
   {
@@ -97,6 +108,8 @@ int PC2CompressorNode::set_publisher()
   LOG(INFO) << ros::this_node::getName() << ":"
             << " publish compressed pointcloud at topic " << topic;
   publisher_ = node_handle_.advertise<msgs::CompressedPointCloud2>(topic, /*queue size=*/2);
+  heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(topic + "/heartbeat", /*queue size=*/2);
+
   return EXIT_SUCCESS;
 }
 

@@ -54,6 +54,7 @@ void FollowingLaneState::update()
   current_pose_ = data_manager_ptr_->getCurrentSelfPose();
   dynamic_objects_ = data_manager_ptr_->getDynamicObjects();
   lane_change_approved_ = data_manager_ptr_->getLaneChangeApproval();
+  obstacle_lane_change_approved_ = data_manager_ptr_->getObstacleLaneChangeApproval();
   force_lane_change_ = data_manager_ptr_->getForceLaneChangeSignal();
 
   lanelet::ConstLanelet current_lane;
@@ -124,8 +125,22 @@ State FollowingLaneState::getNextState() const
     ROS_ERROR_THROTTLE(1, "current lanes empty. Keeping state.");
     return State::FOLLOWING_LANE;
   }
-  if (route_handler_ptr_->isInPreferredLane(current_pose_) && isLaneBlocked(current_lanes_)) {
-    return State::BLOCKED_BY_OBSTACLE;
+  // if (!isObstacleLaneChangeApproved())
+  // {
+  //   ROS_INFO("Lane Change is Unapproved for obstacle !");
+  //   return State::FOLLOWING_LANE;
+  // }
+  if (route_handler_ptr_->isInPreferredLane(current_pose_) && isLaneBlocked(current_lanes_)) 
+  {
+    if (isObstacleLaneChangeApproved())
+    {
+      return State::BLOCKED_BY_OBSTACLE;
+    }
+    else
+    {
+      ROS_INFO("Lane Change is Unapproved for obstacle !");
+      return State::FOLLOWING_LANE;
+    }
   }
   if (isLaneChangeAvailable() && laneChangeForcedByOperator()) {
     return State::FORCING_LANE_CHANGE;
@@ -181,6 +196,8 @@ bool FollowingLaneState::isVehicleInPreferredLane() const
 bool FollowingLaneState::isTooCloseToDeadEnd() const { return false; }
 
 bool FollowingLaneState::isLaneChangeApproved() const { return lane_change_approved_; }
+
+bool FollowingLaneState::isObstacleLaneChangeApproved() const { return obstacle_lane_change_approved_; }
 
 bool FollowingLaneState::laneChangeForcedByOperator() const { return force_lane_change_; }
 

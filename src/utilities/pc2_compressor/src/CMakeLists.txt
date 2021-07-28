@@ -39,6 +39,16 @@ add_executable(${PC2_COMPRESSOR_NODE_EXE} ${PC2_COMPRESSOR_NODE_SRCS})
 target_link_libraries(${PC2_COMPRESSOR_NODE_EXE} ${PC2_COMPRESSOR_LIB} ${catkin_LIBRARIES})
 add_dependencies(${PC2_COMPRESSOR_NODE_EXE} ${PC2_COMPRESSOR_LIB})
 
+set(OUSTER64_TO_XYZIR_NODE_EXE ouster64_to_xyzir_node)
+set(OUSTER64_TO_XYZIR_NODE_SRCS
+  ouster64_to_xyzir_main.cpp
+  ouster64_to_xyzir_node.cpp)
+add_executable(${OUSTER64_TO_XYZIR_NODE_EXE} ${OUSTER64_TO_XYZIR_NODE_SRCS})
+target_link_libraries(${OUSTER64_TO_XYZIR_NODE_EXE} ${PC2_COMPRESSOR_LIB} ${catkin_LIBRARIES})
+add_dependencies(${OUSTER64_TO_XYZIR_NODE_EXE} ${PC2_COMPRESSOR_LIB})
+
+
+
 set(PC2_DECOMPRESSOR_NODE_EXE pc2_decompressor_node)
 set(PC2_DECOMPRESSOR_NODE_SRCS
   pc2_decompressor_node.cpp

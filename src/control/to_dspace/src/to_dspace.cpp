@@ -1,9 +1,3 @@
-
-#define CAN_DLC 8;
-#define CAN_INTERFACE_NAME "can1"
-#define can_id_start  0x000
-const double NumOfID = 5;
-
 #include "std_msgs/Header.h"
 #include "msgs/BoxPoint.h"
 #include "msgs/DetectedObject.h"
@@ -34,6 +28,14 @@ const double NumOfID = 5;
 #include <linux/can.h>
 #include <linux/can/raw.h>
 #include <typeinfo>
+
+#define CAN_DLC 8;
+std::string can_name_ = "can1";
+#define CAN_INTERFACE_NAME can_name_.c_str()
+#define can_id_start  0x000
+const double NumOfID = 5;
+
+double lane_change_state = 0;
 
 using namespace std;
 
@@ -163,6 +165,8 @@ void chatterCallback_02(const std_msgs::Bool::ConstPtr& msg)
 	struct ifreq ifr;
 
 	const char *ifname = CAN_INTERFACE_NAME;
+
+	std::cout << "--------------------------" << CAN_INTERFACE_NAME << std::endl;
 
 	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
 	{
@@ -513,11 +517,56 @@ void chatterCallback_08(const msgs::BehaviorSceneRegister::ConstPtr& msg)
 	//Close the SocketCAN
 }
 
+void chatterCallback_09(const std_msgs::Bool::ConstPtr& msg)
+{
+	int s;
+	int nbytes;
+	struct sockaddr_can addr;
+	struct can_frame frame;
+	struct ifreq ifr;
+
+	const char *ifname = CAN_INTERFACE_NAME;
+
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
+	{
+		perror("Error while opening socket");
+	}
+
+	strcpy(ifr.ifr_name, ifname);
+	ioctl(s, SIOCGIFINDEX, &ifr);
+
+	addr.can_family  = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
+
+	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+	{
+		perror("Error in socket bind");
+	}
+	
+	frame.can_dlc = CAN_DLC;
+	frame.can_id  = 0x067;
+	frame.data[0] = (short int)(msg->data);
+	frame.data[1] = (short int)(lane_change_state);
+	nbytes = write(s, &frame, sizeof(struct can_frame));
+	close(s);
+	printf("Wrote %d bytes\n", nbytes);
+	//Close the SocketCAN
+}
+
+void chatterCallback_10(const std_msgs::Float64::ConstPtr& msg)
+{
+	lane_change_state = msg->data;
+}
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "to_dspace");
   ros::NodeHandle n;
+  
+  ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
+
   //ros::Subscriber dSPACE_subscriber_01 = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallback_01);
   ros::Subscriber dSPACE_subscriber_02 = n.subscribe("/ADV_op/req_run_stop", 1, chatterCallback_02);
   ros::Subscriber dSPACE_subscriber_03 = n.subscribe("/ADV_op/sys_ready", 1, chatterCallback_03);
@@ -526,6 +575,8 @@ int main(int argc, char **argv)
   ros::Subscriber dSPACE_subscriber_06 = n.subscribe("/current_trajectory_info", 1, chatterCallback_06);
   ros::Subscriber dSPACE_subscriber_07 = n.subscribe("/bus_stop_register_info", 1, chatterCallback_07);
   ros::Subscriber dSPACE_subscriber_08 = n.subscribe("/traffic_light_register_info", 1, chatterCallback_08);
+  ros::Subscriber dSPACE_subscriber_09 = n.subscribe("/control/end_path_flag", 1, chatterCallback_09);
+  ros::Subscriber dSPACE_subscriber_10 = n.subscribe("/planning/scenario_planning/lane_driving/lane_change_state", 1, chatterCallback_10);
   ros::spin();
   return 0;
 }
