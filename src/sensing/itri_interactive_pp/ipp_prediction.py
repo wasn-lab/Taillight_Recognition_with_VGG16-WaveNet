@@ -40,7 +40,7 @@ from scipy.interpolate import RectBivariateSpline
 # if torch.cuda.is_available():
 #     torch.cuda.manual_seed_all(seed)
 
-def create_scene(scene_ids, present_id):
+def create_scene(scene_ids, present_id,buffer):
     output_node_data = None
     obstacle_id_list = []
     max_timesteps = buffer.buffer_frame['frame_id'].max()
@@ -150,7 +150,7 @@ def create_scene(scene_ids, present_id):
     return scene
 
 
-def transform_data(data):
+def transform_data(data,buffer):
     global tf_buffer
     heading_data = []
     present_id_list = []
@@ -278,12 +278,12 @@ def transform_data(data):
     return present_id_list, mask_id_list
 
 
-def predict(data):
+def predict(data,buffer,hyperparams,eval_stg):
     timer = []
 
     print('Current time : ', buffer.get_attribute("current_frame"))
     present_id_list, mask_id_list = transform_data(
-        data)
+        data,buffer)
     # ros parameter
     obj_cnt = len(present_id_list) + len(mask_id_list)
     buffer.add_frame_length(len(present_id_list) + len(mask_id_list))
@@ -299,7 +299,7 @@ def predict(data):
 
     # previous obstacle id list
 
-    scene = create_scene(scene_ids, present_id_list)
+    scene = create_scene(scene_ids, present_id_list,buffer)
 
     timer.append(time.time())
     scene.calculate_scene_graph(buffer.env.attention_radius,
@@ -398,8 +398,13 @@ def predict(data):
 
 def listener_ipp():
     global tf_buffer, tf_listener
+    print('Loading model...')
+    eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
+    print('Complete Initialization!')
+    buffer = buffer_data()
+    predict_callback = lambda x:predict(x,buffer,hyperparams,eval_stg)
     rospy.init_node('IPP')
-    rospy.Subscriber(args.get_source(), DetectedObjectArray, predict)
+    rospy.Subscriber(args.get_source(), DetectedObjectArray, predict_callback)
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
     # spin() simply keeps python from exiting until this node is stopped
     tf_listener = tf2_ros.TransformListener(tf_buffer)
@@ -407,7 +412,6 @@ def listener_ipp():
 
 
 def load_model(model_dir, ts=100):
-    global hyperparams
     model_registrar = ModelRegistrar(model_dir, 'cuda:0')
     model_registrar.load_models(ts)
     with open(os.path.join(model_dir, 'config.json'), 'r') as config_json:
@@ -423,15 +427,9 @@ def load_model(model_dir, ts=100):
 if __name__ == '__main__':
     ''' =====================
           loading_model_part
-          frame_length for refreshing buffer
         ===================== '''
-    
-    global buffer, past_obj, frame_length
-    print('Loading model...')
+
     args = parameter()
-    eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
-    buffer = buffer_data()
-    print('Complete Initialization!')
 
     delay_node = rospy.get_param(
         '/object_path_prediction/delay_node')
@@ -460,8 +458,7 @@ if __name__ == '__main__':
         input_topic = '/Tracking3D'
 
     args.set_params(input_topic, prediction_horizon, show_log)
-    past_obj = []
-    frame_length = []
+    
 
     # for i in range(10):
     #     heading = math.atan(i*(-1))
