@@ -5,7 +5,6 @@
 #include "msgs/PointXYZV.h"
 #include "msgs/RadObjectArray.h"
 #include "msgs/RadObject.h"
-#include <cstring>
 #include <cmath>
 #include <vector>
 
@@ -33,7 +32,6 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-
 using namespace std;
 
 void onInit(ros::NodeHandle nh, ros::NodeHandle n);
@@ -41,11 +39,13 @@ void turnRadarOn(int s, int type);
 void radarParsing(struct can_frame first, struct can_frame second, msgs::RadObject* rad_obj);
 
 int debug_message = 0;
+int cubtek_raw_message = 0;
 int radar_object_num = 16;
 int radar_object_data = radar_object_num * 2;
 struct can_frame current_frame;
 ros::Publisher RadPub;
-// ros::Publisher RadPCLPub;
+ros::Publisher RadPCLPub;
+char *ifname;
 
 int main(int argc, char** argv)
 {
@@ -60,18 +60,15 @@ int main(int argc, char** argv)
   int nbytes, i;
   static struct ifreq ifr;
   static struct sockaddr_ll sll;
-  char* ifname = "can1";
   int ifindex;
   int send_one_frame = 0;
-  vector<int> can_data;
+  vector<int> can_data; 
 
   ros::init(argc, argv, "RadCubtek");
   ros::NodeHandle n;
   ros::NodeHandle nh("~");
 
   RadPub = n.advertise<msgs::RadObjectArray>("CubtekFront", 1);
-  // RadPCLPub = n.advertise<sensor_msgs::PointCloud2>("CubtekFrontPCL", 1);
-
   onInit(nh, n);
 
   // Add filter object to socket
@@ -106,16 +103,17 @@ int main(int argc, char** argv)
   }
   else
   {
+    cout << endl << endl << "++++++++++ (main)ifname(cubtek) = " << ifname << " ++++++++++" << endl;
     strcpy(ifr.ifr_name, ifname);
     ioctl(s, SIOCGIFINDEX, &ifr);
     ifindex = ifr.ifr_ifindex;
   }
 
-  sll.sll_family = AF_PACKET;
+  sll.sll_family = AF_CAN;
   sll.sll_ifindex = ifindex;
   sll.sll_protocol = htons(ETH_P_CAN);
 
-  if (bind(s, (struct sockaddr*)&sll, sizeof(sll)) < 0)
+  if (bind(s, (struct sockaddr*)&sll, sizeof(sll)) < 0)  
   {
     perror("bind");
     return 1;
@@ -168,25 +166,6 @@ int main(int argc, char** argv)
 
     RadPub.publish(radArray);
 
-    // pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
-    // pcl::PointXYZI temp;
-
-    // for (int i = 0; i < radArray.objects.size(); i++)
-    // {
-    //   // for rviz drawing
-    //   temp.x = radArray.objects[i].px;
-    //   temp.y = -radArray.objects[i].py;
-    //   temp.z = -2;
-    //   cloud->points.push_back(temp);
-    // }
-
-    // sensor_msgs::PointCloud2 msgtemp;
-    // pcl::toROSMsg(*cloud, msgtemp);
-    // msgtemp.header = radArray.header;
-    // msgtemp.header.seq = radArray.header.seq;
-    // msgtemp.header.frame_id = "radar_cubtek";
-    // RadPCLPub.publish(msgtemp);
-
     print_count++;
     if (print_count > 60)
     {
@@ -208,6 +187,14 @@ int main(int argc, char** argv)
 void onInit(ros::NodeHandle nh, ros::NodeHandle n)
 {
   nh.param("/debug_message", debug_message, 0);
+  nh.param("/cubtek_raw_message", cubtek_raw_message, 0);
+
+  string ifname_temp = "can0";
+  nh.getParam("ifname", ifname_temp);
+  ifname = (char *)malloc(sizeof(char) * (ifname_temp.length()+1));
+  strcpy(ifname, ifname_temp.c_str());
+  cout << endl << endl << "++++++++++ ifname(cubtek) = " << ifname << " ++++++++++" << endl;
+
 }
 
 void radarParsing(struct can_frame first, struct can_frame second, msgs::RadObject* rad_obj)
@@ -247,7 +234,7 @@ void radarParsing(struct can_frame first, struct can_frame second, msgs::RadObje
   aeb_flag = (first.data[7] & 0x40) >> 6;
 
   // for debug use
-  if (debug_message)
+  if (cubtek_raw_message)
   {
     printf("1. [%04X] %02X %02X %02X %02X %02X %02X %02X %02X \n", first.can_id, first.data[0], first.data[1],
            first.data[2], first.data[3], first.data[4], first.data[5], first.data[6], first.data[7]);

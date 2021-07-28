@@ -38,6 +38,15 @@ double Geofence::getNearest_Y()
 {
   return Nearest_Y;
 }
+bool Geofence::setIntersectPoint(bool state)
+{ 
+  PPAlreadyIntersected = state;
+  return PPAlreadyIntersected;
+}
+void Geofence::setObjectWidth(double obj_width)
+{
+  ObjWidth = obj_width;
+}
 
 Point Geofence::findDirection()
 {
@@ -114,7 +123,7 @@ void Geofence::setPointCloud(const std::vector<Point>& PointCloud, bool isLocal,
 #endif
 }
 
-int Geofence::Calculator()
+int Geofence::Calculator(int PP_timetick_index_, double time_threshold, double vehicle_speed_)
 {
   // Check if all information is initialized
   if (PathPoints.size() < 1)
@@ -139,20 +148,30 @@ int Geofence::Calculator()
 
     for (size_t j = 0; j < PathPoints.size(); j++)
     {
-      V_Distance[j] = sqrt(pow(PointCloud[i].X - PathPoints[j].X, 2) + pow(PointCloud[i].Y - PathPoints[j].Y, 2));
+      V_Distance[j] = sqrt(pow(PointCloud[i].X - PathPoints[j].X, 2) + pow(PointCloud[i].Y - PathPoints[j].Y, 2)) - ObjWidth/2;
     }
+
+    std::cout<<ObjWidth<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl; //for debug
 
     int minElementIndex = std::min_element(V_Distance.begin(), V_Distance.end()) - V_Distance.begin();
     double minElement = *std::min_element(V_Distance.begin(), V_Distance.end());
 
-    if (minElement < Boundary)
-    {
-      P_Distance[i] = PathLength[minElementIndex];
+    if (minElement < Boundary && !PPAlreadyIntersected)
+    { 
+      PPAlreadyIntersected = true;
+      if (PossiblePointofCollision(PP_timetick_index_, minElementIndex, vehicle_speed_, time_threshold))
+      {
+        P_Distance[i] = PathLength[minElementIndex];
+      }
     }
 
-    if (minElement < (Boundary + 0.5))
+    if (minElement < Boundary && !PPAlreadyIntersected)
     {
-      P_Distance_w[i] = PathLength[minElementIndex];
+      PPAlreadyIntersected = true;
+      if (PossiblePointofCollision(PP_timetick_index_, minElementIndex, vehicle_speed_, time_threshold))
+      {
+        P_Distance_w[i] = PathLength[minElementIndex];
+      }
     }
   }
 
@@ -191,4 +210,57 @@ int Geofence::Calculator()
   Farest = *std::max_element(P_Distance.begin(), P_Distance.end());
 
   return 0;
+}
+
+bool Geofence::PossiblePointofCollision(int PP_timetick_index_, int minElementIndex, double vehicle_speed_, double time_threshold)
+{ 
+  if (vehicle_speed_ == 0 && time_threshold == 0)
+  { 
+    std::cout << "Non-mapPP Geofence" << std::endl; 
+    return true;
+  }
+
+  vehicle_dist_to_geofence = PathLength[minElementIndex] - 10;
+  vehicle_speed   = vehicle_speed_;
+  vehicle_time    = vehicle_dist_to_geofence / vehicle_speed_; 
+  object_time     = 0.5 * PP_timetick_index_;
+  time_difference = object_time - vehicle_time;
+  filter_state    = 0;
+
+  std::cout << "Dist_to_geofence = " << vehicle_dist_to_geofence << " Vehicle_speed = " << vehicle_speed << std::endl;
+  std::cout << "Object_time = "      << object_time              << " Vehicle_time = "  << vehicle_time 
+            << " Time_difference--------> " << time_difference << std::endl;
+
+  //use narrow threshold (1/2) if the ego-vehicle arrives earlier than the object
+  if (-time_threshold < time_difference && time_difference < time_threshold/2) 
+  { 
+    if (vehicle_time <= abs(time_difference))
+    { 
+      filter_state = 2;
+      std::cout << "G e o f e n c e ********************* f i l t e r e d " << std::endl; //for debug
+      return false;
+    }
+    else 
+    { 
+      filter_state = 0;
+      std::cout << "G e o f e n c e ===================== r e m a i n e d" << std::endl; //for debug
+      return true;
+    }
+  }
+  else 
+  { 
+    filter_state = 1;
+    std::cout << "G e o f e n c e ********************* f i l t e r e d " << std::endl; //for debug
+    return false;
+  }
+}
+
+void Geofence::getSpeedTimeInfo(std::vector<double>& speed_time_info)
+{
+  speed_time_info[0] = vehicle_dist_to_geofence;
+  speed_time_info[1] = vehicle_speed;
+  speed_time_info[2] = vehicle_time;
+  speed_time_info[3] = object_time;
+  speed_time_info[4] = time_difference;
+  speed_time_info[5] = filter_state;
 }

@@ -1,0 +1,7 @@
+<launch>
+  <arg name="target_id" default="AAAA"/>
+
+  <node name="m_geofence_map_pp_test" pkg="geofence_map_pp_test" type="geofence_map_pp_test" output="screen" clear_params="true">
+    <param name="target_id" value="$(arg target_id)" type="str"/>
+  </node>
+</launch>

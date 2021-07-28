@@ -14,7 +14,12 @@ else()
     download_file(
         URL "http://nas.itriadv.co:8888/git_data/B1/camera_grabber/jetson_xavier/init_ar0231_1207_9286trigger_v2.sh"
         DESTINATION "${CAMERA_GRABBER_DATA_DIR}/init_ar0231_1207_9286trigger_v2.sh"
-        MD5 29a3382f2f3b64dc28fdfd8444e8150b)    
+        MD5 29a3382f2f3b64dc28fdfd8444e8150b)
+    execute_process(COMMAND chmod +x ${CAMERA_GRABBER_DATA_DIR}/init_ar0231_1207_9286trigger_v2.sh)
+    download_file(
+        URL "http://nas.itriadv.co:8888/git_data/B1/camera_grabber/jetson_xavier/libmvextractor_standalone.so.1.0.1"
+        DESTINATION "${CAMERA_GRABBER_DATA_DIR}/libmvextractor_standalone.so.1.0.1"
+        MD5 8767bd11064871dcc838f4d756d780e1)        
   endif()
 
 endif()

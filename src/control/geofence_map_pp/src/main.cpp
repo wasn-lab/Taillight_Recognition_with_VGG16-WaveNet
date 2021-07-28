@@ -28,15 +28,20 @@
 #include <linux/can/raw.h>
 #include <typeinfo>
 
+//For debug and test
+#include "msgs/GeofencePPDebugInfo.h"
+
 #define CAN_DLC 8
-#define CAN_INTERFACE_NAME "can1"
+// #define CAN_INTERFACE_NAME "can1"
 
 #define DEBUG 0  // 0: OFF; 1: ON
+bool isDebugMode = true;
 
 int g_input_source = 0;  // 0: PP; 1: VIRTUAL; 2: RADARBOX; 3: NONE
+double time_threshold;
 static double Heading, SLAM_x, SLAM_y, SLAM_z;
 static double current_x, current_y, current_z;
-static Geofence BBox_Geofence(1.2);
+static Geofence BBox_Geofence(1.6);
 static Geofence PedCross_Geofence(1.2);
 static double Ego_speed_ms;
 static int PP_Stop = 0;
@@ -45,6 +50,9 @@ static int PP_Distance = 1000;
 static int PP_Distance_PedCross = 1000;
 static int PP_Speed = 0;
 static int PP_Speed_PedCross = 0;
+std::vector<double> speed_time_info(6, 0);
+
+ros::Publisher debug_speed_time_info_pub;
 ros::Publisher PP_geofence_line;
 ros::Publisher PPCloud_pub;
 
@@ -354,6 +362,8 @@ void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, 
   {
     for (const auto& predicted_path : obj.state.predicted_paths)
     {
+      int PP_timetick_index_ = 0;
+      g.setIntersectPoint(false);
       for (const auto& forecast : predicted_path.path)
       {
         Point p;
@@ -366,9 +376,11 @@ void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, 
         p_vec.reserve(1);
         p_vec.push_back(p);
 
+        g.setObjectWidth(obj.shape.dimensions.y);
+
         g.setPointCloud(p_vec, false, SLAM_x, SLAM_y, Heading);  // no TF
 
-        if (g.Calculator() == 1)
+        if (g.Calculator(PP_timetick_index_, time_threshold, Ego_speed_ms) == 1)
         {
           std::cerr << "Please initialize all PointCloud parameters first!" << std::endl;
           return;
@@ -388,6 +400,10 @@ void plotPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& msg, 
           }
           pp_stop = 1;
         }
+        // get speed time info for test
+        g.getSpeedTimeInfo(speed_time_info);
+
+        PP_timetick_index_++;
       }
     }
   }
@@ -397,6 +413,9 @@ void callbackPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& m
 {
   if (msg->objects.empty())
   {
+    PP_Stop = 0;
+    PP_Distance = 100;
+    PP_Speed = 0;
     return;
   }
 
@@ -407,6 +426,20 @@ void callbackPP2(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& m
   PP_Distance = 100;
   PP_Speed = 0;
   plotPP2(msg, BBox_Geofence, PP_Stop, PP_Distance, PP_Speed);  // require TF /map
+
+  if (isDebugMode)
+  {
+    msgs::GeofencePPDebugInfo GPDI;
+    GPDI.header.stamp             = ros::Time::now();
+    GPDI.vehicle_dist_to_geofence = speed_time_info[0];
+    GPDI.vehicle_speed            = speed_time_info[1];
+    GPDI.vehicle_time             = speed_time_info[2];
+    GPDI.object_time              = speed_time_info[3];
+    GPDI.time_difference          = speed_time_info[4];
+    GPDI.filter_state             = speed_time_info[5];
+
+    debug_speed_time_info_pub.publish(GPDI);
+  }
 }
 
 int main(int argc, char** argv)
@@ -414,6 +447,11 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "Geofence_Map_PP");
 
   ros::NodeHandle n;
+
+  std::string can_name_ = "can1";
+  ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
+  ros::param::get(ros::this_node::getName()+"/time_threshold", time_threshold);
+
   ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, callbackPoly);
   ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, callbackLocalizationToVeh);
   ros::Subscriber VI_sub = n.subscribe("veh_info", 1, callbackVehInfo);
@@ -443,6 +481,7 @@ int main(int argc, char** argv)
     std::cout << "Input Source: RADARBOX" << std::endl;
   }
 
+  debug_speed_time_info_pub = n.advertise<msgs::GeofencePPDebugInfo>("/debug/geofence_map_pp/time_speed", 1);
   PP_geofence_line = n.advertise<visualization_msgs::Marker>("PP_geofence_line", 1);
   PPCloud_pub = n.advertise<sensor_msgs::PointCloud2>("pp_point_cloud", 1);
 
@@ -458,8 +497,8 @@ int main(int argc, char** argv)
   struct sockaddr_can addr;
   struct can_frame frame;
   struct ifreq ifr;
-  const char* ifname = CAN_INTERFACE_NAME;
-
+  const char* ifname = can_name_.c_str();//CAN_INTERFACE_NAME;
+  // std::cout << "cancancancancangeofencemappp : " << can_name_ << std::endl;
   if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
   {
     perror("Error while opening socket");

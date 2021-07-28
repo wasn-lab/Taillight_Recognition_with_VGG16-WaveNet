@@ -1,0 +1,3 @@
+<launch>
+  <node name="pad_issue_reporter" pkg="fail_safe" type="run_pad_issue_reporter.py" respawn="true" />
+</launch>

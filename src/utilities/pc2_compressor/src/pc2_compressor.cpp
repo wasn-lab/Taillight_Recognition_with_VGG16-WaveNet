@@ -4,6 +4,7 @@
  */
 #include <unistd.h>
 #include <cstdio>
+#include <cstring>
 #include <pcl/io/pcd_io.h>
 #include <pcl_ros/transforms.h>
 #include <pcl_ros/point_cloud.h>
@@ -40,17 +41,8 @@ static msgs::CompressedPointCloud2ConstPtr __compress(const sensor_msgs::PointCl
   {
     auto org_size = size_of_msg(in_msg);
     auto cmpr_size = size_of_msg(cmpr_msg);
-    std::string field_names;
-    for (const auto& field : in_msg->fields)
-    {
-      field_names += field.name + "(datatype: " + std::to_string(field.datatype) + ") ";
-    }
-    if (!field_names.empty())
-    {
-      field_names.pop_back();
-    }
     LOG(INFO) << "Compression ratio: " << double(cmpr_size) / org_size << " (" << cmpr_size << "/" << org_size << ")"
-              << ", point cloud fields: " << field_names;
+              << ", " << describe(in_msg);
   }
 
   return cmpr_msg;
@@ -86,7 +78,6 @@ static sensor_msgs::PointCloud2ConstPtr __decompress(const msgs::CompressedPoint
 
 msgs::CompressedPointCloud2ConstPtr compress_msg(const sensor_msgs::PointCloud2ConstPtr& in_msg, const int32_t fmt)
 {
-  CHECK(fmt >= 0 && fmt < compression_format::nums) << "unsupported format " << fmt;
   return __compress(in_msg, fmt);
 }
 
@@ -95,9 +86,51 @@ sensor_msgs::PointCloud2ConstPtr decompress_msg(const msgs::CompressedPointCloud
   return __decompress(cmpr_msg);
 }
 
+sensor_msgs::PointCloud2Ptr ouster64_to_xyzir(const sensor_msgs::PointCloud2ConstPtr& msg)
+{
+  // Ouster has 9 fields: x y z intensity t reflectivity ring noise range
+  // We only needs 5 fields: x, y, z, intensity and ring.
+  constexpr int32_t msg_ring_field_idx = 6;
+  constexpr int32_t res_ring_field_idx = 4;
+  sensor_msgs::PointCloud2Ptr res{ new sensor_msgs::PointCloud2 };
+  res->fields.reserve(res_ring_field_idx + 1);
+  for (int32_t i = 0; i < res_ring_field_idx; i++)
+  {
+    res->fields.push_back(msg->fields[i]);
+  }
+  res->fields.push_back(msg->fields[msg_ring_field_idx]);
+
+  res->point_step = 0;
+  for (const auto& field : res->fields)
+  {
+    res->point_step += pcl::getFieldSize(field.datatype);
+  }
+  // dest_front_size = 16 (x, y, z, intensity: 4 bytes each)
+  const int32_t ring_size = pcl::getFieldSize(res->fields[res_ring_field_idx].datatype);
+  const int32_t dest_front_size = res->point_step - ring_size;
+  res->fields[res_ring_field_idx].offset = dest_front_size;
+  const int32_t num_points = msg->width * msg->height;
+  const int32_t msg_ring_field_offset = msg->fields[msg_ring_field_idx].offset;
+  res->data.resize(num_points * res->point_step);
+  for (int32_t i = 0, src_offset = 0, dest_offset = 0; i < num_points;
+       i++, src_offset += msg->point_step, dest_offset += res->point_step)
+  {
+    memcpy(&(res->data[dest_offset]), &(msg->data[src_offset]), dest_front_size);
+    memcpy(&(res->data[dest_offset + dest_front_size]), &(msg->data[src_offset + msg_ring_field_offset]), ring_size);
+  }
+
+  res->header = msg->header;
+  res->width = msg->width;
+  res->height = msg->height;
+  res->is_bigendian = msg->is_bigendian;
+  res->row_step = msg->width * res->point_step;
+  res->is_dense = msg->is_dense;
+  return res;
+}
+
 bool is_equal_pc2(const sensor_msgs::PointCloud2ConstPtr& a, const sensor_msgs::PointCloud2ConstPtr& b)
 {
-  if (a->header != b->header)
+  if (a->header.seq != b->header.seq || a->header.stamp != b->header.stamp || a->header.frame_id != b->header.frame_id)
   {
     LOG(INFO) << "inconstent header";
     return false;
@@ -114,15 +147,18 @@ bool is_equal_pc2(const sensor_msgs::PointCloud2ConstPtr& a, const sensor_msgs::
     return false;
   }
 
+  // pc_a.points is of type geometry_msgs/Point32[], each of which is 3d points
   for (int i = 0, np = pc_a.points.size(); i < np; i++)
   {
-    if (pc_a.points[i] != pc_b.points[i])
+    if (pc_a.points[i].x != pc_b.points[i].x || pc_a.points[i].y != pc_b.points[i].y ||
+        pc_a.points[i].z != pc_b.points[i].z)
     {
       LOG(INFO) << "inconsitent point[ " << i << "]: " << pc_a.points[i] << " v.s. " << pc_b.points[i];
       return false;
     }
   }
 
+#if 0
   if (pc_a.channels.size() != pc_b.channels.size())
   {
     LOG(INFO) << "Inconsitent channels size: pc_a channel=" << pc_a.channels.size()
@@ -160,6 +196,7 @@ bool is_equal_pc2(const sensor_msgs::PointCloud2ConstPtr& a, const sensor_msgs::
       }
     }
   }
+#endif
   return true;
 }
 
@@ -186,6 +223,25 @@ uint64_t size_of_msg(const sensor_msgs::PointCloud2ConstPtr& msg)
 uint64_t size_of_msg(const msgs::CompressedPointCloud2ConstPtr& msg)
 {
   return sizeof(msg->header) + msg->data.size();
+}
+
+std::string describe(const sensor_msgs::PointCloud2ConstPtr& in_msg)
+{
+  std::string field_names;
+  for (const auto& field : in_msg->fields)
+  {
+    field_names += field.name + "(datatype: " + std::to_string(field.datatype) + ") ";
+  }
+  if (!field_names.empty())
+  {
+    field_names.pop_back();
+  }
+  auto num_points = in_msg->height * in_msg->width;
+  auto is_bigendian = in_msg->is_bigendian != 0u ? "true" : "false";
+  auto is_dense = in_msg->is_dense != 0u ? "true" : "false";
+  return "#points: " + std::to_string(num_points) + ", is_bigendian: " + is_bigendian +
+         ", point_step: " + std::to_string(in_msg->point_step) + ", row_step: " + std::to_string(in_msg->row_step) +
+         ", is_dense: " + is_dense + ", point cloud fields: " + field_names;
 }
 
 };  // namespace pc2_compressor

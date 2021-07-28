@@ -73,6 +73,37 @@ true  : use car mode camera driver (default)
 false : use laboratory mode camera driver
 ```
 
+5. motion_vector 
+```
+true  : enable motion vector message 
+        motion vector message topic names are :
+        /cam/front_bottom_60/motion_vector_msg
+        /cam/front_top_far_30/motion_vector_msg
+        /cam/front_top_close_120/motion_vector_msg
+        /cam/right_front_60/motion_vector_msg
+        /cam/right_back_60/motion_vector_msg
+        /cam/left_front_60/motion_vector_msg
+        /cam/left_back_60/motion_vector_msg
+        /cam/back_top_120/motion_vector_msg
+false : disable motion vector message (default)
+```
+
+### Motion vector image debug flag
+```
+If you want to debug motion vector image. There is a line "//#define MV_IMAGE_DEBUG 1" in the JetsonXavierGrabber.cpp. 
+It can publish motion vector image when unmark the line.
+The motion_vector of launch file have to set true at the same time.
+Motion vector image topic names are :
+/cam/front_bottom_60/motion_vector
+/cam/front_top_far_30/motion_vector
+/cam/front_top_close_120/motion_vector
+/cam/right_front_60/motion_vector
+/cam/right_back_60/motion_vector
+/cam/left_front_60/motion_vector
+/cam/left_back_60/motion_vector
+/cam/back_top_120/motion_vector
+```
+
 ### How to evaluate results
 
 
@@ -90,8 +121,31 @@ use rqt_image_view to view following topic
 /cam/back_top_120/raw
 ```
 
+### How to install camera driver (CAR_MODEL = B1_V3)
 
-### How to install camera driver
+**install camera driver for car mode**
+```
+bash /home/nvidia/itriadv/src/scripts/bus_env/xavier/init_camera_driver_for_car_mode.sh
+```
+
+**install camera driver for laboratory mode**
+```
+bash /home/nvidia/itriadv/src/scripts/bus_env/xavier/init_camera_driver_for_laboratory_mode.sh
+```
+
+### How to install camera driver when xavier bootup (CAR_MODEL = B1_V3)
+**install camera driver for car mode**
+```
+bash /home/nvidia/itriadv/src/scripts/bus_env/xavier/init_car_mode_camera_driver_to_bootup_script.sh
+```
+
+**install camera driver for laboratory mode**
+```
+bash /home/nvidia/itriadv/src/scripts/bus_env/xavier/init_laboratory_mode_camera_driver_to_bootup_script.sh
+```
+
+
+### How to install camera driver (CAR_MODEL = C1)
 
 **install camera driver for car mode**
 ```
@@ -103,7 +157,7 @@ bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_camera_driver_for
 bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_camera_driver_for_laboratory_mode.sh
 ```
 
-### How to install camera driver when xavier bootup
+### How to install camera driver when xavier bootup (CAR_MODEL = C1)
 **install camera driver for car mode**
 ```
 bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_car_mode_camera_driver_to_bootup_script.sh

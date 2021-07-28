@@ -34,6 +34,7 @@ private:
   geometry_msgs::TwistStamped::ConstPtr current_twist_;
   autoware_perception_msgs::DynamicObjectArray::ConstPtr dynamic_objects_;
   bool lane_change_approved_;
+  bool obstacle_lane_change_approved_;
   bool force_lane_change_;
   lanelet::ConstLanelets current_lanes_;
   lanelet::ConstLanelets lane_change_lanes_;
@@ -48,6 +49,7 @@ private:
   bool hasEnoughDistance() const;
   bool isLaneChangePathSafe() const;
   bool isLaneChangeApproved() const;
+  bool isObstacleLaneChangeApproved() const;
   bool isLaneChangeAvailable() const;
 
 public:

@@ -25,26 +25,25 @@ class PedCrossAlert(object):
     def get_events_in_list(self):
         if self.pedcrossing:
             doc = {"module": "pedcross_event",
-                   "status": WARN,
+                   "status": OK,
                    "status_str": "pedestrian is crossing"}
             self.pedcrossing = False
             return [doc]
         return []
 
     def get_status_in_list(self):
-#        fps = self._get_fps()
+        fps = self._get_fps()
+        doc = {"module": "pedcross",
+               "status": OK,
+               "status_str": "FPS: " + str(fps)[:5]}
 #        if fps > self.fps_low:
 #            doc = {"module": "pedcross",
 #                   "status": OK,
-#                   "status_str": ""}
+#                   "status_str": "FPS: " + str(fps)[:5]}
 #        else:
 #            doc = {"module": "pedcross",
 #                   "status": WARN,
-#                   "status_str": "low fps: {}".format(fps)}
-        doc = {"module": "pedcross",
-               "status": OK,
-               "status_str": "Disabled for lacking cam 3d bbox."}
-        self.pedcrossing = False;
+#                   "status_str": "low FPS: " + str(fps)[:5]}
         return [doc]
 
     def _get_fps(self):
