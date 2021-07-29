@@ -5,6 +5,8 @@
 #cmakedefine01 CAR_MODEL_IS_B1_V2
 #cmakedefine01 CAR_MODEL_IS_B1_V3
 #cmakedefine01 CAR_MODEL_IS_C1
+#cmakedefine01 CAR_MODEL_IS_C2
+#cmakedefine01 CAR_MODEL_IS_C3
 #cmakedefine01 ENABLE_LIGHTNET
 #cmakedefine01 ENABLE_PARKNET
 #cmakedefine01 ENABLE_OPENROADNET
@@ -17,6 +19,8 @@ enum Id
   B1_V2,
   B1_V3,
   C1,
+  C2,
+  C3,
   Num,
 };
 
