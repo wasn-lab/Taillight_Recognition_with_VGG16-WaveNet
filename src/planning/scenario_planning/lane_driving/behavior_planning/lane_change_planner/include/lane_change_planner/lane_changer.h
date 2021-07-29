@@ -20,6 +20,7 @@
 // ROS
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/Float64.h>
 #include <tf2_ros/transform_listener.h>
 
 // Autoware
@@ -51,6 +52,7 @@ private:
   ros::Publisher drivable_area_publisher_;
   ros::Publisher lane_change_ready_publisher_;
   ros::Publisher lane_change_available_publisher_;
+  ros::Publisher lane_change_state_publisher_;
 
   ros::NodeHandle pnh_;
 
