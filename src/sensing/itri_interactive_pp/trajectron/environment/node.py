@@ -19,6 +19,7 @@ class Node(object):
 
         if data is not None:
             if isinstance(data, pd.DataFrame):
+                self.pd_data = data
                 self.data = DoubleHeaderNumpyArray(data.values, list(data.columns))
             elif isinstance(data, DoubleHeaderNumpyArray):
                 self.data = data
