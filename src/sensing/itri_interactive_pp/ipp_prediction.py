@@ -409,6 +409,8 @@ def listener_ipp():
     # spin() simply keeps python from exiting until this node is stopped
     tf_listener = tf2_ros.TransformListener(tf_buffer)
     rospy.spin()
+    return buffer
+    
 
 
 def load_model(model_dir, ts=100):
@@ -467,7 +469,7 @@ if __name__ == '__main__':
     # print info
 
     try:
-        listener_ipp()
+        buffer = listener_ipp()
     except rospy.ROSInterruptException:
         pass
 

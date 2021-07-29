@@ -26,11 +26,11 @@ def distance(point1, point2):
 
 def record_call_back(data):
     if len(pred_buffer.items())==0:
-        TIMER = 0
+        timer = 0
     else:
-        TIMER = max(pred_buffer.keys()) + 1
+        timer = max(pred_buffer.keys()) + 1
         
-    print("Time : ", TIMER, " Get Data !")
+    print("Time : ", timer, " Get Data !")
     id_pred = dict()
     id_gt = dict()
     pred = list()
@@ -58,21 +58,21 @@ def record_call_back(data):
                 y_pred = track_point.position.y
                 pred.append([x_pred, y_pred])
         id_pred[id] = pred
-    pred_buffer[TIMER] = id_pred
-    gt_buffer[TIMER] = id_gt
+    pred_buffer[timer] = id_pred
+    gt_buffer[timer] = id_gt
 
 
 def calculate():
     # calculate part
     print('Pred_buffer : ', pred_buffer)
-    Timer = max(pred_buffer.keys())
-    for time in range(TIMER):
+    timer = max(pred_buffer.keys())
+    for time in range(timer):
         for id in pred_buffer[time].keys():
             count = 0
             # If our prediction is longer than grountruth ex : bag only 10s we
             # predict 12s result
             time_dist_list = list()
-            max_gt_in_pred = min(TIMER - time, 10)
+            max_gt_in_pred = min(timer - time, 10)
             for i in range(max_gt_in_pred):
                 # check for the value is exist or not (If id switch in future
                 # the id won't exist)
