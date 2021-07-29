@@ -13,6 +13,8 @@ using namespace DriveNet;
 #if CAR_MODEL_IS_B1_V2
 const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
                                          camera::id::left_front_60, camera::id::left_back_60 };
+const std::vector<int> crop_size;
+const std::vector<int> crop_offset;
 #elif CAR_MODEL_IS_B1_V3
 const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
                                          camera::id::left_front_60, camera::id::left_back_60 };
@@ -25,6 +27,11 @@ const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id:
 // mirror issue
 const std::vector<int> crop_size{ 50, 50, 50, 70 };
 const std::vector<int> crop_offset{ 0, 50, 50, 0 };
+#elif CAR_MODEL_IS_C2
+const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
+                                         camera::id::left_front_60, camera::id::left_back_60 };
+const std::vector<int> crop_size;
+const std::vector<int> crop_offset;
 #else
 #error "car model is not well defined"
 #endif
@@ -457,7 +464,14 @@ void* run_yolo(void* /*unused*/)
     }
     else
     {
-      g_yolo_app.input_preprocess(mat_srcs_tmp, static_cast<int>(g_input_resize), dist_cols_tmp, dist_rows_tmp, crop_offset);
+      if(crop_offset.empty())
+      {
+        g_yolo_app.input_preprocess(mat_srcs_tmp, static_cast<int>(g_input_resize), dist_cols_tmp, dist_rows_tmp);
+      }
+      else
+      {
+        g_yolo_app.input_preprocess(mat_srcs_tmp, static_cast<int>(g_input_resize), dist_cols_tmp, dist_rows_tmp, crop_offset);
+      }
     }
     g_yolo_app.inference_yolo();
     g_yolo_app.get_yolo_result(&mat_order_tmp, vbbx_output_tmp);
@@ -643,7 +657,14 @@ int main(int argc, char** argv)
   std::string pkg_path = ros::package::getPath("drivenet");
   std::string cfg_file = "/yolo_side.cfg";
   drivenet_init();
-  g_yolo_app.init_yolo(pkg_path, cfg_file, crop_size);
+  if (crop_size.empty())
+  {
+    g_yolo_app.init_yolo(pkg_path, cfg_file);
+  }
+  else
+  {
+    g_yolo_app.init_yolo(pkg_path, cfg_file, crop_size);
+  }
   g_dist_est.init(pkg_path, g_dist_est_mode);
 
   // Create the inference thread
