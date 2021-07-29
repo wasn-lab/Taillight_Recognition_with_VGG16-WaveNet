@@ -88,3 +88,6 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_hmi.sh^M"
 
 screen -t pad_issue_reporter
 stuff "bash /home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_pad_issue_reporter.sh^M"
+
+screen -t init_rviz_traffic_light
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_rviz_traffic_light.sh^M"

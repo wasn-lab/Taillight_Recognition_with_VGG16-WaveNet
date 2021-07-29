@@ -27,14 +27,15 @@ def _save_avi(bag_filename, topic, avi_filename):
         width = images[0].shape[1]
         height = images[0].shape[0]
 
-        first_dt = datetime.datetime.fromtimestamp(timestamps[0].secs)
-        last_dt = datetime.datetime.fromtimestamp(timestamps[-1].secs)
-        delta = last_dt - first_dt
-        duration_in_second = delta.seconds
-        if duration_in_second <= 0:
-            duration_in_second = 1
+        # first_dt = datetime.datetime.fromtimestamp(timestamps[0].secs)
+        # last_dt = datetime.datetime.fromtimestamp(timestamps[-1].secs)
+        # delta = last_dt - first_dt
+        # duration_in_second = delta.seconds
+        # if duration_in_second <= 0:
+        #    duration_in_second = 1
 
-        fps = len(images) / float(duration_in_second)
+        # fps = len(images) / float(duration_in_second)
+        fps = 15.0
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
         avi = cv2.VideoWriter(avi_filename, fourcc, fps, (width, height))
         for image in images:

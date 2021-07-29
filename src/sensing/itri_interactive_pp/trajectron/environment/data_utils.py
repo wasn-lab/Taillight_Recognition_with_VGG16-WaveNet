@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def make_continuous_copy(alpha):
     alpha = (alpha + np.pi) % (2.0 * np.pi) - np.pi
     continuous_x = np.zeros_like(alpha)
@@ -16,18 +15,22 @@ def make_continuous_copy(alpha):
     return continuous_x
 
 
-def derivative_of(x, dt=1, radian=False):
+def derivative_of(x, dt=0.5, radian=False):
     # print(radian)
     # print('Data value : ', type(x[0]))
     # print('Data : ',  np.isnan(x))
     if radian:
         x = make_continuous_copy(x)
+        # print('Data type : ',type(x))
+        # print('Data value : ',x)
+        x = x.astype(np.float64)
 
-    # print(np.isnan(x))
     if x[~np.isnan(x)].shape[-1] < 2:
         return np.zeros_like(x)
 
     dx = np.full_like(x, np.nan)
+
     dx[~np.isnan(x)] = np.gradient(x[~np.isnan(x)], dt)
+    # print("delta t : ",dt)
 
     return dx

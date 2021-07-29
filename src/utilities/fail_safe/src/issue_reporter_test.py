@@ -4,7 +4,7 @@
 import unittest
 import datetime
 import rospy
-from issue_reporter import IssueReporter, generate_issue_description
+from issue_reporter import IssueReporter, generate_issue_description, generate_crash_description
 from jira_utils import PROJECT_ID_SCM, ISSUE_TYPE_ID_TASK
 from status_level import OK, WARN
 
@@ -55,6 +55,18 @@ class IssueReporterTest(unittest.TestCase):
                u"plate=試0002&startDt=2020-12-21 13:59&endDt=2020-12-21 14:00")
         self.assertTrue(url in desc)
 
+    def test_generate_crash_description(self):
+        exc_str = """
+Traceback (most recent call last):
+  File "1.py", line 18, in foo
+    goo()
+  File "1.py", line 9, in goo
+    a = 1 / 0
+ZeroDivisionError: integer division or modulo by zero
+"""
+        ret = generate_crash_description(exc_str)
+        self.assertTrue("ZeroDivisionError" in ret)
+        self.assertTrue("timestamp" in ret)
 
 if __name__ == "__main__":
     unittest.main()

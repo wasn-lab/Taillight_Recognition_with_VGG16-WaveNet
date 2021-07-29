@@ -1,0 +1,60 @@
+<launch>
+    <include file="$(find image_compressor)/launch/cmpr_web_streaming.launch"/>
+
+    <node pkg="rosbag" type="play" name="player" output="log" args="-l $(find image_compressor)/src/test/auto_record_2020-03-10-10-48-39_41_image_raw.bag /cam/back_top_120:=/cam/back_top_120/detect_image /cam/front_bottom_60:=/cam/front_bottom_60/detect_image /cam/front_top_close_120:=/cam/front_top_close_120/detect_image /cam/front_top_far_30:=/cam/front_top_far_30/detect_image /cam/left_back_60:=/cam/left_back_60/detect_image /cam/left_front_60:=/cam/left_front_60/detect_image /cam/right_back_60:=/cam/right_back_60/detect_image /cam/right_front_60:=/cam/right_front_60/detect_image">
+    </node>
+
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+        <rosparam>
+          topics:
+            - name: /cam/front_bottom_60/detect_image/jpg
+              timeout: 15
+              negative: False
+            - name: /cam/front_bottom_60/detect_image/jpg/heartbeat
+              timeout: 15
+              negative: False
+            - name: /cam/front_top_far_30/detect_image/jpg
+              timeout: 15
+              negative: False
+            - name: /cam/front_top_far_30/detect_image/jpg/heartbeat
+              timeout: 15
+              negative: False
+            - name: /cam/front_top_close_120/detect_image/jpg
+              timeout: 15
+              negative: False
+            - name: /cam/front_top_close_120/detect_image/jpg/heartbeat
+              timeout: 15
+              negative: False
+            - name: /cam/right_front_60/detect_image/jpg
+              timeout: 15
+              negative: False
+            - name: /cam/right_front_60/detect_image/jpg/heartbeat
+              timeout: 15
+              negative: False
+            - name: /cam/right_back_60/detect_image/jpg
+              timeout: 15
+              negative: False
+            - name: /cam/right_back_60/detect_image/jpg/heartbeat
+              timeout: 15
+              negative: False
+            - name: /cam/left_front_60/detect_image/jpg
+              timeout: 15
+              negative: False
+            - name: /cam/left_front_60/detect_image/jpg/heartbeat
+              timeout: 15
+              negative: False
+            - name: /cam/left_back_60/detect_image/jpg
+              timeout: 15
+              negative: False
+            - name: /cam/left_back_60/detect_image/jpg/heartbeat
+              timeout: 15
+              negative: False
+            - name: /cam/back_top_120/detect_image/jpg
+              timeout: 15
+              negative: False
+            - name: /cam/back_top_120/detect_image/jpg/heartbeat
+              timeout: 15
+              negative: False
+        </rosparam>
+    </test>
+</launch>

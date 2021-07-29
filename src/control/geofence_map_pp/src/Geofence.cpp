@@ -43,6 +43,10 @@ bool Geofence::setIntersectPoint(bool state)
   PPAlreadyIntersected = state;
   return PPAlreadyIntersected;
 }
+void Geofence::setObjectWidth(double obj_width)
+{
+  ObjWidth = obj_width;
+}
 
 Point Geofence::findDirection()
 {
@@ -134,8 +138,6 @@ int Geofence::Calculator(int PP_timetick_index_, double time_threshold, double v
     return 1;
   }
 
-  // std::cout << "PathPoints.size = " << PathPoints.size() << " PP_timetick_index_ = " << PP_timetick_index_ << std::endl; // for debug
-
   std::vector<double> P_Distance(PointCloud.size(), dist0);  // Distance of every pointcloud (default 100)
   std::vector<double> P_Distance_w(PointCloud.size(),
                                    dist0);  // Distance of every pointcloud in wider range (default 100)
@@ -146,8 +148,10 @@ int Geofence::Calculator(int PP_timetick_index_, double time_threshold, double v
 
     for (size_t j = 0; j < PathPoints.size(); j++)
     {
-      V_Distance[j] = sqrt(pow(PointCloud[i].X - PathPoints[j].X, 2) + pow(PointCloud[i].Y - PathPoints[j].Y, 2));
+      V_Distance[j] = sqrt(pow(PointCloud[i].X - PathPoints[j].X, 2) + pow(PointCloud[i].Y - PathPoints[j].Y, 2)) - ObjWidth/2;
     }
+
+    std::cout<<ObjWidth<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl; //for debug
 
     int minElementIndex = std::min_element(V_Distance.begin(), V_Distance.end()) - V_Distance.begin();
     double minElement = *std::min_element(V_Distance.begin(), V_Distance.end());
