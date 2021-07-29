@@ -46,8 +46,11 @@ def callback(spat):
    print(f"red = {red} yellow = {yellow} green = {green}")
    print(f"{state.zfill(8)}")
    print(f"{int(spat.spat_sec)}")
-   stop_line = coordinates[intersection_id]
-   traffic_light = Traffic_Light_Marker_Array(stop_line)
+   if intersection_id != "0":
+       stop_line = coordinates[intersection_id]
+       traffic_light = Traffic_Light_Marker_Array(stop_line)
+   else:
+       traffic_light = Traffic_Light_Marker_Array()
    marker_pub.publish(traffic_light.dump_marker_array(red, yellow, green, greeb_left, green_strait, green_right,int(spat.spat_sec)))
   
 
