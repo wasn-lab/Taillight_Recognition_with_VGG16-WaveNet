@@ -43,6 +43,13 @@ if (CATKIN_ENABLE_TESTING)
     MD5 fe090879b354151dfa6c4674422d0964
   )
 
+  set(TEST_BAG "lidar_compressed_xyzir_2021-07-27-22-52-12_62.bag")
+  catkin_download_test_data(${TEST_BAG}
+    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
+    DESTINATION ${Project_SOURCE_DIR}/bags
+    MD5 0329f0028c18ee94f057ce9478d88353
+  )
+
   set(TEST_BAG "lidar_detection_car_ped_cyc_2020-12-28-16-53-14_21.bag")
   catkin_download_test_data(${TEST_BAG}
     "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
