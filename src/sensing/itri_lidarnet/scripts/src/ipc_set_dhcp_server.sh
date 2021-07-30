@@ -27,7 +27,8 @@ sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:b4,os1-991939001245,192.168.0.225,i
 sudo bash -c "echo '#---- c1 ' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:15:af,os1-122016000062,192.168.0.228,infinite' >> /etc/dnsmasq.d/dhcp.conf" # Left
 sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:1e:ed,os1-122035000199,192.168.0.227,infinite' >> /etc/dnsmasq.d/dhcp.conf" # Right
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:1e:52,os1-122032000008,192.168.0.229,infinite' >> /etc/dnsmasq.d/dhcp.conf" # Top
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:1e:f1,os1-122036000203,192.168.0.229,infinite' >> /etc/dnsmasq.d/dhcp.conf" # Top @20210729
+
 # lab @ 20210511
 sudo bash -c "echo '#---- lab @ 20210511' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:05:4f,os1-122033000240,192.168.0.104,infinite' >> /etc/dnsmasq.d/dhcp.conf" 
