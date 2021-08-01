@@ -10,16 +10,24 @@ import time
 import numpy as np
 
 
-def init_new_points(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='map'):
+def init_new_points(
+        id=0,
+        duration=0.5,
+        color=[
+            1.0,
+            1.0,
+            1.0],
+        coordinate_type='map', marker_scale=[0.4, 0.4, -3.1]):
     marker = Marker()
     marker.header.stamp = rospy.get_rostime()
     marker.header.frame_id = coordinate_type  # vehicle center
     marker.id = id
+
     marker.type = marker.POINTS
     marker.action = marker.ADD
-    marker.scale.x = 0.4
-    marker.scale.y = 0.4
-    # marker.scale.z = 0.1
+    marker.scale.x = marker_scale[0]
+    marker.scale.y = marker_scale[1]
+    marker.scale.z = marker_scale[2]
     marker.color.r = color[0]
     marker.color.g = color[1]
     marker.color.b = color[2]
@@ -30,7 +38,14 @@ def init_new_points(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='m
     return marker
 
 
-def init_new_line(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='map'):
+def init_new_line(
+        id=0,
+        duration=0.5,
+        color=[
+            1.0,
+            1.0,
+            1.0],
+        coordinate_type='map', marker_scale=[0.1, 0.1, -3.1]):
     marker = Marker()
     marker.header.stamp = rospy.get_rostime()
     marker.header.frame_id = coordinate_type
@@ -38,9 +53,9 @@ def init_new_line(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='map
     marker.action = marker.ADD
     marker.id = id
     # marker scale
-    marker.scale.x = 0.1
-    marker.scale.y = 0.1
-    marker.scale.z = 0.1
+    marker.scale.x = marker_scale[0]
+    marker.scale.y = marker_scale[1]
+    marker.scale.z = marker_scale[2]
 
     # marker color
     marker.color.r = color[0]
@@ -69,10 +84,11 @@ def vehicle_marker_callback_final(data):
         if obj.track.is_ready_prediction:
             i = i + 1
             line_marker = init_new_line(
-                id = i, color=[1.0, 0.2, 0.0],coordinate_type=coordinate_type)
+                id=i, color=[1.0, 0.2, 0.0], coordinate_type=coordinate_type)
             for track_point in obj.track.forecasts:
                 i = i + 1
-                point_marker = init_new_points(id=i,coordinate_type=coordinate_type)
+                point_marker = init_new_points(
+                    id=i, coordinate_type=coordinate_type)
                 point_2 = Point()
                 point_2.x = track_point.position.x
                 point_2.y = track_point.position.y
@@ -96,11 +112,11 @@ def listener_pedestrian():
 
 
 if __name__ == '__main__':
-    global input_source,coordinate_type
+    global input_source, coordinate_type
     rospy.init_node('Ipp_Marker')
     # IPP input with map-based
     coordinate_type = 'map'
-        
+
     try:
         listener_pedestrian()
     except rospy.ROSInterruptException:

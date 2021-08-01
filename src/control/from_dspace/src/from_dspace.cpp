@@ -379,7 +379,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "from_dspace");
     ros::NodeHandle n;
 
-    std::string can_name_ = "can0";
+    std::string can_name_ = "can1";
     ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
 
 	ros::Publisher Publisher[NumOfTopic];

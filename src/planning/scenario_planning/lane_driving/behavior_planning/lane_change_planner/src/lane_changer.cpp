@@ -81,7 +81,8 @@ void LaneChanger::init()
   lane_change_ready_publisher_ = pnh_.advertise<std_msgs::Bool>("output/lane_change_ready", 1);
   lane_change_available_publisher_ =
     pnh_.advertise<std_msgs::Bool>("output/lane_change_available", 1);
-
+  lane_change_state_publisher_ = 
+    pnh_.advertise<std_msgs::Float64>("output/lane_change_state", 1);
   waitForData();
 
   // set state_machine
@@ -146,6 +147,18 @@ void LaneChanger::run(const ros::TimerEvent & event)
   std_msgs::Bool lane_change_available_msg;
   lane_change_available_msg.data = lane_change_status.lane_change_available;
   lane_change_available_publisher_.publish(lane_change_available_msg);
+
+  const auto lane_change_state = state_machine_ptr_->getCurrentState();
+  std_msgs::Float64 lane_change_state_msg;
+  if (lane_change_state == State::FOLLOWING_LANE)
+  {
+    lane_change_state_msg.data = 0;
+  }
+  else
+  {
+    lane_change_state_msg.data = 1;
+  }
+  lane_change_state_publisher_.publish(lane_change_state_msg);
 }
 
 void LaneChanger::publishDrivableArea(const autoware_planning_msgs::PathWithLaneId & path)

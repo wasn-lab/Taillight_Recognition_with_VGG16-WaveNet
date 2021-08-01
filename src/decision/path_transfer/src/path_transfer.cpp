@@ -39,6 +39,9 @@ ros::Publisher currenttrajinfo_pub;
 ros::Publisher nav_path_heartbeat_pub;
 ros::Publisher veh_overshoot_pub;
 ros::Publisher end_path_flag_pub;
+ros::Publisher cumulative_offset_pub;
+
+double overshoot_dis_last = 0.0;
 
 struct Point3D
 {
@@ -424,6 +427,12 @@ void transfer_path_callback(const autoware_planning_msgs::Path& path)
     }
   }
   veh_overshoot_pub.publish(overshoot_dis);
+
+  std_msgs::Float64 cumulative_offset;
+  cumulative_offset.data = (overshoot_dis_last - overshoot_dis.data)/0.1;
+  cumulative_offset_pub.publish(cumulative_offset);
+
+  overshoot_dis_last = overshoot_dis.data;
 }
 
 
@@ -450,6 +459,7 @@ int main(int argc, char** argv)
   currenttrajinfo_pub = node.advertise<msgs::CurrentTrajInfo>("current_trajectory_info",1);
   nav_path_heartbeat_pub = node.advertise<std_msgs::Empty>("nav_path_astar_final/heartbeat",1);
   veh_overshoot_pub = node.advertise<std_msgs::Float64>("veh_overshoot_orig_dis",1);
+  cumulative_offset_pub = node.advertise<std_msgs::Float64>("/control/lateral_cumulative_offset",1);
   end_path_flag_pub = node.advertise<std_msgs::Bool>("/control/end_path_flag",1);
 
   ros::spin();
