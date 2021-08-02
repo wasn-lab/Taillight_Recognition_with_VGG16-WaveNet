@@ -73,8 +73,9 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
     *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Velodyne);
 #elif CAR_MODEL_IS_B1_V3
     *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
-#elif CAR_MODEL_IS_C1
+#elif CAR_MODEL_IS_C1 || CAR_MODEL_IS_C2 || CAR_MODEL_IS_C3
     *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
+
 #else
     #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
@@ -87,7 +88,7 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
       *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 32, 0.5);
 #elif CAR_MODEL_IS_B1_V3
       *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1);
-#elif CAR_MODEL_IS_C1
+#elif CAR_MODEL_IS_C1 || CAR_MODEL_IS_C2 || CAR_MODEL_IS_C3
       *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1);
 #else
       #error CORRESPONDING CAR MODEL NOT FOUND.
@@ -158,7 +159,7 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
     *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Velodyne);
 #elif CAR_MODEL_IS_B1_V3
     *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
-#elif CAR_MODEL_IS_C1
+#elif CAR_MODEL_IS_C1 || CAR_MODEL_IS_C2 || CAR_MODEL_IS_C3
     *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, lidar::Hardware::Ouster);
 #else
     #error CORRESPONDING CAR MODEL NOT FOUND.
@@ -171,7 +172,7 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
       *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 32, 0.5);
 #elif CAR_MODEL_IS_B1_V3
       *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1);
-#elif CAR_MODEL_IS_C1
+#elif CAR_MODEL_IS_C1 || CAR_MODEL_IS_C2 || CAR_MODEL_IS_C3
       *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1);
 #else
     #error CORRESPONDING CAR MODEL NOT FOUND.
@@ -259,6 +260,10 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
       *g_cloudPtr_LidarFrontTop = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
 #elif CAR_MODEL_IS_C1
       *g_cloudPtr_LidarFrontTop = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0.023, 0.21, 0);
+#elif CAR_MODEL_IS_C2
+      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
+#elif CAR_MODEL_IS_C3
+      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
 #else
       #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
@@ -272,6 +277,10 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
 #elif CAR_MODEL_IS_C1
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0.023, 0.21, 0);
+#elif CAR_MODEL_IS_C2
+      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
+#elif CAR_MODEL_IS_C3
+      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
 #else
       #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
