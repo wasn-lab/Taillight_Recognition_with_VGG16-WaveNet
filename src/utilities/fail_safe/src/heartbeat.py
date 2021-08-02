@@ -49,16 +49,14 @@ def backend_info_func(msg, fps):
         lowest_voltage = msg.lowest_volage
         status = OK
         status_str = "FPS: " + str(fps)[:5]
-        if gross_voltage < 350 or lowest_voltage < 3.2:
-            status = ERROR
-            status_str = ("Battery too low: gross voltage is {}, "
-                          "lowest voltage is {}").format(
-                              gross_voltage, lowest_voltage)
-        elif gross_voltage < 355 or lowest_voltage < 3.25:
-            status = WARN
-            status_str = ("Low battery: gross voltage is {}, "
-                          "lowest voltage is {}").format(
-                              gross_voltage, lowest_voltage)
+        voltage_strs = []
+        if gross_voltage < 355:
+            voltage_strs.append("gross_voltage: {:.2f}, expect >= 355".format(gross_voltage))
+        if lowest_voltage < 3.25:
+            voltage_strs.append("lowest_voltage: {:.2f}, expect >= 3.25".format(lowest_voltage))
+        if voltage_strs:
+            status_str += ", " + ", ".join(voltage_strs)
+
     if status != OK:
         rospy.logwarn("BackendInfo: %s", status_str)
     return status, status_str
