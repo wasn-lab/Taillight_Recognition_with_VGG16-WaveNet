@@ -79,6 +79,7 @@ def backend_sender_func(msg, fps):
 
 
 def occ_sender_func(msg, fps):
+    # pylint: disable=global-statement
     global G_OCC_FAILURE_COUNT
     status = WARN
     status_str = "No message from /occ_sender/status"
@@ -103,6 +104,7 @@ def occ_sender_func(msg, fps):
 
 __BPOINT_PIDS = ["p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7"]
 def __calc_center_by_3d_bpoint(bpoint):
+    # pylint: disable=invalid-name
     # only calculate (x, y) now, as z is not so important
     x, y = 0, 0
     for pid in __BPOINT_PIDS:
@@ -249,15 +251,24 @@ class Heartbeat(object):
             ret["status_str"] = "Disabled"
         return ret
 
+    def _resubscribe_if_necessary(self, fps):
+        if fps <= 0 and self.subscriber is not None:
+            rospy.logwarn("Publisher might be down. Try to re-subscribe %s", self.topic)
+            self.subscriber.unregister()
+            self.subscriber = None
+
+        if self.subscriber is None:
+            try:
+                self.subscriber = rospy.Subscriber(
+                    self.topic,
+                    get_message_type_by_str(self.message_type),
+                    self.heartbeat_cb)
+            except IOError:
+                rospy.logwarn("Fail to re-subscribe %s, try again in the next round", self.topic)
+
     def get_fps(self):
         fps = len(self.heap) / self.sampling_period_in_seconds
-        if fps == 0 and self.subscriber is not None:
-            rospy.logwarn("Publisher might be down. Reconnect to get topic %s", self.topic)
-            self.subscriber.unregister()
-            self.subscriber = rospy.Subscriber(
-                self.topic,
-                get_message_type_by_str(self.message_type),
-                self.heartbeat_cb)
+        self._resubscribe_if_necessary(fps)
         return fps
 
     def _update_status(self):
