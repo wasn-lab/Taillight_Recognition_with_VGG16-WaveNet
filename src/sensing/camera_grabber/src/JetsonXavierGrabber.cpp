@@ -344,6 +344,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
           if (for_running)
           {
             std::cout << "ERROR : video_capture_list read camera " << i << " fail \n" << std::endl;
+            std::cout << "ERROR : camera " << i << " green screen \n" << std::endl;
             std::cout << "Please press CTRL+C to break program \n" << std::endl;
             for_running = false;  // stop for loop
           }

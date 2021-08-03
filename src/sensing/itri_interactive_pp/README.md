@@ -11,7 +11,7 @@ source sandbox/bin/activate
 ```
 ## execute roslaunch file :
 ```
-roslaunch itri_interactive_pp ipp.launch delay_node:=2 prediction_horizon:=10 print_log:=0 tf_map:=1 output_csv:=True
+roslaunch itri_interactive_pp ipp.launch delay_node:=1 prediction_horizon:=10 print_log:=0 tf_map:=1 output_csv:=True
 ```
 ## IPP need following topic :
 
