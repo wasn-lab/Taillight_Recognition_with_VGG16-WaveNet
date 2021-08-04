@@ -3,8 +3,8 @@ set -x
 set -e
 
 readonly build_type="${build_type:-Release}"
-readonly install_prefix="${install_prefix:-/usr/local/itriadv}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
+readonly install_prefix="${install_prefix:-${repo_dir}/itriadv_install}"
 # clean up the previous build.
 for _dir in build devel; do
     if [[ -d $_dir ]]; then

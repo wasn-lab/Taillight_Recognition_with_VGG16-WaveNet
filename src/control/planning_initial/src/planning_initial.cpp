@@ -500,20 +500,26 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
     if (trafficlightstate.lamp_states.empty())// unknown
     {
       lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
-      lampstate.confidence = 0.0;
+      lampstate.confidence = confidence;
       trafficlightstate.lamp_states.push_back(lampstate);
     }
   }
   else if (signal_state == 2)
   {
     lampstate.type = autoware_perception_msgs::LampState::FLASHING_YELLOW;
-    lampstate.confidence = 0.0;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
+  }
+  else if (signal_state == 0)
+  {
+    lampstate.type = autoware_perception_msgs::LampState::PHASE_COMPENSATION;
+    lampstate.confidence = confidence;
     trafficlightstate.lamp_states.push_back(lampstate);
   }
   else
   {
     lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
-    lampstate.confidence = 0.0;
+    lampstate.confidence = confidence;
     trafficlightstate.lamp_states.push_back(lampstate);
   }
   trafficlightstatearray.states.push_back(trafficlightstate);

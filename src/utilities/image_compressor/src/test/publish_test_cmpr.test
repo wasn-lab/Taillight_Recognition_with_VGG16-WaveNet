@@ -2,65 +2,57 @@
     <include file="$(find image_compressor)/launch/cmpr.launch"/>
 
     <node pkg="rosbag" type="play" name="player" output="log" args="-l $(find image_compressor)/src/test/auto_record_2020-03-10-10-48-39_41_image_raw.bag">
-      <remap from="/cam/front_bottom_60" to="/cam/front_bottom_60/raw"/>
-      <remap from="/cam/front_top_far_30" to="/cam/front_top_far_30/raw"/>
-      <remap from="/cam/front_top_close_120" to="/cam/front_top_close_120/raw"/>
-      <remap from="/cam/right_front_60" to="/cam/right_front_60/raw"/>
-      <remap from="/cam/right_back_60" to="/cam/right_back_60/raw"/>
-      <remap from="/cam/left_front_60" to="/cam/left_front_60/raw"/>
-      <remap from="/cam/left_back_60" to="/cam/left_back_60/raw"/>
-      <remap from="/cam/back_top_120" to="/cam/back_top_120/raw"/>
     </node>
 
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
           topics:
-            - name: /cam/front_bottom_60/jpg/origin
+            - name: /cam/front_bottom_60/jpg
               timeout: 15
               negative: False
-            - name: /cam/front_bottom_60/jpg/origin/heartbeat
+            - name: /cam/front_bottom_60/jpg/heartbeat
               timeout: 15
               negative: False
-            - name: /cam/front_top_far_30/jpg/origin
+            - name: /cam/front_top_far_30/jpg
               timeout: 15
               negative: False
-            - name: /cam/front_top_far_30/jpg/origin/heartbeat
+            - name: /cam/front_top_far_30/jpg/heartbeat
               timeout: 15
               negative: False
-            - name: /cam/front_top_close_120/jpg/origin
+            - name: /cam/front_top_close_120/jpg
               timeout: 15
               negative: False
-            - name: /cam/front_top_close_120/jpg/origin/heartbeat
+            - name: /cam/front_top_close_120/jpg/heartbeat
               timeout: 15
               negative: False
-            - name: /cam/right_front_60/jpg/origin
+            - name: /cam/right_front_60/jpg
               timeout: 15
               negative: False
-            - name: /cam/right_front_60/jpg/origin/heartbeat
+            - name: /cam/right_front_60/jpg/heartbeat
               timeout: 15
               negative: False
-            - name: /cam/right_back_60/jpg/origin
+            - name: /cam/right_back_60/jpg
               timeout: 15
               negative: False
-            - name: /cam/right_back_60/jpg/origin/heartbeat
+            - name: /cam/right_back_60/jpg/heartbeat
               timeout: 15
               negative: False
-            - name: /cam/left_front_60/jpg/origin
+            - name: /cam/left_front_60/jpg
               timeout: 15
               negative: False
-            - name: /cam/left_front_60/jpg/origin/heartbeat
+            - name: /cam/left_front_60/jpg/heartbeat
               timeout: 15
               negative: False
-            - name: /cam/left_back_60/jpg/origin
+            - name: /cam/left_back_60/jpg
               timeout: 15
               negative: False
-            - name: /cam/left_back_60/jpg/origin/heartbeat
+            - name: /cam/left_back_60/jpg/heartbeat
               timeout: 15
               negative: False
-            - name: /cam/back_top_120/jpg/origin
+            - name: /cam/back_top_120/jpg
               timeout: 15
               negative: False
-            - name: /cam/back_top_120/jpg/origin/heartbeat
+            - name: /cam/back_top_120/jpg/heartbeat
               timeout: 15
               negative: False
         </rosparam>

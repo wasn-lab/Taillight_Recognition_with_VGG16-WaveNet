@@ -14,12 +14,14 @@ set(PCD_SAVER_SRCS pcd_saver_args_parser.cpp pcd_saver_main.cpp)
 
 set(FILE_SAVER_INCLUDE_DIRS
     ${catkin_INCLUDE_DIRS}
+    ${pc_transform_SOURCE_DIR}/src
     ${PCL_INCLUDE_DIRS}
     ${GLOG_INCLUDE_DIRS})
 
 # set up dependencies for pslot_detector
 set(FILE_SAVER_LIB_DEPS
     m pthread stdc++
+    pc_transform
     ${GFLAGS_LIBRARIES}
     ${GLOG_LIBRARIES}
     ${catkin_LIBRARIES}

@@ -1,13 +1,13 @@
 <launch>
   <rosparam param="LidarFrontLeft_Fine_Param">[0.323, 1.171, -1.942, 0.054, 0.015, 1.798]</rosparam>
   <rosparam param="LidarFrontRight_Fine_Param">[0.363, -1.033, -1.827, 0.0, 0.001, -1.836]</rosparam>
-  <node pkg="lidars_grabber" type="lidars_grabber" name="lidars_grabber" output="screen" cwd="node" />
-  <include file="$(find edge_detection)/launch/edge_detection.launch" />
-  <include file="$(find pc2_compressor)/launch/ouster64_to_xyzir.launch" />
-  <include file="$(find pc_transform)/launch/lidar_front_top_localization.launch" />
-  <include file="$(find msg_replay)/launch/replay_lidar_data_to_localization.launch" />
-
   <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_2020-12-28-16-53-14_21.bag -l" />
+  <include file="$(find pc2_compressor)/launch/ouster64_to_xyzir.launch" />
+  <node pkg="lidars_grabber" type="lidars_grabber" name="lidars_grabber" output="screen" cwd="node" />
+  <include file="$(find msg_replay)/launch/replay_lidar_data_to_localization.launch" />
+  <include file="$(find pc_transform)/launch/lidar_front_top_localization.launch" />
+  <include file="$(find edge_detection)/launch/edge_detection.launch" />
+
 
   <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
     <rosparam>

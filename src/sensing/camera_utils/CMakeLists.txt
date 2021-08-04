@@ -51,6 +51,7 @@ set(CAMERA_UTILS_SOURCES
   src/camera_params_b1_v2.cpp
   src/camera_params_b1_v3.cpp 
   src/camera_params_c1.cpp
+  src/camera_params_c2.cpp
   src/camera_distance_mapper.cpp
   src/cv_color.cpp
   src/imu_distance.cpp

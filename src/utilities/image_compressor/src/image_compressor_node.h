@@ -15,6 +15,7 @@ private:
   ros::NodeHandle node_handle_;
   int32_t num_compression_;
   int32_t latency_wrt_raw_in_ms_;
+  const int32_t quality_;
 
   // functions
   void callback(const sensor_msgs::ImageConstPtr& msg);

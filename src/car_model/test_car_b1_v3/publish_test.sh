@@ -15,6 +15,7 @@ if [[ ! -f ${bag_dir}/camera_raw_2021-02-25-15-53-00_77.bag
   || ! -f ${bag_dir}/auto_record_2020-04-14-16-41-15_89.bag
   || ! -f ${bag_dir}/geofence_pp_2020-11-16-16-35-39.bag
   || ! -f ${bag_dir}/lidar_raw_compressed_2021-02-03.bag
+  || ! -f ${bag_dir}/lidar_compressed_xyzir_2021-07-27-22-52-12_62.bag
   || ! -f ${bag_dir}/lidar_detection_car_ped_cyc_2020-12-28-16-53-14_21.bag
   || ! -f ${bag_dir}/lidar_raw_2020-12-28-16-53-14_21.bag
   || ! -f ${bag_dir}/localization_raw_2020-09-24-17-02-06.bag
@@ -45,6 +46,7 @@ rostest car_model publish_test_lidars_grabber_b1_v3.test
 rostest car_model publish_test_lidarnet_b1_v3_raw_compressed.test
 rostest car_model publish_test_lidar_point_pillars_integrator_b1_v3.test
 rostest car_model publish_test_edge_detection_b1_v3.test
+rostest car_model publish_test_edge_detection_xyzir_b1_v3.test  # use compressed xyzir
 rostest car_model publish_test_localization_b1_v3.test
 rostest car_model publish_test_lidarxyz2lla_b1_v3.test
 rostest car_model publish_test_rad_grab_b1_v3.test

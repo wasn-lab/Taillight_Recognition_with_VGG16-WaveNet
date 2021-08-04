@@ -47,6 +47,12 @@ stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_alignment.sh^M"
 screen -t init_repub_cam_raw
 stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_repub_cam_raw.sh^M"
 
+screen -t init_image_compressor
+stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_image_compressor.sh^M"
+
+screen -t init_detect_image_web_streaming.sh
+stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_detect_image_web_streaming.sh^M"
+
 screen -t init_fail_safe
 stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_fail_safe.sh^M"
 
@@ -55,9 +61,6 @@ stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_rosbag_sender.sh^M"
 
 screen -t init_lightnet
 stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_lightnet.sh^M"
-
-screen -t replay_jpg
-stuff "/home/camera/itriadv/src/scripts/bus_env/camera/run_replay_jpg.sh^M"
 
 screen -t msg_recorder
 stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_msg_recorder.sh^M"

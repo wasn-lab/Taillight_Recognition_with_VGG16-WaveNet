@@ -10,7 +10,7 @@
 
 namespace image_compressor
 {
-sensor_msgs::CompressedImageConstPtr compress_msg(const sensor_msgs::ImageConstPtr& msg, const compression_format fmt)
+sensor_msgs::CompressedImageConstPtr compress_msg(const sensor_msgs::ImageConstPtr& msg, const compression_format fmt, const int32_t quality)
 {
   cv_bridge::CvImageConstPtr cv_ptr;
 
@@ -27,14 +27,13 @@ sensor_msgs::CompressedImageConstPtr compress_msg(const sensor_msgs::ImageConstP
   sensor_msgs::CompressedImagePtr cmpr_msg{ new sensor_msgs::CompressedImage };
   cmpr_msg->header = msg->header;
   CHECK(fmt == compression_format::jpg || fmt == compression_format::png);
+  compress(cv_ptr->image, cmpr_msg->data, fmt, quality);
   if (fmt == compression_format::jpg)
   {
-    compress_by_jpg(cv_ptr->image, cmpr_msg->data);
     cmpr_msg->format = "jpeg";
   }
   else
   {
-    compress_by_png(cv_ptr->image, cmpr_msg->data);
     cmpr_msg->format = "png";
   }
 
