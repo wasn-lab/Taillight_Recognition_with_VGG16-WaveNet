@@ -1,6 +1,6 @@
 #include "kalman.h"
 
-Kalman::Kalman(int id) : id(id)
+Kalman::Kalman(int id, int type) : id(id) , type(type)
 {
 }
 
@@ -8,15 +8,20 @@ void Kalman::init(cv::Rect rect)
 {
   KF.init(stateNum, measureNum, 0);
   //轉移矩陣A
-  KF.transitionMatrix = (cv::Mat_<float>(8, 8) <<
-                                        1, 0, 0, 0, delta_t, 0,       0,       0,
-                                        0, 1, 0, 0, 0,       delta_t, 0,       0,
-                                        0, 0, 1, 0, 0,       0,       delta_t, 0,
-                                        0, 0, 0, 1, 0,       0,       0,       delta_t,
-                                        0, 0, 0, 0, 1,       0,       0,       0,
-                                        0, 0, 0, 0, 0,       1,       0,       0,
-                                        0, 0, 0, 0, 0,       0,       1,       0,
-                                        0, 0, 0, 0, 0,       0,       0,       1); 
+  float delta_t2 = 0.5 * delta_t * delta_t;  
+  KF.transitionMatrix = (cv::Mat_<float>(12, 12) <<
+		1, 0, 0, 0, delta_t, 0,  0,  0,  delta_t2, 0,   0, 0,
+		0, 1, 0, 0, 0,  delta_t, 0,  0,  0,   delta_t2, 0,   0,
+		0, 0, 1, 0, 0,  0,  delta_t, 0,  0,   0,   delta_t2, 0,
+		0, 0, 0, 1, 0,  0,  0,  delta_t, 0,   0,   0,   delta_t2,
+		0, 0, 0, 0, 1,  0,  0,  0,  delta_t,  0,   0,   0,
+		0, 0, 0, 0, 0,  1,  0,  0,  0,   delta_t,  0,   0,
+		0, 0, 0, 0, 0,  0,  1,  0,  0,   0,   delta_t,  0,
+		0, 0, 0, 0, 0,  0,  0,  1,  0,   0,   0,   delta_t,
+		0, 0, 0, 0, 0,  0,  0,  0,  1,   0,   0,   0,
+		0, 0, 0, 0, 0,  0,  0,  0,  0,   1,   0,   0,
+		0, 0, 0, 0, 0,  0,  0,  0,  0,   0,   1,   0,
+		0, 0, 0, 0, 0,  0,  0,  0,  0,   0,   0,   1);
   float x = rect.x + (rect.width / 2);
   float y = rect.y + (rect.height / 2);
   //初始狀態值x(0)
@@ -26,8 +31,12 @@ void Kalman::init(cv::Rect rect)
   KF.statePre.at<float>(3) = rect.height; // height
   KF.statePre.at<float>(4) = 0;     // dx
   KF.statePre.at<float>(5) = 0;     // dy
-  KF.statePre.at<float>(6) = 0;            // dw
-  KF.statePre.at<float>(7) = 0;            // dh
+  KF.statePre.at<float>(6) = 0;     // dw
+  KF.statePre.at<float>(7) = 0;     // dh
+  KF.statePre.at<float>(9) = 0;      // ax
+  KF.statePre.at<float>(10) = 0;     // ay
+  KF.statePre.at<float>(11) = 0;     // aw
+  KF.statePre.at<float>(12) = 0;     // ah
   //初始測量值x'(0)
   KF.statePost.at<float>(0) = x;
   KF.statePost.at<float>(1) = y;
@@ -37,12 +46,16 @@ void Kalman::init(cv::Rect rect)
   KF.statePost.at<float>(5) = 0;
   KF.statePost.at<float>(6) = 0;
   KF.statePost.at<float>(7) = 0;
+  KF.statePost.at<float>(9) = 0;      
+  KF.statePost.at<float>(10) = 0;     
+  KF.statePost.at<float>(11) = 0;     
+  KF.statePost.at<float>(12) = 0;     
   //測量矩陣H
   cv::setIdentity(KF.measurementMatrix);              
   //系統噪聲方差矩陣Q                               
-  cv::setIdentity(KF.processNoiseCov, cv::Scalar::all(1e-5));     
+  cv::setIdentity(KF.processNoiseCov, cv::Scalar::all(1e-5));   
   //測量噪聲方差矩陣R                       
-  cv::setIdentity(KF.measurementNoiseCov, cv::Scalar::all(1e-1));   
+  cv::setIdentity(KF.measurementNoiseCov, cv::Scalar::all(.1));   
   //後驗錯誤估計協方差矩陣P                     
   cv::setIdentity(KF.errorCovPost, cv::Scalar::all(.1));      
   initialized = true;    
@@ -54,7 +67,9 @@ void Kalman::predict()
   if (initialized)
   {
     cv::Mat prediction = KF.predict();
-    last_detection = cv::Rect_<float>(prediction.at<float>(0), prediction.at<float>(1), prediction.at<float>(2), prediction.at<float>(3));
+    double x = prediction.at<float>(0) - (prediction.at<float>(2) / 2);
+    double y = prediction.at<float>(1) - (prediction.at<float>(3) / 2);
+    last_detection = cv::Rect_<float>(x, y, prediction.at<float>(2), prediction.at<float>(3));
   }
 }
 

@@ -6,15 +6,17 @@
 class Kalman
 {
 private:
-  // 8 state variables (x, y, width, height, vx, vy, vw, vh), 4 measurements (x, y, width, height)
-  int stateNum=8;                                  
+  // 12 state variables (x, y, width, height, vx, vy, vw, vh, ax, ay, aw, ah), 4 measurements (x, y, width, height)
+  int stateNum=12;                                  
   int measureNum=4;                  
-  float delta_t=1;  
+  float delta_t=1.2;                  
   cv::KalmanFilter KF;
 public: 
   int tracking_count = 0;
+  double max_iou;
   int id;
-  Kalman(int id);
+  int type;
+  Kalman(int id, int type);
   cv::Rect last_detection;
   bool initialized = false;
   bool isUpdated = false;
