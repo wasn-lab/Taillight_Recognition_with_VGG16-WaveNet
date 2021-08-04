@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>camera_utils</name>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <description>Utility functions for camera</description>
     <maintainer email="chtseng@itri.org.tw">chtseng</maintainer>
     <license>TODO</license>
