@@ -94,7 +94,7 @@ set(CAMERA_UTILS_INCLUDE_DIRS
 include_directories(${CAMERA_UTILS_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME} STATIC ${CAMERA_UTILS_SOURCES})
-add_dependencies(${PROJECT_NAME} msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME} ${CAMERA_UTILS_LIB_DEPS})
 add_subdirectory(src/test)
 
