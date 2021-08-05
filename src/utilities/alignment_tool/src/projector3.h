@@ -7,22 +7,22 @@
 class Projector3
 {
 private:
-  cv::Mat projectionMatrix;
-  cv::Mat cameraExtrinsicMat;
-  cv::Mat rotationMat;
-  cv::Mat rotationMat_fix;
-  cv::Mat rotationVec;
-  cv::Mat translationVec;
-  cv::Mat rotationVec_fix;
-  cv::Mat translationVec_fix;
-  cv::Mat cameraMat;
-  cv::Mat cameraMat_fix;
-  cv::Mat distCoeff;
-  cv::Size ImageSize;
+  cv::Mat projection_matrix;
+  cv::Mat camera_extrinsic_mat;
+  cv::Mat rotation_mat;
+  cv::Mat rotation_mat_fix;
+  cv::Mat rotation_vec;
+  cv::Mat translation_vec;
+  cv::Mat rotation_vec_fix;
+  cv::Mat translation_vec_fix;
+  cv::Mat camera_mat;
+  cv::Mat camera_mat_fix;
+  cv::Mat dist_Coeff;
+  cv::Size image_size;
   void readCameraParameters(const char* yml_filename);
 
 public:
-  void init(int camera_id);
+  void init(/*int camera_id*/);
   void setprojectionMat(double yaw, double pitch, double roll, double tx, double ty, double tz);
   void setcameraMat(double fx, double fy, double cx, double cy);
   std::vector<int> project(float x, float y, float z);

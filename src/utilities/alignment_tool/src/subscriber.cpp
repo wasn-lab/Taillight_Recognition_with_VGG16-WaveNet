@@ -20,82 +20,44 @@
 #include <pcl/io/boost.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/image_encodings.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <thread>
 #include <vector>
 
-cv::Mat M_MID(cvSize(1920, 1208), CV_8UC3, cvScalar(0));
-boost::mutex mutex_LidarAll;
-Eigen::Matrix4f front_top_to_HDL;
-cv::Mat trans_mid;
+cv::Mat g_m_mid(cvSize(1920, 1208), CV_8UC3, cvScalar(0));
+boost::mutex g_mutex_lidar_all;
 
-pcl::PointCloud<pcl::PointXYZI> LidarAll_cloud;
-pcl::PointCloud<pcl::PointXYZI>::Ptr LidarAll_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
-
-void trans_function(cv::Mat& transform, float* p)
-{
-  // std::cout << p[0] << " " << p[1] << " "  << p[2] << " "  << p[3] << " "  <<
-  // p[4] << " "  << p[5] << " "  << p[6] << std::endl;
-  float cos_x = cosf(p[1] * (3.1416 / 180));
-  float sin_x = sinf(p[1] * (3.1416 / 180));
-  float cos_y = cosf(p[2] * (3.1416 / 180));
-  float sin_y = sinf(p[2] * (3.1416 / 180));
-  float cos_z = cosf(p[3] * (3.1416 / 180));
-  float sin_z = sinf(p[3] * (3.1416 / 180));
-  // std::cout << p[0] << " " << cos_x << " "  << sin_x << " "  << cos_y << " "
-  // << sin_y << " "  << cos_z << " "  << sin_z << std::endl;
-
-  float f[9] = { p[0], 0, 640, 0, -p[0], 360, 0, 0, 1 };
-  cv::Mat foc = cv::Mat(3, 3, CV_32FC1, f);
-
-  float Rx[9] = { 1, 0, 0, 0, cos_x, -sin_x, 0, sin_x, cos_x };
-  cv::Mat rx = cv::Mat(3, 3, CV_32FC1, Rx);
-
-  float Ry[9] = { cos_y, 0, sin_y, 0, 1, 0, -sin_y, 0, cos_y };
-  cv::Mat ry = cv::Mat(3, 3, CV_32FC1, Ry);
-
-  float Rz[9] = { cos_z, -sin_z, 0, sin_z, cos_z, 0, 0, 0, 1 };
-  cv::Mat rz = cv::Mat(3, 3, CV_32FC1, Rz);
-  float Txyz[3] = { p[4], p[6], p[5] };
-  cv::Mat txyz = cv::Mat(3, 1, CV_32FC1, Txyz);
-  cv::Mat rot_tmp = (rx * ry) * rz;
-  rot_tmp = foc * rot_tmp;
-  cv::hconcat(rot_tmp, txyz, transform);
-  std::cout << transform << std::endl;
-}
-
-// 1272.796   -48.003   591.428   -60.000
-//   15.913 -1276.116   251.744 -1340.000
-//    0.037    -0.085     0.996    -0.500
+pcl::PointCloud<pcl::PointXYZI> g_lidar_all_cloud;
+pcl::PointCloud<pcl::PointXYZI>::Ptr g_lidar_all_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
 
 void callbackCamera(const sensor_msgs::Image::ConstPtr& msg)
 {
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  M_MID = cv_ptr->image;
+  g_m_mid = cv_ptr->image;
 }
 
 void callbackLidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
-  mutex_LidarAll.lock();
-  LidarAll_cloud.width = msg->points.size();
-  LidarAll_cloud.height = 1;
-  LidarAll_cloud.is_dense = false;
-  LidarAll_cloud.points.resize(LidarAll_cloud.width);
+  g_mutex_lidar_all.lock();
+  g_lidar_all_cloud.width = msg->points.size();
+  g_lidar_all_cloud.height = 1;
+  g_lidar_all_cloud.is_dense = false;
+  g_lidar_all_cloud.points.resize(g_lidar_all_cloud.width);
 
 #pragma omp parallel for
   for (size_t i = 0; i < msg->points.size(); i++)
   {
-    LidarAll_cloud.points[i].x = (float)msg->points[i].x;
-    LidarAll_cloud.points[i].y = (float)msg->points[i].y;
-    LidarAll_cloud.points[i].z = (float)msg->points[i].z;
-    LidarAll_cloud.points[i].intensity = (int)msg->points[i].intensity;
-    LidarAll_cloud.points[i].intensity = 50;
+    g_lidar_all_cloud.points[i].x = (float)msg->points[i].x;
+    g_lidar_all_cloud.points[i].y = (float)msg->points[i].y;
+    g_lidar_all_cloud.points[i].z = (float)msg->points[i].z;
+    g_lidar_all_cloud.points[i].intensity = (int)msg->points[i].intensity;
+    g_lidar_all_cloud.points[i].intensity = 50;
   }
-  *LidarAll_cloudPtr = LidarAll_cloud;
+  *g_lidar_all_cloud_ptr = g_lidar_all_cloud;
 
-  mutex_LidarAll.unlock();
+  g_mutex_lidar_all.unlock();
 }
 
 void detection(int argc, char** argv)
@@ -104,12 +66,12 @@ void detection(int argc, char** argv)
   ros::NodeHandle n;
 
   Projector3 projector;
-  projector.init(0);
+  projector.init(/*0*/);
 
   image_transport::ImageTransport it(n);
-  image_transport::Subscriber sub_image2 = it.subscribe("/cam/left_back_60/raw", 1, callbackCamera);
+  image_transport::Subscriber sub_image2 = it.subscribe("/cam/front_bottom_60/raw", 1, callbackCamera);
 
-  ros::Subscriber LidFrontTopSub = n.subscribe("/LidarAll", 1, callbackLidarAll);
+  ros::Subscriber lid_front_top_sub = n.subscribe("/LidarAll", 1, callbackLidarAll);
 
   while (ros::ok())
   {
@@ -119,28 +81,28 @@ void detection(int argc, char** argv)
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr release_cloud(new pcl::PointCloud<pcl::PointXYZI>);
 
-    mutex_LidarAll.lock();
-    cv::Mat M_MID_temp;
-    M_MID.copyTo(M_MID_temp);
-    cv::resize(M_MID_temp, M_MID_temp, cv::Size(608, 342), 0, 0, cv::INTER_LINEAR);
-    *release_cloud = *LidarAll_cloudPtr;
-    double scaleFactor = M_MID_temp.rows / 342;
+    g_mutex_lidar_all.lock();
+    cv::Mat m_mid_temp;
+    g_m_mid.copyTo(m_mid_temp);
+    cv::resize(m_mid_temp, m_mid_temp, cv::Size(608, 342), 0, 0, cv::INTER_LINEAR);
+    *release_cloud = *g_lidar_all_cloud_ptr;
+    double scale_factor = m_mid_temp.rows / 342.0;
     for (size_t i = 0; i < release_cloud->size(); i++)
     {
       if (!projector.outOfFov(release_cloud->points[i].x, release_cloud->points[i].y, release_cloud->points[i].z))
       {
         std::vector<int> result = projector.project(
             (float)release_cloud->points[i].x, (float)release_cloud->points[i].y, (float)release_cloud->points[i].z);
-        result[0] = result[0] * scaleFactor;
-        result[1] = result[1] * scaleFactor;
-        if (result[0] >= 0 && result[1] >= 0 && result[0] < M_MID_temp.cols && result[1] < M_MID_temp.rows)
+        result[0] = result[0] * scale_factor;
+        result[1] = result[1] * scale_factor;
+        if (result[0] >= 0 && result[1] >= 0 && result[0] < m_mid_temp.cols && result[1] < m_mid_temp.rows)
         {
-          double hight = (double)release_cloud->points[i].z;
+          auto hight = (double)release_cloud->points[i].z;
           int red_int = 0, gre_int = 0, blu_int = 0;
-          double depths_float = (double)release_cloud->points[i].x;
+          auto depths_float = (double)release_cloud->points[i].x;
           if(hight > -2.4 && hight < -0.3)
           {
-            cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 2.5, CV_RGB(0, 0, 0), -1, 8, 0);
+            cv::circle(m_mid_temp, cv::Point(result[0], result[1]), 2.5, CV_RGB(0, 0, 0), -1, 8, 0);
           }
             if (abs(depths_float) <= 7)
             {
@@ -172,7 +134,7 @@ void detection(int argc, char** argv)
               gre_int = 0;
               blu_int = 255;
             }
-          cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 0.75, CV_RGB(red_int, gre_int, blu_int), -1, 8, 0);
+          cv::circle(m_mid_temp, cv::Point(result[0], result[1]), 0.75, CV_RGB(red_int, gre_int, blu_int), -1, 8, 0);
         }
       }
     }
@@ -181,17 +143,17 @@ void detection(int argc, char** argv)
     // cv::imshow("OPENCV_LIDAR_WINDOW_MID", M_MID);
     // cv::waitKey(1);
     cv::namedWindow("Alignment_view", cv::WINDOW_NORMAL);
-    cv::imshow("Alignment_view", M_MID_temp);
+    cv::imshow("Alignment_view", m_mid_temp);
     cv::waitKey(1);
 
-    mutex_LidarAll.unlock();
+    g_mutex_lidar_all.unlock();
     ros::spinOnce();
   }
 }
 
 int main(int argc, char** argv)
 {
-  thread TheadDetection(detection, argc, argv);
+  thread thead_detection(detection, argc, argv);
   QApplication a(argc, argv);
   QtViewer w;
   w.show();

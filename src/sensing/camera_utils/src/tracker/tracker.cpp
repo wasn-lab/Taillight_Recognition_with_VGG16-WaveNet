@@ -2,27 +2,27 @@
 
 msgs::DetectedObjectArray Tracker::tracking(msgs::DetectedObjectArray camera_objects)
 {
-  msgs::DetectedObjectArray result(camera_objects);
+  msgs::DetectedObjectArray result(std::move(camera_objects));
   if(kalman_vector.empty())
   {
-    for(std::size_t i = 0; i < result.objects.size(); i++)
+    for(auto & object : result.objects)
     {
-      cv::Rect rect = cv::Rect(result.objects[i].camInfo[0].u, result.objects[i].camInfo[0].v, 
-                           result.objects[i].camInfo[0].width, result.objects[i].camInfo[0].height);
+      cv::Rect rect = cv::Rect(object.camInfo[0].u, object.camInfo[0].v, 
+                           object.camInfo[0].width, object.camInfo[0].height);
       Kalman kf(tracking_id);
       kf.update(rect, true);
       kalman_vector.push_back(kf);
-      result.objects[i].camInfo[0].id = tracking_id;
+      object.camInfo[0].id = tracking_id;
       tracking_id++;
     }
   }
   else
   {
     //matching by iou & update or creat kalman filter
-    for(std::size_t i = 0; i < result.objects.size(); i++)
+    for(auto & object : result.objects)
     {
-      cv::Rect rect = cv::Rect(result.objects[i].camInfo[0].u, result.objects[i].camInfo[0].v, 
-                           result.objects[i].camInfo[0].width, result.objects[i].camInfo[0].height);
+      cv::Rect rect = cv::Rect(object.camInfo[0].u, object.camInfo[0].v, 
+                           object.camInfo[0].width, object.camInfo[0].height);
       double iou_max = -1;
       int k = -1;
       for(std::size_t j = 0; j < kalman_vector.size(); j++)
@@ -41,20 +41,20 @@ msgs::DetectedObjectArray Tracker::tracking(msgs::DetectedObjectArray camera_obj
         kalman_vector.at(k).predict();
         kalman_vector.at(k).isUpdated = true;
         cv::Rect currected_rect = kalman_vector.at(k).update(rect, true);
-        result.objects[i].camInfo[0].id = kalman_vector.at(k).id;
-        result.objects[i].camInfo[0].u = currected_rect.x;
-        result.objects[i].camInfo[0].v = currected_rect.y;
-        result.objects[i].camInfo[0].width = currected_rect.width ;
-        result.objects[i].camInfo[0].height = currected_rect.height;
+        object.camInfo[0].id = kalman_vector.at(k).id;
+        object.camInfo[0].u = currected_rect.x;
+        object.camInfo[0].v = currected_rect.y;
+        object.camInfo[0].width = currected_rect.width ;
+        object.camInfo[0].height = currected_rect.height;
       }
       else
       {
-        if(kalman_vector.size() < max_tracking_num)
+        if(kalman_vector.size() < (unsigned)max_tracking_num)
         {
           Kalman kf(tracking_id);
           kf.update(rect, true);
           kalman_vector.push_back(kf);
-          result.objects[i].camInfo[0].id = tracking_id;
+          object.camInfo[0].id = tracking_id;
           tracking_id++;
         }
       }

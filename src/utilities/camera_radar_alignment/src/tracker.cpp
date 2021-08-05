@@ -2,18 +2,18 @@
 
 msgs::DetectedObjectArray Tracker::tracking(msgs::DetectedObjectArray camera_objects)
 {
-  msgs::DetectedObjectArray result(camera_objects);
+  msgs::DetectedObjectArray result(std::move(camera_objects));
   if(kalman_vector.empty())
   {
-    for(std::size_t i = 0; i < result.objects.size(); i++)
+    for(auto & object : result.objects)
     {
-      cv::Rect rect = cv::Rect(result.objects[i].camInfo[0].u, result.objects[i].camInfo[0].v, 
-                           result.objects[i].camInfo[0].width, result.objects[i].camInfo[0].height);
-      int type = result.objects[i].classId;
+      cv::Rect rect = cv::Rect(object.camInfo[0].u, object.camInfo[0].v, 
+                           object.camInfo[0].width, object.camInfo[0].height);
+      int type = object.classId;
       Kalman kf(tracking_id, type);
       kf.update(rect, true);
       kalman_vector.push_back(kf);
-      result.objects[i].camInfo[0].id = tracking_id;
+      object.camInfo[0].id = tracking_id;
       tracking_id++;
     }
   }
@@ -21,11 +21,11 @@ msgs::DetectedObjectArray Tracker::tracking(msgs::DetectedObjectArray camera_obj
   {
     //matching by iou & update or creat kalman filter
     std::vector<std::vector<double>> iou_table(result.objects.size(), std::vector<double>(kalman_vector.size()));
-    for(std::size_t i = 0; i < result.objects.size(); i++)
+    for(auto & object : result.objects)
     {
-      cv::Rect rect = cv::Rect(result.objects[i].camInfo[0].u, result.objects[i].camInfo[0].v, 
-                           result.objects[i].camInfo[0].width, result.objects[i].camInfo[0].height);
-      int type = result.objects[i].classId;
+      cv::Rect rect = cv::Rect(object.camInfo[0].u, object.camInfo[0].v, 
+                           object.camInfo[0].width, object.camInfo[0].height);
+      int type = object.classId;
       double iou_max = -1;
       int k = -1;
       for(std::size_t j = 0; j < kalman_vector.size(); j++)
@@ -73,21 +73,21 @@ msgs::DetectedObjectArray Tracker::tracking(msgs::DetectedObjectArray camera_obj
         kalman_vector.at(k).predict();
         kalman_vector.at(k).isUpdated = true;
         cv::Rect currected_rect = kalman_vector.at(k).update(rect, true);
-        result.objects[i].camInfo[0].id = kalman_vector.at(k).id;
-        result.objects[i].camInfo[0].u = currected_rect.x;
-        result.objects[i].camInfo[0].v = currected_rect.y;
-        result.objects[i].camInfo[0].width = currected_rect.width ;
-        result.objects[i].camInfo[0].height = currected_rect.height;
+        object.camInfo[0].id = kalman_vector.at(k).id;
+        object.camInfo[0].u = currected_rect.x;
+        object.camInfo[0].v = currected_rect.y;
+        object.camInfo[0].width = currected_rect.width ;
+        object.camInfo[0].height = currected_rect.height;
       }
       else
       {
-        if(kalman_vector.size() < max_tracking_num)
+        if(kalman_vector.size() < (unsigned)max_tracking_num)
         {
           std::cout << "new object: " << rect.x << " " << rect.y << " " << rect.width << " " << rect.height << " " << rect.area() << std::endl;
           Kalman kf(tracking_id, type);
           kf.update(rect, true);
           kalman_vector.push_back(kf);
-          result.objects[i].camInfo[0].id = tracking_id;
+          object.camInfo[0].id = tracking_id;
           tracking_id++;
         }
       }
@@ -108,8 +108,8 @@ msgs::DetectedObjectArray Tracker::tracking(msgs::DetectedObjectArray camera_obj
       }
       else
       {
-        double center_x = kalman_vector.at(i).last_detection.x + (kalman_vector.at(i).last_detection.width / 2);
-        double center_y = kalman_vector.at(i).last_detection.y + (kalman_vector.at(i).last_detection.height / 2);
+        double center_x = kalman_vector.at(i).last_detection.x + (kalman_vector.at(i).last_detection.width / 2.0);
+        double center_y = kalman_vector.at(i).last_detection.y + (kalman_vector.at(i).last_detection.height / 2.0);
         if(center_x < 50 || center_y < 50 || center_x > 1230 || center_y > 670)
         {
           kalman_vector.erase(kalman_vector.begin() + i);

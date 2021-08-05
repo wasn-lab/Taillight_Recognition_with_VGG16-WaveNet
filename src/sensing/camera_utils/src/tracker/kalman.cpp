@@ -17,8 +17,8 @@ void Kalman::init(cv::Rect rect)
                                         0, 0, 0, 0, 0,       1,       0,       0,
                                         0, 0, 0, 0, 0,       0,       1,       0,
                                         0, 0, 0, 0, 0,       0,       0,       1); 
-  float x = rect.x + (rect.width / 2);
-  float y = rect.y + (rect.height / 2);
+  float x = rect.x + (rect.width / 2.0);
+  float y = rect.y + (rect.height / 2.0);
   //初始狀態值x(0)
   KF.statePre.at<float>(0) = x;      // x
   KF.statePre.at<float>(1) = y;      // y
@@ -60,15 +60,15 @@ void Kalman::predict()
 
 cv::Rect Kalman::update(cv::Rect rect, bool hasDetected)
 {
-  float u, v, width, height;
+  float u = 0, v = 0, width = 0, height = 0;
   if (initialized)
   {
     cv::Mat measurement = cv::Mat::zeros(measureNum, 1, CV_32F); 
     if (hasDetected)
     {
       tracking_count = 0;
-      float x = rect.x + (rect.width / 2);
-      float y = rect.y + (rect.height / 2);
+      float x = rect.x + (rect.width / 2.0);
+      float y = rect.y + (rect.height / 2.0);
       measurement.at<float>(0) = (float)x;  
       measurement.at<float>(1) = (float)y; 
       measurement.at<float>(2) = (float)rect.width; 
@@ -78,27 +78,27 @@ cv::Rect Kalman::update(cv::Rect rect, bool hasDetected)
       last_detection.y = rect.y;
       last_detection.width = rect.width;
       last_detection.height = rect.height;
-      u = estimated.at<float>(0) - (estimated.at<float>(2) / 2);
-      v = estimated.at<float>(1) - (estimated.at<float>(3) / 2);
+      u = estimated.at<float>(0) - (estimated.at<float>(2) / 2.0);
+      v = estimated.at<float>(1) - (estimated.at<float>(3) / 2.0);
       width = estimated.at<float>(2);
       height = estimated.at<float>(3);
     }
     else
     {
       tracking_count++;
-      float x = last_detection.x + (last_detection.width / 2);
-      float y = last_detection.y + (last_detection.height / 2);
+      float x = last_detection.x + (last_detection.width / 2.0);
+      float y = last_detection.y + (last_detection.height / 2.0);
       measurement.at<float>(0) = (float)x;  
       measurement.at<float>(1) = (float)y; 
       measurement.at<float>(2) = (float)last_detection.width; 
       measurement.at<float>(3) = (float)last_detection.height; 
       cv::Mat estimated = KF.correct(measurement);  
-      last_detection.x = estimated.at<float>(0) - (estimated.at<float>(2) / 2);
-      last_detection.y = estimated.at<float>(1) - (estimated.at<float>(3) / 2);
+      last_detection.x = estimated.at<float>(0) - (estimated.at<float>(2) / 2.0);
+      last_detection.y = estimated.at<float>(1) - (estimated.at<float>(3) / 2.0);
       last_detection.width = estimated.at<float>(2);
       last_detection.height = estimated.at<float>(3);  
-      u = estimated.at<float>(0) - (estimated.at<float>(2) / 2);
-      v = estimated.at<float>(1) - (estimated.at<float>(3) / 2);
+      u = estimated.at<float>(0) - (estimated.at<float>(2) / 2.0);
+      v = estimated.at<float>(1) - (estimated.at<float>(3) / 2.0);
       width = estimated.at<float>(2);
       height = estimated.at<float>(3);
     }
@@ -111,7 +111,8 @@ cv::Rect Kalman::update(cv::Rect rect, bool hasDetected)
     }
   }    
   isUpdated = true;
-  return cv::Rect(u, v, width, height);
+  cv::Rect rect_result = cv::Rect(u, v, width, height);
+  return rect_result;
 }
 
 
