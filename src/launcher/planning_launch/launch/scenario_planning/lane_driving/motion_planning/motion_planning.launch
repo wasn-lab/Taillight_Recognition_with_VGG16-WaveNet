@@ -1,11 +1,13 @@
 <!-- -*- mode: XML -*- -->
 <launch>
+	<arg name="location_name" default="ITRI"/>
   <arg name="input_path_topic" default="/planning/scenario_planning/lane_driving/behavior_planning/path" />
   <group>
     <remap from="~input/path" to="$(arg input_path_topic)" />
     <remap from="~output/path" to="obstacle_avoidance_planner/trajectory" />
     <remap from="~debug/marker" to="obstacle_avoidance_planner/debug/marker" />
-    <include file="$(find obstacle_avoidance_planner)/launch/obstacle_avoidance_planner.launch">
+    <include file="$(find obstacle_avoidance_planner)/launch/obstacle_avoidance_planner.launch" pass_all_args="true">
+	<param name="location_name" value="$(arg location_name)" />
     </include>
   </group>
 

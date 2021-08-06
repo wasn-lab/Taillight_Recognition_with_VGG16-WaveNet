@@ -1,5 +1,6 @@
 <!-- -*- mode: XML -*- -->
 <launch>
+	<arg name="location_name" default="ITRI"/>
   <!-- scenario selector -->
   <include file="$(find scenario_selector)/launch/scenario_selector.launch">
     <arg name="input_lane_driving_trajectory" value="/planning/scenario_planning/lane_driving/trajectory"/>
@@ -25,7 +26,8 @@
   <!-- scenarios-->
   <group>
     <!-- lane driving -->
-    <include file="$(find planning_launch)/launch/scenario_planning/lane_driving.launch">
+    <include file="$(find planning_launch)/launch/scenario_planning/lane_driving.launch" pass_all_args="true">
+	<param name="location_name" value="$(arg location_name)" />
     </include>
     <!-- parking -->
     <include file="$(find planning_launch)/launch/scenario_planning/parking.launch">

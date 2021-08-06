@@ -21,7 +21,8 @@
       </include>
 
     <!-- planning module -->
-      <include file="$(find planning_launch)/launch/planning.launch">
+      <include file="$(find planning_launch)/launch/planning.launch" pass_all_args="true">
+	<param name="location_name" value="$(arg location_name)" />
       </include>
 
     <!-- mission input module -->
