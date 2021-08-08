@@ -64,8 +64,13 @@ void JetsonXavierGrabber::InitParameters()
 
   std::string ar0231_sh_directory_path = camera_grabber_pkg_path + "/src/CameraGrabber";
   // std::cout << "ar0231_sh_directory_path : " << ar0231_sh_directory_path << std::endl;
-
-  std::string ar0231_sh_file_path = camera_grabber_pkg_path + "/src/CameraGrabber/init_ar0231_driver.sh";
+#if CAR_MODEL_IS_B1_V3
+  std::string ar0231_sh_file_path = camera_grabber_pkg_path + "/src/CameraGrabber/init_ar0231_driver_b1_v3.sh";  
+#elif CAR_MODEL_IS_C1
+  std::string ar0231_sh_file_path = camera_grabber_pkg_path + "/src/CameraGrabber/init_ar0231_driver_c1.sh";
+#elif CAR_MODEL_IS_C2
+  std::string ar0231_sh_file_path = camera_grabber_pkg_path + "/src/CameraGrabber/init_ar0231_driver_c2.sh";
+#endif
   // std::cout << "ar0231_sh_file_path : " << ar0231_sh_file_path << std::endl;
 
   // password selection
