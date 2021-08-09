@@ -12,20 +12,9 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   msgs
   nav_msgs
-<<<<<<< HEAD
   serial
 )
 
-=======
-  car_model
-  serial
-)
-
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-include(CarModel)
-include(CompilerFlags)
-
->>>>>>> remotes/origin/map_lanelet2_test_planning_plcfatek
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -122,11 +111,7 @@ include(CompilerFlags)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lidarxyz2lla
-<<<<<<< HEAD
   CATKIN_DEPENDS roscpp rospy std_msgs message_runtime msgs nav_msgs serial
-=======
-  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime msgs nav_msgs car_model serial
->>>>>>> remotes/origin/map_lanelet2_test_planning_plcfatek
 #  DEPENDS system_lib
 )
 

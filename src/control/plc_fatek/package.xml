@@ -46,10 +46,6 @@
   <build_depend>msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>message_generation</build_depend>
-<<<<<<< HEAD
-=======
-  <build_depend>car_model</build_depend>
->>>>>>> remotes/origin/map_lanelet2_test_planning_plcfatek
   <build_depend>serial</build_depend>
 
   <run_depend>message_runtime</run_depend>
@@ -58,10 +54,6 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
-<<<<<<< HEAD
-=======
-  <run_depend>car_model</run_depend>
->>>>>>> remotes/origin/map_lanelet2_test_planning_plcfatek
   <run_depend>serial</run_depend>
 
 <!-- </export> -->
