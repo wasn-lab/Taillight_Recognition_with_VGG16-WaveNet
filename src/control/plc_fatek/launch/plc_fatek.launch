@@ -1,0 +1,33 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+	<!-- nodes -->
+<<<<<<< HEAD
+	<node pkg="plc_fatek" type="control" name="control" output="screen" cwd="node" respawn="true"  >
+
+	</node>
+
+	<node pkg="plc_fatek" type="state" name="state" output="screen" cwd="node" respawn="true"  >
+
+	</node>
+
+	<node pkg="plc_fatek" type="plc_fatek" name="plc_fatek" output="screen" cwd="node" respawn="true"  >
+
+	</node>
+
+=======
+	<node pkg="plc_fatek" type="plc_fatek" name="plc_fatek" output="screen" cwd="node" respawn="true"  >
+
+	</node>
+
+	<node pkg="plc_fatek" type="control" name="control" output="screen" cwd="node" respawn="true"  >
+
+	</node>
+
+	<node pkg="plc_fatek" type="state" name="state" output="screen" cwd="node" respawn="true"  >
+
+	</node>
+
+	
+
+>>>>>>> remotes/origin/map_lanelet2_test_planning_plcfatek
+</launch>
