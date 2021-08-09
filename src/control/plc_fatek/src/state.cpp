@@ -193,7 +193,7 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "talker_state");  
 
-  ros::NodeHandle n;     
+  ros::NodeHandle n, param_n;     
 
 
   ros::Publisher chatter_pub = n.advertise<std_msgs::String>("/control/plc_write", 1000);  
@@ -202,6 +202,8 @@ int main(int argc, char **argv)
 
   ros::Subscriber control = n.subscribe("/control/plc_control", 1000, control_callback);
 
+  int update_rate;
+  param_n.getParam("update_rate", update_rate);
 
   ros::Rate loop_rate(10); 
   int count = 0;
@@ -218,28 +220,28 @@ int main(int argc, char **argv)
     ss = "034601R02966";
     msg = sendCommand(ss,49);
     chatter_pub.publish(msg); 
-    usleep(100000);
+    usleep(update_rate);
     
 
     ss = "034602R02769";
     msg = sendCommand(ss,50);   
     chatter_pub.publish(msg);
-    usleep(100000);
+    usleep(update_rate);
     
     ss = "034605R02785";
     msg = sendCommand(ss,51); 
     chatter_pub.publish(msg);
-    usleep(100000);
+    usleep(update_rate);
     
     ss = "034605R02790";
     msg = sendCommand(ss,52);
     chatter_pub.publish(msg);
-    usleep(100000);
+    usleep(update_rate);
 
     ss = "034606R02795";
     msg = sendCommand(ss,53);
     chatter_pub.publish(msg);
-    usleep(100000);
+    usleep(update_rate);
 
     ss = "6";
     msg.data = ss ;
@@ -247,18 +249,17 @@ int main(int argc, char **argv)
 
     if(con){
 
-      usleep(100000);
+      usleep(update_rate);
 
       std::string check = generateChecksum(commond);
-      char start = 2 , end = 3, ctrl = 55;;
+      char start = 2 , end = 3, ctrl = 55;
 
       commond =  ctrl + (start + commond + check + end);
       msg.data = commond;
       chatter_pub.publish(msg);
       con = false;
     }
-    
-    usleep(800000);
+
 
     ros::spinOnce();
     loop_rate.sleep();
