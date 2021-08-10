@@ -30,7 +30,7 @@ sessionname "adv"
 # We first make light-weight load_monitor to successfully connect to master,
 # and then bring up other nodes.
 screen -t init_plc_fatek
-stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/throttle/init_plc_fatek.sh^M"
+stuff "/home/itri/itriadv/src/scripts/bus_env_cbus/throttle/init_plc_fatek.sh^M"
 
 screen -t init_throttle
-stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/throttle/init_throttle.sh^M"
+stuff "/home/itri/itriadv/src/scripts/bus_env_cbus/throttle/init_throttle.sh^M"
