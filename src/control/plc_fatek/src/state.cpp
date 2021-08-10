@@ -93,7 +93,7 @@ std::string StatetoIns(State s){
   return msg;
 }
 
-void show(){
+void show(int update_rate){
   printf("\033c");
   std::cout << std::endl;
   std::cout<<"1: door             : " << state.door << std::endl;
@@ -105,6 +105,8 @@ void show(){
   std::cout<<"7: indoor light     : " << state.indoor_light << std::endl;
   std::cout<<"8: gross power      : " << state.gross_power << std::endl;
   std::cout<<"9: ACC state        : " << state.ACC_state << std::endl;
+
+  std::cout <<"Update Rate:"<< update_rate*6 <<std::endl;
 }
 
 void read_callback(const std_msgs::String::ConstPtr& msg){
@@ -203,14 +205,15 @@ int main(int argc, char **argv)
   ros::Subscriber control = n.subscribe("/control/plc_control", 1000, control_callback);
 
   int update_rate;
-  param_n.getParam("update_rate", update_rate);
+  param_n.getParam("/state/update_rate", update_rate);
 
   ros::Rate loop_rate(10); 
   int count = 0;
 
+  //std::cout <<"Update Rate:"<< update_rate <<std::endl;
   while (ros::ok())
   {
-    show();
+    show(update_rate);
 
     std_msgs::String msg;
 
@@ -246,10 +249,9 @@ int main(int argc, char **argv)
     ss = "6";
     msg.data = ss ;
     chatter_pub.publish(msg);
+    usleep(update_rate);
 
     if(con){
-
-      usleep(update_rate);
 
       std::string check = generateChecksum(commond);
       char start = 2 , end = 3, ctrl = 55;
@@ -258,6 +260,8 @@ int main(int argc, char **argv)
       msg.data = commond;
       chatter_pub.publish(msg);
       con = false;
+
+      usleep(update_rate);
     }
 
 
