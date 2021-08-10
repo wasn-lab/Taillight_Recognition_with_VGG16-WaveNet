@@ -496,7 +496,7 @@ int main(int argc, char **argv)
             // index++;
         }
         std::cout << "--------------" << std::endl;
-        Publisher_Backend.publish(msg_Backend);
+        // Publisher_Backend.publish(msg_Backend);
         //vehinfo_pub.publish(msg_VehInfo);
         rate.sleep();
     }
