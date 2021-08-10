@@ -1,0 +1,66 @@
+# ctrl+a q unblock scrolling
+altscreen on # erase screen when quit apps
+defutf8 on
+defc1 off # treat input chars 128 ~ 159 as control functions
+defflow on
+activity "activity in %n (%t)"
+bell_msg "bell in %n (%t)"
+vbell on
+startup_message off
+nethack on
+shell $SHELL
+defscrollback 100000
+
+# using Ctrl+Left & Ctrl+Right
+bindkey ^[[1;5D prev
+bindkey ^[[1;5C next
+bindkey \033[D prev
+bindkey \033[C next
+
+# encoding
+defencoding utf8
+bind b encoding big5 utf8
+bind u encoding utf8 utf8
+defbce on # erase background with current bg color
+cjkwidth off
+caption always "%n(%t@%H)"
+sessionname "adv"
+
+# ROS has trouble when dealing multiple nodes concurrently.
+# We first make light-weight load_monitor to successfully connect to master,
+# and then bring up other nodes.
+screen -t init_load_monitor
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_load_monitor.sh^M"
+
+screen -t init_drivenet_group_a
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_drivenet_group_a.sh^M"
+
+screen -t init_drivenet_side
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_drivenet_side.sh^M"
+
+screen -t init_drivenet_top
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_drivenet_top.sh^M"
+
+screen -t init_alignment
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_alignment.sh^M"
+
+screen -t init_repub_cam_raw
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_repub_cam_raw.sh^M"
+
+screen -t init_image_compressor
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_image_compressor.sh^M"
+
+screen -t init_detect_image_web_streaming.sh
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_detect_image_web_streaming.sh^M"
+
+screen -t init_rosbag_sender
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_rosbag_sender.sh^M"
+
+screen -t init_fail_safe
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh^M"
+
+#screen -t init_lightnet
+#stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_lightnet.sh^M"
+
+screen -t init_msg_recorder
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_msg_recorder.sh^M"
