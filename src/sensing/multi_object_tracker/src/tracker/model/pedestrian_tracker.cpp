@@ -143,6 +143,15 @@ bool PedestrianTracker::getEstimatedDynamicObject(const ros::Time& time,
   object.state.orientation_reliable = false;
 
   // fill: velocity
+  // IMPORTANT:
+  // twist.linear.x and .y:  base_link-frame filtered_vx_ filtered_vy_
+  // twist.angular.x and .y:       map-frame filtered_vx_ filtered_vy_
+  // ----------------------
+  // The standard way: Place map-frame filtered_vx_ filtered_vy_ on twist.linear.x and .y, respectively,
+  // since the frame_id of /objects is set 'map'.
+  // However, Tier4 designed twist.linear.x and .y in this fashion for map_based_prediction's use, and
+  // this hindered us from adjusting them freely.
+
   double roll, pitch, yaw;
   tf2::Quaternion quaternion;
   tf2::fromMsg(object.state.pose_covariance.pose.orientation, quaternion);
@@ -150,6 +159,9 @@ bool PedestrianTracker::getEstimatedDynamicObject(const ros::Time& time,
 
   object.state.twist_covariance.twist.linear.x = filtered_vx_ * std::cos(-yaw) - filtered_vy_ * std::sin(-yaw);
   object.state.twist_covariance.twist.linear.y = filtered_vx_ * std::sin(-yaw) + filtered_vy_ * std::cos(-yaw);
+
+  object.state.twist_covariance.twist.angular.x = filtered_vx_;
+  object.state.twist_covariance.twist.angular.y = filtered_vy_;
 
   object.state.twist_reliable = true;
 
