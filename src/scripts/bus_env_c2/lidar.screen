@@ -1,0 +1,93 @@
+# ctrl+a q unblock scrolling
+altscreen on # erase screen when quit apps
+defutf8 on
+defc1 off # treat input chars 128 ~ 159 as control functions
+defflow on
+activity "activity in %n (%t)"
+bell_msg "bell in %n (%t)"
+vbell on
+startup_message off
+nethack on
+shell $SHELL
+defscrollback 100000
+
+# using Ctrl+Left & Ctrl+Right
+bindkey ^[[1;5D prev
+bindkey ^[[1;5C next
+bindkey \033[D prev
+bindkey \033[C next
+
+# encoding
+defencoding utf8
+bind b encoding big5 utf8
+bind u encoding utf8 utf8
+defbce on # erase background with current bg color
+cjkwidth off
+caption always "%n(%t@%H)"
+sessionname "adv"
+
+screen -t init_load_monitor
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_load_monitor.sh^M"
+
+screen -t init_lidar
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_lidar.sh^M"
+
+screen -t init_ouster64_to_xyzir.sh
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_ouster64_to_xyzir.sh^M"
+
+screen -t init_pc2_compressor
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_pc2_compressor.sh^M"
+
+screen -t run_xwin_grabber_rviz
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_xwin_grabber_rviz.sh^M"
+
+screen -t run_web_video_server
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_web_video_server.sh^M"
+
+screen -t run_sys_check_gateway
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_sys_check_gateway.sh^M"
+
+screen -t init_tracking_3d
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_tracking_3d.sh^M"
+
+screen -t init_xyz2lla
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_xyz2lla.sh^M"
+
+screen -t init_obj_msg_converter
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_obj_msg_converter.sh^M"
+
+screen -t init_multi_object_tracker
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_multi_object_tracker.sh^M"
+
+screen -t init_map_based_prediction
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_map_based_prediction.sh^M"
+
+screen -t init_dynamic_object_vis
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_dynamic_object_vis.sh^M"
+
+screen -t init_adv_to_server_lanelet2
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_adv_to_server_lanelet2.sh^M"
+
+screen -t init_adv_to_server_events
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_adv_to_server_lanelet2_events.sh^M"
+
+screen -t init_pedcross
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_pedcross.sh^M"
+
+screen -t init_pedcross_tf
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_pedcross_tf.sh^M"
+
+screen -t replay_lidar_data_to_localization
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_replay_lidar_data_to_localization.sh^M"
+
+screen -t detection_viz
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_detection_viz.sh^M"
+
+screen -t hmi
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_hmi.sh^M"
+
+screen -t pad_issue_reporter
+stuff "bash /home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_pad_issue_reporter.sh^M"
+
+screen -t init_rviz_traffic_light
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_rviz_traffic_light.sh^M"
