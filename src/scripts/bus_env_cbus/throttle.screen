@@ -29,17 +29,8 @@ sessionname "adv"
 # ROS has trouble when dealing multiple nodes concurrently.
 # We first make light-weight load_monitor to successfully connect to master,
 # and then bring up other nodes.
-screen -t init_load_monitor
-stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_load_monitor.sh^M"
-
-screen -t init_camera
-stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_camera.sh^M"
-
-screen -t init_control_new_lanelet2
-stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_control_new_lanelet2.sh^M"
-
-screen -t init_radar
-stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_radar.sh^M"
-
 screen -t init_plc_fatek
-stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_plc_fatek.sh^M"
+stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/throttle/init_plc_fatek.sh^M"
+
+screen -t init_throttle
+stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/throttle/init_throttle.sh^M"
