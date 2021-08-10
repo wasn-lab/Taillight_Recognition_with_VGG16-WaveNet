@@ -19,6 +19,12 @@ sudo apt install ros-melodic-grid-map
 cd /usr/include
 sudo ln -s opencv4/ opencv
 ```
+
+* setup the max power of xavier
+```
+sudo nvpmodel -m 0
+```
+
 ### Compile 
 
 **CAR_MODEL = B1_V3:**
@@ -126,7 +132,7 @@ use rqt_image_view to view following topic
 /cam/back_top_120/raw
 ```
 
-### How to install camera driver (CAR_MODEL = B1_V3)
+### Install camera driver (CAR_MODEL = B1_V3)
 
 **install camera driver for car mode**
 ```
@@ -139,18 +145,18 @@ bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar02
 ```
 
 ### How to install camera driver when xavier bootup (CAR_MODEL = B1_V3)
-**install camera driver for car mode**
+**Add camera driver install command to /etc/rc.local. Install camera driver for car mode**
 ```
 sudo bash /home/nvidia/itriadv/src/scripts/bus_env/xavier/init_car_mode_camera_driver_to_bootup_script_b1_v3.sh
 ```
 
-**install camera driver for laboratory mode**
+**Add camera driver install command to /etc/rc.local. Install camera driver for laboratory mode**
 ```
 bash /home/nvidia/itriadv/src/scripts/bus_env/xavier/init_laboratory_mode_camera_driver_to_bootup_script_b1_v3.sh
 ```
 
 
-### How to install camera driver (CAR_MODEL = C1)
+### Install camera driver (CAR_MODEL = C1)
 
 **install camera driver for car mode**
 ```
@@ -163,17 +169,17 @@ bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar02
 ```
 
 ### How to install camera driver when xavier bootup (CAR_MODEL = C1)
-**install camera driver for car mode**
+**Add camera driver install command to /etc/rc.local. Install camera driver for car mode**
 ```
 bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_car_mode_camera_driver_to_bootup_script_c1.sh
 ```
 
-**install camera driver for laboratory mode**
+**Add camera driver install command to /etc/rc.local. Install camera driver for laboratory mode**
 ```
 bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_laboratory_mode_camera_driver_to_bootup_script_c1.sh
 ```
 
-### How to install camera driver (CAR_MODEL = C2)
+### Install camera driver (CAR_MODEL = C2)
 
 **install camera driver for car mode**
 ```
@@ -186,12 +192,12 @@ bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar02
 ```
 
 ### How to install camera driver when xavier bootup (CAR_MODEL = C2)
-**install camera driver for car mode**
+**Add camera driver install command to /etc/rc.local. Install camera driver for car mode**
 ```
 bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_car_mode_camera_driver_to_bootup_script_c2.sh
 ```
 
-**install camera driver for laboratory mode**
+**Add camera driver install command to /etc/rc.local. Install camera driver for laboratory mode**
 ```
 bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_laboratory_mode_camera_driver_to_bootup_script_c2.sh
 
