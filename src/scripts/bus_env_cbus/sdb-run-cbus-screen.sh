@@ -11,10 +11,15 @@ set -x
 echo starting programs........
 
 readonly cur_dir=$(dirname $(readlink -e $0))
-rosparam set /south_bridge/vid Oq5YN1hgzAhA
-rosparam set /south_bridge/license_plate_number MOREA
-rosparam set /south_bridge/company_name itri
-rosparam set /car_model C1
+readonly car_model=$(rosparam get /car_model)
+
+if [[ -z "${car_model}" ]]; then
+  echo "car model not set. Use default setting"
+  rosparam set /south_bridge/vid Oq5YN1hgzAhA
+  rosparam set /south_bridge/license_plate_number MOREA
+  rosparam set /south_bridge/company_name itri
+  rosparam set /car_model C1
+fi
 
 gnome-terminal -e "screen -c ${cur_dir}/lidar.screen"
 gnome-terminal -e 'ssh -t local "screen -c /home/local/itriadv/src/scripts/bus_env_cbus/localization.screen"'
