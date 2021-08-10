@@ -6,10 +6,10 @@
 	</node>
 
 	<node pkg="plc_fatek" type="state" name="state" output="screen" cwd="node" respawn="true"  >
-		<param name="update_rate" value="100000" />
+		<param name="update_rate" type="int" value="85000" />
 	</node>
 
 	<node pkg="plc_fatek" type="plc_fatek" name="plc_fatek" output="screen" cwd="node" respawn="true"  >
-
+		<param name="portpath" value="/dev/ttyS0" />
 	</node>
 </launch>
