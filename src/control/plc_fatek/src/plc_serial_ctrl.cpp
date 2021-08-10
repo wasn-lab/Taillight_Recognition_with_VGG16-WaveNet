@@ -58,7 +58,6 @@ void PLCControl::write_callback(const std_msgs::String::ConstPtr& msg) {
             ser.write(ss);   //send serial data
         }
         else{
-            //ROS_INFO_STREAM("Writing to serial port: " << msg->data);
             ROS_INFO_STREAM("Serialport is unavailable.\n");
         }
     }
@@ -115,7 +114,6 @@ void PLCControl::run(){
 
     while(ros::ok()) 
     { 
-        //std::cout << ser.available() << std::endl;
         if(ser.available()){ 
             std::string result;
             std_msgs::String state;
@@ -156,13 +154,8 @@ void PLCControl::run(){
                     sendMsg1(result);
                     break;
             }
-            //Publisher_Backend.publish(msg_Backend);
-
-            //sendMsg2(result);
             //std::cout << result << std::endl;
             //ROS_INFO_STREAM("Read: " << result.data);
-            //read.publish(result); 
-            //usleep(2000000);
         } 
 
         ros::spinOnce(); 
@@ -173,13 +166,7 @@ void PLCControl::run(){
 }
 
 std::string PLCControl::readMsg(std::string data){
-    //if((data[0] != 2) && (data[data.length()-1] != 3))
-    //    return data;
-    //cmd = data.substr(1,2);
-    //std::string msg;
-
     std::string msg = data.substr(6);
-    //msg[data.length()-5] = '\0';
     msg = msg.substr(0,msg.length()-3);
     //std::cout<<msg<<std::endl;
     return msg;
@@ -187,16 +174,7 @@ std::string PLCControl::readMsg(std::string data){
 
 void PLCControl::sendMsg1(const std::string msg){
     int bin[4];
-    /*
-    for(int i = 0; i < msg.length(); i++){
-        HexToBin(msg[i],bin);
-        for(int j=0; j<4; j++){
-            std::cout << bin[j] <<" ";
-        }
-    }
 
-    std::cout<<std::endl;
-    */
     //publish data
     HexToBin(msg[1],bin);
     msg_Backend.ACC_state=bin[2];
@@ -232,8 +210,7 @@ void PLCControl::sendMsg2(const std::string msg){
             //std::cout << n << " ";
             data[i/4] *= 16;
             data[i/4] += n; 
-        }
-        //std::cout << data[i/4] << std::endl;    
+        }  
     }
     //std::cout<<std::endl;
     
@@ -382,7 +359,11 @@ std::string PLCControl::generateChecksum(std::string str){
 int main (int argc, char** argv){
 
     ros::init(argc, argv, "plc_serial_ctrl");
-    std::string portpath = "/dev/ttyS0";
+
+    std::string portpath;
+    ros::NodeHandle n;
+    n.getParam("/plc_fatek/portpath", portpath);
+
     PLCControl obj(portpath);
 
     ros::spin();

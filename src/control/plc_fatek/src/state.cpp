@@ -57,10 +57,9 @@ void HexToBin (char c, int* bin){
 
 char DecToHex (int n)
 {
-    char hex[] = {'0', '1', '2', '3','4','5'
-                 ,'6','7','8','9','A','B','C'
-                 ,'D','E','F'
-                 };
+    char hex[] = {'0', '1', '2', '3', '4', '5'
+                 ,'6', '7', '8', '9', 'A', 'B', 'C'
+                 ,'D', 'E', 'F'};
     
     return hex[n];
 }
@@ -106,7 +105,8 @@ void show(int update_rate){
   std::cout<<"8: gross power      : " << state.gross_power << std::endl;
   std::cout<<"9: ACC state        : " << state.ACC_state << std::endl;
 
-  std::cout <<"Update Rate:"<< update_rate*6 <<std::endl;
+  double time = (double)update_rate*6/1000000;
+  std::cout <<"Update Rate:"<< time << " s" <<std::endl;
 }
 
 void read_callback(const std_msgs::String::ConstPtr& msg){
