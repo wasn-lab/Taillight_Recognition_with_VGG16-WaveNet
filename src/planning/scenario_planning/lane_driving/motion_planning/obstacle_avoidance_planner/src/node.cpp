@@ -74,6 +74,7 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner()
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   pnh_.param<bool>("use_freespace", use_freespace_, false);
   pnh_.param<bool>("disable_lane_constrain", disable_lane_constrain_, false);
+  pnh_.param<std::string>("location_name", location_name_, "ITRI");
   ///////////////////////////////////////////////////////////////////////////////////////////////////
 
   qp_param_ = std::make_unique<QPParam>();
@@ -110,7 +111,7 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner()
   pnh_.param<double>(
     "clearance_from_object_for_straight", constrain_param_->clearance_from_object_for_straight,
     10.0);
-  pnh_.param<double>("min_clearance_from_road", constrain_param_->min_clearance_from_road, 0.1);
+  pnh_.param<double>("min_clearance_from_road_"+location_name_, constrain_param_->min_clearance_from_road, 0.1);
   pnh_.param<double>("min_clearance_from_object", constrain_param_->min_clearance_from_object, 0.6);
   pnh_.param<double>("min_lat_constrain_space", constrain_param_->min_lat_constrain_space, 0.1);
   pnh_.param<double>("min_lon_constrain_space", constrain_param_->min_lon_constrain_space, 0.1);
