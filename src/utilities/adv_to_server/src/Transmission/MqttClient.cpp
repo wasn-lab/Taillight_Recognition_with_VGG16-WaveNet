@@ -76,6 +76,12 @@ void MqttClient::setTLS()
   }else if( vid == "Oq5YN1hgzAhA"){
     car = "C1";
     port = 3052;
+  }else if(vid == "Kvu9zyAF5CAB"){
+    car = "C2";
+    port = 3051;
+  }else if(vid == "4nbbnxUszZGj"){
+    car = "C3";
+    port = 3051;
   }
   MQTT_CA_CRT = path + "/src/Transmission/TLS/" + car + "/ca.crt";
   MQTT_CLIENT_CRT = path + "/src/Transmission/TLS/" + car + "/client.crt";
