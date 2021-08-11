@@ -78,7 +78,7 @@ void MqttClient::setTLS()
     port = 3052;
   }else if(vid == "Kvu9zyAF5CAB"){
     car = "C2";
-    port = "3051";
+    port = 3051;
   }else if(vid == "4nbbnxUszZGj"){
     car = "C3";
     port = 3051;
