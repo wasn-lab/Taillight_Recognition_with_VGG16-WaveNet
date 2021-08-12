@@ -18,4 +18,7 @@ python scripts/wait_topic.py --topic-name /LidarDetection
 
 cd $CWD
 
+readonly car_model=$(rosparam get /car_model)
+if [[ "${car_model}" == "C1" ]]; then
 roslaunch --wait alignment c1_2d_3d_matching.launch
+fi
