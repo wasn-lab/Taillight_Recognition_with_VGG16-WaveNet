@@ -1,187 +1,185 @@
-1
-(Unnamed ITensor* 138): 3d9e24f6
-(Unnamed ITensor* 11): 3d122435
-(Unnamed ITensor* 196): 3d3771a6
-(Unnamed ITensor* 200): 3e61c581
-(Unnamed ITensor* 5): 3d7f83e9
-(Unnamed ITensor* 190): 3d5e9a04
-(Unnamed ITensor* 31): 3d012dba
-(Unnamed ITensor* 34): 3d7e2712
-(Unnamed ITensor* 173): 3ce4e705
-(Unnamed ITensor* 49): 3d3ca322
-(Unnamed ITensor* 58): 3d4799be
-(Unnamed ITensor* 10): 3d8e9aef
-(Unnamed ITensor* 20): 3d0c5bcd
-(Unnamed ITensor* 220): 3e017011
-(Unnamed ITensor* 38): 3cf32a7f
-(Unnamed ITensor* 90): 3d272bbb
-(Unnamed ITensor* 47): 3d3834f2
-(Unnamed ITensor* 143): 3daccd06
-(Unnamed ITensor* 166): 3cdc6d7a
-(Unnamed ITensor* 42): 3d25048d
-(Unnamed ITensor* 243): 3d5aa87f
-(Unnamed ITensor* 44): 3d81566d
-(Unnamed ITensor* 17): 3db78f50
-(Unnamed ITensor* 174): 3d4955dd
-(Unnamed ITensor* 179): 3de909fd
-(Unnamed ITensor* 128): 3cc2b901
-(Unnamed ITensor* 51): 3d5a2b76
-(Unnamed ITensor* 251): 3ddfc9cd
-(Unnamed ITensor* 27): 3da9fb51
-(Unnamed ITensor* 62): 3cdfd13a
-(Unnamed ITensor* 139): 3d027f2b
-(Unnamed ITensor* 232): 3da87451
-(Unnamed ITensor* 141): 3d95a61d
-(Unnamed ITensor* 103): 3d829dc3
-(Unnamed ITensor* 169): 3dfd8c08
-(Unnamed ITensor* 142): 3d113798
-(Unnamed ITensor* 148): 3de33201
-(Unnamed ITensor* 114): 3cddb3c5
-(Unnamed ITensor* 32): 3d6b2def
-(Unnamed ITensor* 149): 3d218833
-(Unnamed ITensor* 150): 3dd9fc03
-(Unnamed ITensor* 228): 3e65cc70
-(Unnamed ITensor* 153): 3cee2b9f
-(Unnamed ITensor* 165): 3d8d9e6c
-(Unnamed ITensor* 8): 3d5e29aa
-(Unnamed ITensor* 236): 3da87451
-(Unnamed ITensor* 252): 3d536ac9
-(Unnamed ITensor* 104): 3d1bd3cd
-(Unnamed ITensor* 212): 3d67560b
-(Unnamed ITensor* 245): 3decfe6e
-(Unnamed ITensor* 186): 3dc81621
-(Unnamed ITensor* 227): 3d6a3350
-yolo_95: 3ca36952
-(Unnamed ITensor* 221): 3d3fb1ed
-(Unnamed ITensor* 223): 3dfdd89e
-(Unnamed ITensor* 48): 3cb6afdc
-(Unnamed ITensor* 205): 3c010a14
-(Unnamed ITensor* 246): 3d67692d
-yolo_107: 3ca6737b
-(Unnamed ITensor* 177): 3ca3a1f3
-(Unnamed ITensor* 235): 3da87451
-(Unnamed ITensor* 254): 3df7515b
-(Unnamed ITensor* 189): 3dd2db37
-(Unnamed ITensor* 155): 3e05aecf
-(Unnamed ITensor* 256): 3ec5ca52
-(Unnamed ITensor* 204): 3d9d7869
-(Unnamed ITensor* 211): 3dea57d4
-(Unnamed ITensor* 239): 3df62870
-(Unnamed ITensor* 56): 3d48131d
-(Unnamed ITensor* 255): 3d907751
-(Unnamed ITensor* 240): 3d7609f1
-(Unnamed ITensor* 236) copy: 3da87451
-(Unnamed ITensor* 249): 3d448b76
-(Unnamed ITensor* 199): 3d3a9dd1
-(Unnamed ITensor* 233): 3c010a14
-(Unnamed ITensor* 203): 3e10d195
-(Unnamed ITensor* 135): 3d3f02dd
-(Unnamed ITensor* 231): 3e3eb924
-yolo_83: 3c51985c
-(Unnamed ITensor* 207): 3d9d7869
-(Unnamed ITensor* 198): 3d958a23
-(Unnamed ITensor* 242): 3de89ceb
-(Unnamed ITensor* 195): 3dd6da67
-(Unnamed ITensor* 158): 3d9ea9b5
-(Unnamed ITensor* 181): 3d9a8dc3
-(Unnamed ITensor* 176): 3e1afa9e
-(Unnamed ITensor* 180): 3d73b513
-(Unnamed ITensor* 214): 3de7af38
-(Unnamed ITensor* 183): 3ddf7d0a
-(Unnamed ITensor* 77): 3dc05c86
-(Unnamed ITensor* 120): 3d40848a
-(Unnamed ITensor* 80): 3d089205
-(Unnamed ITensor* 206): 3c010a14
-(Unnamed ITensor* 172): 3db260b1
-(Unnamed ITensor* 100): 3c2834fb
-(Unnamed ITensor* 108): 3d042a18
-(Unnamed ITensor* 113): 3d3da837
-(Unnamed ITensor* 106): 3d2f0e24
-(Unnamed ITensor* 61): 3d4be371
-(Unnamed ITensor* 82): 3dbc1b58
-(Unnamed ITensor* 117): 3d9c2f74
-(Unnamed ITensor* 65): 3d910918
-(Unnamed ITensor* 184): 3d66d7cf
-(Unnamed ITensor* 86): 3d6fbf5d
-(Unnamed ITensor* 115): 3d30a22a
-(Unnamed ITensor* 101): 3d0ced63
-(Unnamed ITensor* 125): 3ceb25dd
-(Unnamed ITensor* 146): 3ce2afac
-(Unnamed ITensor* 68): 3d719449
-(Unnamed ITensor* 87): 3cdf1a72
-(Unnamed ITensor* 97): 3d20ef25
-(Unnamed ITensor* 13): 3dd16c07
-(Unnamed ITensor* 99): 3d16b996
-(Unnamed ITensor* 132): 3cf30552
-(Unnamed ITensor* 217): 3defcbbb
-(Unnamed ITensor* 156): 3d2eb136
-(Unnamed ITensor* 215): 3d791778
-(Unnamed ITensor* 83): 3d1f2efc
-(Unnamed ITensor* 122): 3d439edd
-(Unnamed ITensor* 75): 3d760b84
-(Unnamed ITensor* 131): 3dab53e8
-(Unnamed ITensor* 41): 3c5b5c71
-(Unnamed ITensor* 129): 3d78df5a
-(Unnamed ITensor* 208): 3d9d7869
-(Unnamed ITensor* 124): 3d8fa612
-(Unnamed ITensor* 111): 3d0903b9
-(Unnamed ITensor* 79): 3d7f75ff
-(Unnamed ITensor* 4): 3da383cf
-(Unnamed ITensor* 21): 3caeb2ff
-(Unnamed ITensor* 84): 3dc00432
-(Unnamed ITensor* 167): 3d4d9ca7
-(Unnamed ITensor* 110): 3d8f0836
-(Unnamed ITensor* 37): 3d72035b
-(Unnamed ITensor* 118): 3cff3f74
-(Unnamed ITensor* 76): 3d018598
-(Unnamed ITensor* 192): 3dc727ea
-(Unnamed ITensor* 93): 3d9a5408
-(Unnamed ITensor* 96): 3d86d9b0
-(Unnamed ITensor* 121): 3cb655db
-(Unnamed ITensor* 94): 3d07628c
-(Unnamed ITensor* 1): 4000890a
-(Unnamed ITensor* 160): 3cfba38d
-(Unnamed ITensor* 89): 3dba339b
-(Unnamed ITensor* 91): 3dbf8067
-(Unnamed ITensor* 73): 3cf87d55
-(Unnamed ITensor* 193): 3d52d93d
-(Unnamed ITensor* 248): 3de25c34
-(Unnamed ITensor* 72): 3d65059e
-(Unnamed ITensor* 52): 3cf1b3fc
-(Unnamed ITensor* 187): 3d789d0a
-(Unnamed ITensor* 70): 3d7f2013
-(Unnamed ITensor* 69): 3d04b4a6
-(Unnamed ITensor* 145): 3db4b294
-(Unnamed ITensor* 28): 3d1bbd3c
-(Unnamed ITensor* 163): 3ce454b3
-(Unnamed ITensor* 127): 3d79311e
-(Unnamed ITensor* 208) copy: 3d9d7869
-(Unnamed ITensor* 59): 3d2272f6
-(Unnamed ITensor* 134): 3db11382
-(Unnamed ITensor* 234): 3c010a14
-(Unnamed ITensor* 159): 3c99632b
-(Unnamed ITensor* 66): 3d0bf9da
-(Unnamed ITensor* 218): 3d3534b1
-(Unnamed ITensor* 226): 3dc3e0cc
-(Unnamed ITensor* 23): 3d975561
-(Unnamed ITensor* 18): 3d541019
-(Unnamed ITensor* 15): 3d848913
-(Unnamed ITensor* 35): 3d1166b3
-(Unnamed ITensor* 40): 3d323bd4
-(Unnamed ITensor* 107): 3c9cc128
-(Unnamed ITensor* 55): 3cb35e4f
-(Unnamed ITensor* 170): 3cd5bff6
-(Unnamed ITensor* 24): 3cb5520a
-(Unnamed ITensor* 152): 3de059df
-(Unnamed ITensor* 7): 3d866e55
-(Unnamed ITensor* 45): 3d159fff
-(Unnamed ITensor* 14): 3d3fa060
-(Unnamed ITensor* 63): 3d4e7ce7
+TRT-6001-EntropyCalibration
 data: 40000889
-(Unnamed ITensor* 136): 3dabe8b5
-(Unnamed ITensor* 2): 3c008912
-(Unnamed ITensor* 30): 3d9a2846
-(Unnamed ITensor* 25): 3d5dc4ee
-(Unnamed ITensor* 162): 3e0e54f5
-(Unnamed ITensor* 224): 3d2b1abd
-(Unnamed ITensor* 54): 3d604054
+(Unnamed Layer* 0) [Constant]_output: 4000890a
+(Unnamed Layer* 1) [ElementWise]_output: 3c008912
+(Unnamed Layer* 3) [Scale]_output: 3e13fe20
+(Unnamed Layer* 4) [Plugin]_output_0: 3d983f7a
+(Unnamed Layer* 6) [Scale]_output: 3dc289cc
+(Unnamed Layer* 7) [Plugin]_output_0: 3d5a23b0
+(Unnamed Layer* 9) [Scale]_output: 3dc62a6f
+(Unnamed Layer* 10) [Plugin]_output_0: 3d683b2d
+(Unnamed Layer* 12) [Scale]_output: 3e1d28b1
+(Unnamed Layer* 13) [Plugin]_output_0: 3d99e437
+(Unnamed Layer* 14) [ElementWise]_output: 3dbe6066
+(Unnamed Layer* 16) [Scale]_output: 3dc6afba
+(Unnamed Layer* 17) [Plugin]_output_0: 3d82393a
+(Unnamed Layer* 19) [Scale]_output: 3d5b1b0a
+(Unnamed Layer* 20) [Plugin]_output_0: 3ca57fc8
+(Unnamed Layer* 22) [Scale]_output: 3d942539
+(Unnamed Layer* 23) [Plugin]_output_0: 3d0e7029
+(Unnamed Layer* 24) [ElementWise]_output: 3d7dcd72
+(Unnamed Layer* 26) [Scale]_output: 3e01caf5
+(Unnamed Layer* 27) [Plugin]_output_0: 3d25846d
+(Unnamed Layer* 29) [Scale]_output: 3db19589
+(Unnamed Layer* 30) [Plugin]_output_0: 3d1334d8
+(Unnamed Layer* 31) [ElementWise]_output: 3dac4fd7
+(Unnamed Layer* 33) [Scale]_output: 3d7ef5e9
+(Unnamed Layer* 34) [Plugin]_output_0: 3d6635d4
+(Unnamed Layer* 36) [Scale]_output: 3d80a02d
+(Unnamed Layer* 37) [Plugin]_output_0: 3cf6ef0a
+(Unnamed Layer* 39) [Scale]_output: 3d58bf49
+(Unnamed Layer* 40) [Plugin]_output_0: 3c5bafb2
+(Unnamed Layer* 41) [ElementWise]_output: 3d1f9fcc
+(Unnamed Layer* 43) [Scale]_output: 3dc03971
+(Unnamed Layer* 44) [Plugin]_output_0: 3d4a701c
+(Unnamed Layer* 46) [Scale]_output: 3d4473b5
+(Unnamed Layer* 47) [Plugin]_output_0: 3ca5f630
+(Unnamed Layer* 48) [ElementWise]_output: 3d4fc97e
+(Unnamed Layer* 50) [Scale]_output: 3d77ddc1
+(Unnamed Layer* 51) [Plugin]_output_0: 3d22e208
+(Unnamed Layer* 53) [Scale]_output: 3d74a4c8
+(Unnamed Layer* 54) [Plugin]_output_0: 3cc39914
+(Unnamed Layer* 55) [ElementWise]_output: 3d686e4f
+(Unnamed Layer* 57) [Scale]_output: 3d9852a1
+(Unnamed Layer* 58) [Plugin]_output_0: 3d5c52ee
+(Unnamed Layer* 60) [Scale]_output: 3d3ee9bb
+(Unnamed Layer* 61) [Plugin]_output_0: 3ca88e0a
+(Unnamed Layer* 62) [ElementWise]_output: 3d6f23df
+(Unnamed Layer* 64) [Scale]_output: 3d938a78
+(Unnamed Layer* 65) [Plugin]_output_0: 3d0f2697
+(Unnamed Layer* 67) [Scale]_output: 3d6f6a0b
+(Unnamed Layer* 68) [Plugin]_output_0: 3cfcd84a
+(Unnamed Layer* 69) [ElementWise]_output: 3da32df7
+(Unnamed Layer* 71) [Scale]_output: 3d79c197
+(Unnamed Layer* 72) [Plugin]_output_0: 3d2022a3
+(Unnamed Layer* 74) [Scale]_output: 3dd0396d
+(Unnamed Layer* 75) [Plugin]_output_0: 3ce27106
+(Unnamed Layer* 76) [ElementWise]_output: 3d998f2c
+(Unnamed Layer* 78) [Scale]_output: 3db1414a
+(Unnamed Layer* 79) [Plugin]_output_0: 3cfff1ca
+(Unnamed Layer* 81) [Scale]_output: 3ddef90b
+(Unnamed Layer* 82) [Plugin]_output_0: 3d0e9e7c
+(Unnamed Layer* 83) [ElementWise]_output: 3daab84a
+(Unnamed Layer* 85) [Scale]_output: 3da3ac76
+(Unnamed Layer* 86) [Plugin]_output_0: 3d08f9c8
+(Unnamed Layer* 88) [Scale]_output: 3da64957
+(Unnamed Layer* 89) [Plugin]_output_0: 3d31a8bc
+(Unnamed Layer* 90) [ElementWise]_output: 3ddaadf9
+(Unnamed Layer* 92) [Scale]_output: 3dafe81b
+(Unnamed Layer* 93) [Plugin]_output_0: 3d1ed924
+(Unnamed Layer* 95) [Scale]_output: 3d967d4b
+(Unnamed Layer* 96) [Plugin]_output_0: 3d2666f7
+(Unnamed Layer* 98) [Scale]_output: 3d2d3128
+(Unnamed Layer* 99) [Plugin]_output_0: 3c3ac963
+(Unnamed Layer* 100) [ElementWise]_output: 3ced2f62
+(Unnamed Layer* 102) [Scale]_output: 3d8ad815
+(Unnamed Layer* 103) [Plugin]_output_0: 3d26c264
+(Unnamed Layer* 105) [Scale]_output: 3d3e83f2
+(Unnamed Layer* 106) [Plugin]_output_0: 3cb4da12
+(Unnamed Layer* 107) [ElementWise]_output: 3d1af74d
+(Unnamed Layer* 109) [Scale]_output: 3d85eaa8
+(Unnamed Layer* 110) [Plugin]_output_0: 3cec6f23
+(Unnamed Layer* 112) [Scale]_output: 3d725ad3
+(Unnamed Layer* 113) [Plugin]_output_0: 3ca92fda
+(Unnamed Layer* 114) [ElementWise]_output: 3d47de0e
+(Unnamed Layer* 116) [Scale]_output: 3da166eb
+(Unnamed Layer* 117) [Plugin]_output_0: 3ccb6bcb
+(Unnamed Layer* 119) [Scale]_output: 3d682058
+(Unnamed Layer* 120) [Plugin]_output_0: 3cb5632a
+(Unnamed Layer* 121) [ElementWise]_output: 3d4f3400
+(Unnamed Layer* 123) [Scale]_output: 3d9125e0
+(Unnamed Layer* 124) [Plugin]_output_0: 3ce29b09
+(Unnamed Layer* 126) [Scale]_output: 3d7bd8b2
+(Unnamed Layer* 127) [Plugin]_output_0: 3cb9d51d
+(Unnamed Layer* 128) [ElementWise]_output: 3d7d0b74
+(Unnamed Layer* 130) [Scale]_output: 3d9504da
+(Unnamed Layer* 131) [Plugin]_output_0: 3cc23aec
+(Unnamed Layer* 133) [Scale]_output: 3da30b53
+(Unnamed Layer* 134) [Plugin]_output_0: 3d01fc51
+(Unnamed Layer* 135) [ElementWise]_output: 3d7b051e
+(Unnamed Layer* 137) [Scale]_output: 3d8dbf01
+(Unnamed Layer* 138) [Plugin]_output_0: 3ce6cdd7
+(Unnamed Layer* 140) [Scale]_output: 3d911cfe
+(Unnamed Layer* 141) [Plugin]_output_0: 3cebbb6d
+(Unnamed Layer* 142) [ElementWise]_output: 3d907018
+(Unnamed Layer* 144) [Scale]_output: 3d8c2544
+(Unnamed Layer* 145) [Plugin]_output_0: 3cd28136
+(Unnamed Layer* 147) [Scale]_output: 3de02d57
+(Unnamed Layer* 148) [Plugin]_output_0: 3d09bad4
+(Unnamed Layer* 149) [ElementWise]_output: 3db2a124
+(Unnamed Layer* 151) [Scale]_output: 3db90bdf
+(Unnamed Layer* 152) [Plugin]_output_0: 3cf17a5c
+(Unnamed Layer* 154) [Scale]_output: 3dc6ea5a
+(Unnamed Layer* 155) [Plugin]_output_0: 3d0a19a1
+(Unnamed Layer* 157) [Scale]_output: 3d84e0f2
+(Unnamed Layer* 158) [Plugin]_output_0: 3ca0f56f
+(Unnamed Layer* 159) [ElementWise]_output: 3cf4a380
+(Unnamed Layer* 161) [Scale]_output: 3dbde275
+(Unnamed Layer* 162) [Plugin]_output_0: 3cd7611d
+(Unnamed Layer* 164) [Scale]_output: 3d8f2862
+(Unnamed Layer* 165) [Plugin]_output_0: 3ccdfe27
+(Unnamed Layer* 166) [ElementWise]_output: 3d1f7f5c
+(Unnamed Layer* 168) [Scale]_output: 3dac4e3f
+(Unnamed Layer* 169) [Plugin]_output_0: 3cd43cc8
+(Unnamed Layer* 171) [Scale]_output: 3d8bc1b3
+(Unnamed Layer* 172) [Plugin]_output_0: 3ce32b2f
+(Unnamed Layer* 173) [ElementWise]_output: 3d3ee1ec
+(Unnamed Layer* 175) [Scale]_output: 3dcd2a7e
+(Unnamed Layer* 176) [Plugin]_output_0: 3cbef7ab
+(Unnamed Layer* 178) [Scale]_output: 3de76977
+(Unnamed Layer* 179) [Plugin]_output_0: 3d3dc344
+(Unnamed Layer* 180) [ElementWise]_output: 3d99dc00
+(Unnamed Layer* 182) [Scale]_output: 3db4e34e
+(Unnamed Layer* 183) [Plugin]_output_0: 3d4cc28a
+(Unnamed Layer* 185) [Scale]_output: 3dc17ddd
+(Unnamed Layer* 186) [Plugin]_output_0: 3d5c4b95
+(Unnamed Layer* 188) [Scale]_output: 3dc7eb1f
+(Unnamed Layer* 189) [Plugin]_output_0: 3d56770a
+(Unnamed Layer* 191) [Scale]_output: 3dc4ae3e
+(Unnamed Layer* 192) [Plugin]_output_0: 3d538954
+(Unnamed Layer* 194) [Scale]_output: 3dd64b34
+(Unnamed Layer* 195) [Plugin]_output_0: 3d31b09c
+(Unnamed Layer* 197) [Scale]_output: 3db063e0
+(Unnamed Layer* 198) [Plugin]_output_0: 3d6ff260
+(Unnamed Layer* 199) [Convolution]_output: 3e686131
+yolo_83: 3c3c1c39
+(Unnamed Layer* 202) [Scale]_output: 3d978fb5
+(Unnamed Layer* 203) [Plugin]_output_0: 3d3c9311
+(Unnamed Layer* 204) [Constant]_output: 3c010a14
+(Unnamed Layer* 205) [Constant]_output: 3c010a14
+(Unnamed Layer* 206) [Matrix Multiply]_output: 3d3c9311
+(Unnamed Layer* 207) [Matrix Multiply]_output: 3d3c9311
+(Unnamed Layer* 210) [Scale]_output: 3da5be8c
+(Unnamed Layer* 211) [Plugin]_output_0: 3d4bd7db
+(Unnamed Layer* 213) [Scale]_output: 3d96ecea
+(Unnamed Layer* 214) [Plugin]_output_0: 3d3c7546
+(Unnamed Layer* 216) [Scale]_output: 3d9c69c7
+(Unnamed Layer* 217) [Plugin]_output_0: 3d260b15
+(Unnamed Layer* 219) [Scale]_output: 3d9d057a
+(Unnamed Layer* 220) [Plugin]_output_0: 3d150725
+(Unnamed Layer* 222) [Scale]_output: 3d96481f
+(Unnamed Layer* 223) [Plugin]_output_0: 3d1bd3dd
+(Unnamed Layer* 225) [Scale]_output: 3d760ec6
+(Unnamed Layer* 226) [Plugin]_output_0: 3d25b7c8
+(Unnamed Layer* 227) [Convolution]_output: 3e5aec09
+yolo_95: 3c5f59d0
+(Unnamed Layer* 230) [Scale]_output: 3da39928
+(Unnamed Layer* 231) [Plugin]_output_0: 3d48a5f1
+(Unnamed Layer* 232) [Constant]_output: 3c010a14
+(Unnamed Layer* 233) [Constant]_output: 3c010a14
+(Unnamed Layer* 234) [Matrix Multiply]_output: 3d48a5f1
+(Unnamed Layer* 235) [Matrix Multiply]_output: 3d48a5f1
+(Unnamed Layer* 238) [Scale]_output: 3d89a971
+(Unnamed Layer* 239) [Plugin]_output_0: 3d234be9
+(Unnamed Layer* 241) [Scale]_output: 3d8f0417
+(Unnamed Layer* 242) [Plugin]_output_0: 3d248b58
+(Unnamed Layer* 244) [Scale]_output: 3da746a1
+(Unnamed Layer* 245) [Plugin]_output_0: 3d466cd4
+(Unnamed Layer* 247) [Scale]_output: 3d9a07d8
+(Unnamed Layer* 248) [Plugin]_output_0: 3d291d4e
+(Unnamed Layer* 250) [Scale]_output: 3d9d472a
+(Unnamed Layer* 251) [Plugin]_output_0: 3d25c29b
+(Unnamed Layer* 253) [Scale]_output: 3d92b0fc
+(Unnamed Layer* 254) [Plugin]_output_0: 3d3b33a3
+(Unnamed Layer* 255) [Convolution]_output: 3e693c4c
+yolo_107: 3c5f469b
