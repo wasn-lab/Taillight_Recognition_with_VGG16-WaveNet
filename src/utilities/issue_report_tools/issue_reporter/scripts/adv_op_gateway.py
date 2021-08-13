@@ -4,6 +4,7 @@ Interaction between IPCs and pad. The latter will sends self-drving commands.
 """
 import threading
 import time
+import json
 #
 
 # MQTT
@@ -149,13 +150,21 @@ def mqtt_advop_sync_cb(client, userdata, mqtt_msg):
     ROS_ADVOP_SYNC_PUB.publish(Empty())
     mqtt_publish_all_states()
 
+def parse_advop_req_run_stop(mqtt_msg_str):
+    jdoc = json.loads(mqtt_msg_str)
+    if isinstance(jdoc, dict):
+        # jdoc is something like {"state":1,"timestamp":1628832738652}
+        return bool(jdoc.get("state", 0))
+    # raw string, mqtt_msg_str is either "0" or "1"
+    return bool(jdoc)
+
 def mqtt_advop_req_run_stop_cb(client, userdata, mqtt_msg):
     """
     This is the callback function at receiving req_run_stop signal.
     ** On receiving this message, bypass to ROS.
     """
     rospy.loginfo("[MQTT] %s payload = %s", mqtt_msg.topic, mqtt_msg.payload)
-    req_run_stop = mqtt_char_to_bool(mqtt_msg.payload)
+    req_run_stop = parse_advop_req_run_stop(mqtt_msg.payload)
     ROS_ADVOP_REQ_RUN_STOP_PUB.publish(req_run_stop) # "1" or "0"
     rospy.loginfo("[MQTT] Request to go" if req_run_stop else "[MQTT] Request to stop")
 #------------------------------------------------------#
