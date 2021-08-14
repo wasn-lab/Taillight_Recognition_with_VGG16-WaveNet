@@ -481,7 +481,9 @@ bool JetsonXavierGrabber::runPerceptionGst()
       if (for_running == false)
         break;
 
-      ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_tmp[i], ros_time_);
+      bool status = ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_tmp[i], ros_time_);
+      if (status == false)
+        std::cout << "send_image_rgb_gstreamer fail cam_id "<< cam_ids_[i] << std::endl;
     
       
       if (motion_vector_) 
