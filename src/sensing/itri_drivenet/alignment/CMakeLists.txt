@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   cv_bridge
   msgs
+  autoware_perception_msgs
   car_model
   camera_utils
 )  
