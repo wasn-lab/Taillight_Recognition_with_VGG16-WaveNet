@@ -1023,7 +1023,7 @@ void runInference()
         }
 
         // fusion result
-        //drawBoxOnImages(cam_mats, cam_pixels_obj);
+        drawBoxOnImages(cam_mats, cam_pixels_obj);
 
         if (g_img_result_publish)
         {
