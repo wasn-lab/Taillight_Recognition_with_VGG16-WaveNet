@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
     cv_bridge
     image_transport
     sensor_msgs
+    pc_transform
 )
 
 find_package(OpenCV REQUIRED)

@@ -24,6 +24,7 @@ bind u encoding utf8 utf8
 defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
+sessionname "adv"
 
 screen -t init_load_monitor
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_load_monitor.sh^M"
@@ -43,11 +44,12 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_xwin_grabber_rviz.sh^M"
 screen -t run_web_video_server
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_web_video_server.sh^M"
 
-screen -t run_gui_gateway
-stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_gui_gateway.sh^M"
-
 screen -t run_sys_check_gateway
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_sys_check_gateway.sh^M"
+
+# Interation with pad (esp. self-driving)
+screen -t run_adv_op_gateway.sh
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_adv_op_gateway.sh^M"
 
 screen -t init_tracking_3d
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_3d.sh^M"
@@ -79,9 +81,6 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_pedcross_tf.sh^M"
 
 screen -t replay_lidar_data_to_localization
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_replay_lidar_data_to_localization.sh^M"
-
-screen -t replay_on_switch
-stuff "bash /home/lidar/itriadv/src/scripts/bus_env/lidar/run_replay_lidar_data_to_localization_switch.sh^M"
 
 screen -t detection_viz
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_detection_viz.sh^M"

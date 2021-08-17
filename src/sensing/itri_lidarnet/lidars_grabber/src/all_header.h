@@ -57,7 +57,6 @@
 
 #include "UserDefine.h"
 #include "std_msgs/String.h"
-#include <pcl/compression/octree_pointcloud_compression.h>
 
 using namespace std;
 using namespace pcl;

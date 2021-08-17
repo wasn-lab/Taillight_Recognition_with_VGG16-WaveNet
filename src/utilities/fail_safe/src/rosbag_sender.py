@@ -43,7 +43,7 @@ def _send_bag_by_lftp(lftp_script_file, debug_mode=False):
         return 0
 
     shell_cmd = ["lftp", "-f", lftp_script_file]
-    print(" ".join(shell_cmd))
+    rospy.logwarn(" ".join(shell_cmd))
     if debug_mode:
         logging.warn("In debug mode, do not actually send bag files.")
         return 0
@@ -51,9 +51,7 @@ def _send_bag_by_lftp(lftp_script_file, debug_mode=False):
     try:
         ret = subprocess.check_call(shell_cmd)
     except subprocess.CalledProcessError:
-        print("Fail to upload bag file. lftp_script contents:")
-        with io.open(lftp_script_file) as _fp:
-            print(_fp.read())
+        rospy.logwarn("Fail to upload bag file. lftp_script path: %s", lftp_script_file)
         ret = 1
     return ret
 
@@ -77,8 +75,8 @@ class RosbagSender(object):
         self.notified_bags = {}
         self.debug_mode = False
         self.set_rosbag_backup_dir(rosbag_backup_dir)
-        print("rosbag backup dir: {}".format(self.rosbag_backup_dir))
-        print("backend server fqdn: {}, user_name: {}".format(self.fqdn, self.user_name))
+        rospy.logwarn("rosbag backup dir: {}".format(self.rosbag_backup_dir))
+        rospy.logwarn("backend server fqdn: {}, user_name: {}".format(self.fqdn, self.user_name))
 
     def run(self):
         rate = rospy.Rate(1)
@@ -90,7 +88,7 @@ class RosbagSender(object):
     def send_if_having_bags(self):
         bags = self.get_unsent_rosbag_filenames()
         if not bags:
-            print("{}: No bags to upload".format(datetime.datetime.now()))
+            rospy.logwarn("{}: No bags to upload".format(datetime.datetime.now()))
             return
         self.send_bags(bags)
 
@@ -112,9 +110,9 @@ class RosbagSender(object):
             if bag_base_name in self.notified_bags:
                 continue
             if not self.debug_mode:
-                print("notify backend: {} is ready to be uploaded".format(bag))
+                rospy.logwarn("notify backend: %s is ready to be uploaded", bag)
                 jret = notify_backend_with_new_bag(bag_base_name)
-                print(jret)
+                rospy.logwarn(jret)
                 self.notified_bags[bag_base_name] = True
 
         should_notify_backend = (
@@ -125,9 +123,9 @@ class RosbagSender(object):
             lftp_script_filename = self._generate_lftp_script(bag)
             ret = _send_bag_by_lftp(lftp_script_filename, debug_mode=self.debug_mode)
             if ret == 0 and should_notify_backend:
-                print("notify backend: {} has been uploaded successfuly".format(bag))
+                rospy.logwarn("notify backend: %s has been uploaded successfuly", bag)
                 jret = notify_backend_with_uploaded_bag(bag_base_name)
-                print(jret)
+                rospy.logwarn(jret)
             if os.path.isfile(lftp_script_filename):
                 os.unlink(lftp_script_filename)
 
@@ -135,10 +133,11 @@ class RosbagSender(object):
         ftp_cmds = [
             u"set ssl:verify-certificate no",
             u"set net:limit-total-rate 0:{}".format(self.upload_rate),
+            u"set sftp:auto-confirm yes",
             u"open -p {} -u {},{} {}".format(self.port, self.user_name, self.password, self.fqdn),
         ]
         ymd = get_bag_yymmdd(bag)  # backup dir name in backend
-        dir_name = u"/Share/ADV/Rosbag/fail_safe/{}/{}".format(self.license_plate_number, ymd)
+        dir_name = u"/fail_safe/{}/{}".format(self.license_plate_number, ymd)
         ftp_cmds += [
             u"mkdir -p {}".format(dir_name),
             u"cd {}".format(dir_name),

@@ -81,10 +81,10 @@ void XWinGrabberNode::publish_full_img(cv::Mat& img)
 {
   int32_t org_width = img.cols;
   int32_t org_height = img.rows;
-  if (img.cols > 640)
+  if (img.cols > 1280)
   {
     // resize image
-    const double scale = 640.0 / img.cols;
+    const double scale = 1280.0 / img.cols;
     cv::Mat temp;
     cv::resize(img, temp, cv::Size(), /*width*/scale, /*height*/ scale);
     img = temp;

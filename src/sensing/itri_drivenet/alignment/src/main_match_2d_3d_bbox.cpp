@@ -1207,13 +1207,11 @@ int main(int argc, char** argv)
   /// set topic name
   std::string lidar_raw_topic = "/LidarAll";
   std::string lidar_detection_topic = "/LidarDetection";
-  std::vector<std::string> cam_raw_topic_names(g_cam_ids.size());
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     if (g_img_result_publish || g_is_display)
     {
       g_cam_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]];
-      cam_raw_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]] + std::string("/raw");
     }
     g_bbox_topic_names[cam_order] = camera::topics_obj[g_cam_ids[cam_order]];
   }
@@ -1223,9 +1221,9 @@ int main(int argc, char** argv)
   {
     if (g_img_result_publish || g_is_display)
     {
-      std::cout << "Wait for input topic " << cam_raw_topic_names[cam_order] << std::endl;
-      ros::topic::waitForMessage<sensor_msgs::Image>(cam_raw_topic_names[cam_order]);
-      std::cout << cam_raw_topic_names[cam_order] << " is ready" << std::endl;
+      std::cout << "Wait for input topic " << g_cam_topic_names[cam_order] << std::endl;
+      ros::topic::waitForMessage<sensor_msgs::Image>(g_cam_topic_names[cam_order]);
+      std::cout << g_cam_topic_names[cam_order] << " is ready" << std::endl;
     }
 
     std::cout << "Wait for input topic " << g_bbox_topic_names[cam_order] << std::endl;
@@ -1248,7 +1246,7 @@ int main(int argc, char** argv)
   {
     if (g_img_result_publish || g_is_display)
     {
-      cam_filter_subs[cam_order].subscribe(nh, cam_raw_topic_names[cam_order], 1);
+      cam_filter_subs[cam_order].subscribe(nh, g_cam_topic_names[cam_order], 1);
       g_cache_image[cam_order].connectInput(cam_filter_subs[cam_order]);
       g_cache_image[cam_order].registerCallback(f_callbacks_cam[cam_order]);
       g_cache_image[cam_order].setCacheSize(g_buffer_size);

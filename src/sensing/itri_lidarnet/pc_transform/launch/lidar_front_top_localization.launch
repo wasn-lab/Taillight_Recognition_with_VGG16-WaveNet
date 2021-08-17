@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="pc_transform" type="pc_transform_node" name="pc_transform_node_lidar_front_top_localization" output="screen" cwd="node" respawn="true" args="-input_topic /LidarFrontTop/Raw/xyzir -output_topic /LidarFrontTop/Localization " />
+</launch>

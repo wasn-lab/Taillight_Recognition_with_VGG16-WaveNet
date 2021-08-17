@@ -6,7 +6,7 @@
 ros::Publisher filtered_objects_pub;
 
 //-------------ROS Param-------------
-double confidence_threshold = 0.3; 
+double confidence_threshold = 0.15; 
 autoware_perception_msgs::DynamicObjectArray input;
 
 //=========================Filtered Map PP Functions========================
@@ -55,7 +55,7 @@ void MapPPConfidenceFilter(autoware_perception_msgs::DynamicObjectArray &input)
 void callbackMapPPFilter(const autoware_perception_msgs::DynamicObjectArray::ConstPtr &msg)
 {
     input = *msg;
-    ROS_INFO("[Geofence_Map_PP_Filter] running...");
+    ROS_INFO("[Geofence_Map_PP_Filter] getting onjects info...");
     MapPPConfidenceFilter(input);
 }
 
@@ -66,6 +66,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "Geofence_Map_PP_Filter");
     ros::NodeHandle node;
     ros::param::get(ros::this_node::getName()+"/confidence_threshold", confidence_threshold);
+    ROS_INFO("[Geofence_Map_PP_Filter] running...");
 
     // Subscriber-----------------------------------
     ros::Subscriber GeofenceMapPPFilterSub = node.subscribe("objects", 1000, callbackMapPPFilter);

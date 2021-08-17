@@ -24,6 +24,7 @@ bind u encoding utf8 utf8
 defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
+sessionname "adv"
 
 # ROS has trouble when dealing multiple nodes concurrently.
 # We first make light-weight load_monitor to successfully connect to master,
@@ -34,11 +35,11 @@ stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_load_monitor.sh^M"
 screen -t init_camera
 stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_camera.sh^M"
 
-screen -t init_image_compressor
-stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_image_compressor.sh^M"
-
 screen -t init_control_new_lanelet2
 stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_control_new_lanelet2.sh^M"
 
 screen -t init_radar
 stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_radar.sh^M"
+
+screen -t init_plc_fatek
+stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_plc_fatek.sh^M"

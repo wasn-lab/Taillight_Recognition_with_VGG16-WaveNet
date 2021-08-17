@@ -8,6 +8,7 @@ from __future__ import print_function
 import os
 import subprocess
 import sys
+import time
 import rospy
 from std_msgs.msg import Bool
 
@@ -27,27 +28,34 @@ def change_led_text(mode):
     Return -- 0: success
               1: failure
     """
+    msg = ""
     if mode == AUTO_DRIVING:
-        print("Change powerled text to auto driving mode.")
+        msg = "Change powerled text to auto driving mode."
     elif mode == MANUAL_DRIVING:
-        print("Change powerled text to manual driving mode.")
+        msg = "Change powerled text to manual driving mode."
     else:
         print("Undefined mode: {}".format(mode))
         return 1
     powerled = get_powerled_exe()
     powerled_dir, _base_name = os.path.split(powerled)
     cmd = [powerled, str(mode)]
-    try:
-        subprocess.check_output(cmd, cwd=powerled_dir)
-    except subprocess.CalledProcessError:
-        print("Fail to run command: {}".format(" ".join(cmd)))
-        return 1
+    done = False
+    while not done:
+        try:
+            subprocess.check_call(cmd, cwd=powerled_dir)
+            done = True
+            print(msg)
+        except subprocess.CalledProcessError:
+            print("Fail to run command: {}".format(" ".join(cmd)))
+            time.sleep(1)
     return 0
 
 class LEDManager(object):
     def __init__(self):
         self.driving_mode = 0
         self.prev_mode = 0
+        self.last_change_time = 0
+        self.change_periodically = False
 
     def _cb(self, msg):
         """
@@ -64,6 +72,7 @@ class LEDManager(object):
             rospy.logwarn("Receive msg, driving mode is {}, prev mode is {}".format(
                 self.driving_mode, self.prev_mode))
             change_led_text(self.driving_mode)
+            self.last_change_time = time.time()
             ret = 1
         self.prev_mode = self.driving_mode
         return ret
@@ -77,6 +86,13 @@ class LEDManager(object):
         rate = rospy.Rate(1)  # FPS: 1
 
         while not rospy.is_shutdown():
+            cur_time = time.time()
+            # Change LED text unconditionally every 15 seconds.
+            # This avoids miscommunication with LED badger.
+            if self.change_periodically and cur_time - self.last_change_time >= 15:
+                rospy.logwarn("Change LED text periodically")
+                change_led_text(self.driving_mode)
+                self.last_change_time = cur_time
             rate.sleep()
 
 

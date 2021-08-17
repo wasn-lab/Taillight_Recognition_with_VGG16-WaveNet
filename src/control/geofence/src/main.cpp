@@ -57,13 +57,16 @@ ros::Publisher Radar_marker;
 ros::Publisher Geofence_line;
 
 uint PCloud_Geofence_count = 0;
-int PCloud_Geofence_lastdis = 300;
+double PCloud_Geofence_lastdis = 300;
+Point PCloud_Geofence_findDirection_last;
 
 uint Deviate_Geofence_count = 0;
-int Deviate_Geofence_lastdis = 300;
+double Deviate_Geofence_lastdis = 300;
+Point Deviate_Geofence_findDirection_last;
 
 uint CPoint_Geofence_count = 0;
-int CPoint_Geofence_lastdis = 300;
+double CPoint_Geofence_lastdis = 300;
+Point CPoint_Geofence_findDirection_last;
 
 void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg)
 {
@@ -470,22 +473,26 @@ int main(int argc, char** argv)
       std_msgs::Float64 Geofence_temp;
       Geofence_temp.data = PCloud_Geofence.getDistance_w();
       Geofence_PC.publish(Geofence_temp);
-      int PCloud_Geofence_dis = 300;  // PCloud_Geofence.getDistance();
-      if (PCloud_Geofence_lastdis - PCloud_Geofence.getDistance() > 200 && PCloud_Geofence_count < 10)
+      double PCloud_Geofence_dis = 300;  // PCloud_Geofence.getDistance();
+      Point PCloud_Geofence_findDirection;
+      if ((PCloud_Geofence_lastdis - PCloud_Geofence.getDistance())/PCloud_Geofence_lastdis > 0.2 && PCloud_Geofence_count < 5)
       {
         PCloud_Geofence_dis = PCloud_Geofence_lastdis;
+        PCloud_Geofence_findDirection = PCloud_Geofence_findDirection_last;
         PCloud_Geofence_count++;
       }
       else
       {
         PCloud_Geofence_dis = PCloud_Geofence.getDistance();
+        PCloud_Geofence_findDirection = PCloud_Geofence.findDirection();
         PCloud_Geofence_count = 0;
       }
       if (PCloud_Geofence_dis < 80)
       {
-        Plot_geofence(PCloud_Geofence.findDirection());
+        Plot_geofence(PCloud_Geofence_findDirection);
       }
       PCloud_Geofence_lastdis = PCloud_Geofence_dis;
+      PCloud_Geofence_findDirection_last = PCloud_Geofence_findDirection;
     }
     else
     {
@@ -518,22 +525,26 @@ int main(int argc, char** argv)
       frame.data[7] = (short int)(Deviate_Geofence.getNearest_Y() * 10) >> 8;
       nbytes = write(s, &frame, sizeof(struct can_frame));
       printf("Wrote %d bytes\n", nbytes);
-      int Deviate_Geofence_dis = 300;  // Deviate_Geofence.getDistance();
-      if (Deviate_Geofence_lastdis - Deviate_Geofence.getDistance() > 200 && Deviate_Geofence_count < 10)
+      double Deviate_Geofence_dis = 300;  // PCloud_Geofence.getDistance();
+      Point Deviate_Geofence_findDirection;
+      if ((Deviate_Geofence_lastdis - Deviate_Geofence.getDistance())/Deviate_Geofence_lastdis > 0.2 && Deviate_Geofence_count < 5)
       {
         Deviate_Geofence_dis = Deviate_Geofence_lastdis;
+        Deviate_Geofence_findDirection = Deviate_Geofence_findDirection_last;
         Deviate_Geofence_count++;
       }
       else
       {
         Deviate_Geofence_dis = Deviate_Geofence.getDistance();
+        Deviate_Geofence_findDirection = Deviate_Geofence.findDirection();
         Deviate_Geofence_count = 0;
       }
       if (Deviate_Geofence_dis < 80)
       {
-        Plot_geofence(Deviate_Geofence.findDirection());
+        Plot_geofence(Deviate_Geofence_findDirection);
       }
       Deviate_Geofence_lastdis = Deviate_Geofence_dis;
+      Deviate_Geofence_findDirection_last = Deviate_Geofence_findDirection;
     }
     else
     {
@@ -590,22 +601,26 @@ int main(int argc, char** argv)
       frame.data[7] = (short int)(CPoint_Geofence.getNearest_Y() * 10) >> 8;
       nbytes = write(s, &frame, sizeof(struct can_frame));
       printf("Wrote %d bytes\n", nbytes);
-      int CPoint_Geofence_dis = 300;  // CPoint_Geofence.getDistance();
-      if (CPoint_Geofence_lastdis - CPoint_Geofence.getDistance() > 200 && CPoint_Geofence_count < 10)
+      double CPoint_Geofence_dis = 300;  // CPoint_Geofence.getDistance();
+      Point CPoint_Geofence_findDirection;
+      if ((CPoint_Geofence_lastdis - CPoint_Geofence.getDistance())/CPoint_Geofence_lastdis > 0.2 && CPoint_Geofence_count < 5)
       {
         CPoint_Geofence_dis = CPoint_Geofence_lastdis;
+        CPoint_Geofence_findDirection = CPoint_Geofence_findDirection_last;
         CPoint_Geofence_count++;
       }
       else
       {
         CPoint_Geofence_dis = CPoint_Geofence.getDistance();
+        CPoint_Geofence_findDirection = CPoint_Geofence.findDirection();
         CPoint_Geofence_count = 0;
       }
       if (CPoint_Geofence_dis < 80)
       {
-        Plot_geofence_yellow(CPoint_Geofence.findDirection());
+        Plot_geofence(CPoint_Geofence_findDirection);
       }
       CPoint_Geofence_lastdis = CPoint_Geofence_dis;
+      CPoint_Geofence_findDirection_last = CPoint_Geofence_findDirection;
     }
     else
     {

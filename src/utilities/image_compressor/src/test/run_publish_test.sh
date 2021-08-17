@@ -11,6 +11,7 @@ export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 
 make auto_record_2020-03-10-10-48-39_41_image_raw.bag
 rostest image_compressor publish_test_cmpr.test
+rostest image_compressor publish_test_cmpr_web_streaming.test
 
 make auto_record_2020-12-28-16-55-14_29_jpg.bag
 rostest image_compressor publish_test_decmpr.test

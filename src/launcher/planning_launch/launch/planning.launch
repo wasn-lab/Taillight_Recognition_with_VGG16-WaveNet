@@ -1,5 +1,7 @@
+<!--*-->
 <launch>
   <!-- planning module -->
+	<arg name="location_name" default="ITRI"/>
   <group ns="planning">
     <!-- mission planning module -->
     <group ns="mission_planning">
@@ -9,7 +11,8 @@
 
     <!-- scenario planning module -->
     <group ns="scenario_planning">
-      <include file="$(find planning_launch)/launch/scenario_planning/scenario_planning.launch">
+      <include file="$(find planning_launch)/launch/scenario_planning/scenario_planning.launch" pass_all_args="true">
+	<param name="location_name" value="$(arg location_name)" />
       </include>
     </group>
   </group>

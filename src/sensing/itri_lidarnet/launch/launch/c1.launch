@@ -23,7 +23,6 @@
 	<arg name="hardware_enable" default="true" />
     
 	<!-- Grabber & Preprocessing -->
-    <arg name="use_oct_compress" default="false" />
 	<arg name="use_filter" default="true" />
 	<arg name="use_roi" default="true" />
 
@@ -31,7 +30,6 @@
 	<arg name="use_old_stitch" default="false"/>
 
 <!-- Parameter ************************************************************* -->
-	<param name="use_oct_compress" value="$(arg use_oct_compress)" />
 
 	<param name="use_filter" value="$(arg use_filter)"/>
 	<param name="use_roi" value="$(arg use_roi)"/>
@@ -104,7 +102,7 @@
     <include file="$(find ouster_ros)/ouster.launch" if="$(arg hardware_enable)">
 		<arg name="group_name" value="/LidarFrontTop" />
 		<arg name="tf_prefix" value="lidar" doc="as frame_id" />
-		<arg name="sensor_hostname" value="192.168.0.141" />
+		<arg name="sensor_hostname" value="192.168.0.229" />
 		<arg name="udp_dest" value="192.168.0.1" />
 		<arg name="lidar_port" value="7503" />
 		<arg name="imu_port" value="7513" />
