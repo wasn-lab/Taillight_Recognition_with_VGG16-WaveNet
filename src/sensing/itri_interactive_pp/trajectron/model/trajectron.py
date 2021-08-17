@@ -68,7 +68,7 @@ class Trajectron(object):
                             'scene_freq_mult_eval': False, 
                             'scene_freq_mult_viz': False, 
                             'edge_encoding': True, 
-                            'use_map_encoding': False, 
+                            'use_map_encoding': True, 
                             'augment': True, 
                             'override_attention_radius': [], 
                             'map_enc_dropout': 0.0}

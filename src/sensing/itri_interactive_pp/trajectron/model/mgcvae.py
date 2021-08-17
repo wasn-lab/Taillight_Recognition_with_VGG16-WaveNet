@@ -36,7 +36,7 @@ class MultimodalGenerativeCVAE(object):
         self.model_registrar = model_registrar
         self.log_writer = log_writer
         self.device = device
-        self.edge_types = [edge_type for edge_type in edge_types if edge_type[0] is node_type]
+        self.edge_types = [edge_type for edge_type in edge_types if edge_type[0] == node_type]
         self.curr_iter = 0
 
         self.node_modules = dict()
@@ -129,8 +129,8 @@ class MultimodalGenerativeCVAE(object):
         ###################
         #   Map Encoder   #
         ###################
-#         print('if using map encoding')
-#         print(self.hyperparams['use_map_encoding'])
+        print('if using map encoding')
+        print(self.hyperparams['use_map_encoding'])
         if self.hyperparams['use_map_encoding']:
             if self.node_type in self.hyperparams['map_encoder']:
                 me_params = self.hyperparams['map_encoder'][self.node_type]
@@ -141,12 +141,6 @@ class MultimodalGenerativeCVAE(object):
                                                                  me_params['masks'],
                                                                  me_params['strides'],
                                                                  me_params['patch_size']))
-                model_if_absent=CNNMapEncoder(me_params['map_channels'],
-                                              me_params['hidden_channels'],
-                                              me_params['output_size'],
-                                              me_params['masks'],
-                                              me_params['strides'],
-                                              me_params['patch_size'])
 
         ################################
         #   Discrete Latent Variable   #
@@ -468,18 +462,19 @@ class MultimodalGenerativeCVAE(object):
 
         ################
         # Map Encoding #
-        ################
-        # if self.hyperparams['use_map_encoding'] and self.node_type in self.hyperparams['map_encoder']:
-        #     if self.log_writer and (self.curr_iter + 1) % 500 == 0:
-        #         map_clone = map.clone()
-        #         map_patch = self.hyperparams['map_encoder'][self.node_type]['patch_size']
-        #         map_clone[:, :, map_patch[1]-5:map_patch[1]+5, map_patch[0]-5:map_patch[0]+5] = 1.
-        #         self.log_writer.add_images(f"{self.node_type}/cropped_maps", map_clone,
-        #                                    self.curr_iter, dataformats='NCWH')
+        ################        
+        if self.hyperparams['use_map_encoding'] and self.node_type in self.hyperparams['map_encoder']:
+            if self.log_writer and (self.curr_iter + 1) % 500 == 0:
+                print("mgcave", map)
+                map_clone = map.clone()
+                map_patch = self.hyperparams['map_encoder'][self.node_type]['patch_size']
+                map_clone[:, :, map_patch[1] - 5:map_patch[1] + 5, map_patch[0] - 5:map_patch[0] + 5] = 1.
+                self.log_writer.add_images("{}/cropped_maps".format(self.node_type), map_clone,
+                                           self.curr_iter, dataformats='NCWH')
 
-        #     encoded_map = self.node_modules[self.node_type + '/map_encoder'](map * 2. - 1., (mode == ModeKeys.TRAIN))
-        #     do = self.hyperparams['map_encoder'][self.node_type]['dropout']
-        #     encoded_map = F.dropout(encoded_map, do, training=(mode == ModeKeys.TRAIN))
+            encoded_map = self.node_modules[self.node_type + '/map_encoder'](map * 2. - 1., (mode == ModeKeys.TRAIN))
+            do = self.hyperparams['map_encoder'][self.node_type]['dropout']
+            encoded_map = F.dropout(encoded_map, do, training=(mode == ModeKeys.TRAIN))
 
         ######################################
         # Concatenate Encoder Outputs into x #
@@ -497,11 +492,11 @@ class MultimodalGenerativeCVAE(object):
         #     robot_future_encoder = self.encode_robot_future(mode, x_r_t, y_r)
         #     x_concat_list.append(robot_future_encoder)
 
-        # if self.hyperparams['use_map_encoding'] and self.node_type in self.hyperparams['map_encoder']:
-        #     if self.log_writer:
-        #         self.log_writer.add_scalar(f"{self.node_type}/encoded_map_max",
-        #                                    torch.max(torch.abs(encoded_map)), self.curr_iter)
-        #     x_concat_list.append(encoded_map)
+        if self.hyperparams['use_map_encoding'] and self.node_type in self.hyperparams['map_encoder']:
+            if self.log_writer:
+                self.log_writer.add_scalar("{}/encoded_map_max".format(self.node_type),
+                                           torch.max(torch.abs(encoded_map)), self.curr_iter)
+            x_concat_list.append(encoded_map)
 
         x = torch.cat(x_concat_list, dim=1)
 
