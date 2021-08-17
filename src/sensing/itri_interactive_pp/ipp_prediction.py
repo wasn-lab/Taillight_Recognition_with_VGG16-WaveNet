@@ -26,11 +26,12 @@ import sys
 sys.path.insert(0, "./trajectron")
 import evaluation
 import utils
+import mapUtil
 from script.ipp_method import output_csvfile
 from script.ipp_class import parameter, buffer_data
 from model.trajectron import Trajectron
 from model.model_registrar import ModelRegistrar
-from environment import Environment, Scene, derivative_of, Node
+from environment import Environment, Scene, derivative_of, Node, GeometricMap
 from scipy.interpolate import RectBivariateSpline
 # from script.ipp_method import create_scene, transform_data
 
@@ -45,6 +46,53 @@ def create_scene(scene_ids, present_id,buffer):
     obstacle_id_list = []
     max_timesteps = buffer.buffer_frame['frame_id'].max()
     scene = Scene(timesteps=max_timesteps + 1, dt = frequency)
+    
+    # Generate Maps HJQ
+    # consider all Xs and Ys in buffer_frame (create continue map for nodes)
+    Xs = buffer.buffer_frame['x']
+    Ys = buffer.buffer_frame['y']
+    type_map = dict()
+    x_min = np.round(Xs.min())
+    x_max = np.round(Xs.max())
+    y_min = np.round(Ys.min())
+    y_max = np.round(Ys.max())
+
+    x_size = x_max - x_min
+    y_size = y_max - y_min
+    patch_box = (x_min + 0.5 * (x_max - x_min), y_min + 0.5 * (y_max - y_min), y_size, x_size)
+
+    # map_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "map_mask/", map_name + ".npy")
+    # TODO: map_name argparse
+    # map_mask = np.load(map_file)
+    
+    #  crop map_mask using mapUtil.maskCrop
+    if not math.isnan(patch_box[0]):
+        map_mask_cropped = mapUtil.maskCrop(patch_box, g_map_mask)
+        map_mask_tensor = []
+
+        # map_channel is 3, stack np.array to np tensor
+        map_channel = 3
+        for i in range (map_channel):
+            map_mask_tensor.append(map_mask_cropped)
+
+        # make it a numpy array to fit in GeometrivMap initialization
+        map_mask_tensor = np.array(map_mask_tensor)
+        
+        # PEDESTRIANS
+        # map_mask_pedestrian = np.stack((map_mask[9], map_mask[8], np.max(map_mask[:3], axis=0)), axis=0)
+        # type_map['PEDESTRIAN'] = GeometricMap(data=map_mask_pedestrian, homography=homography, description=', '.join(layer_names))
+        # VEHICLES
+        # map_mask_vehicle = np.stack((np.max(map_mask[:3], axis=0), map_mask[3], map_mask[4]), axis=0)
+        homography = np.array([[3., 0., 0.], [0., 3., 0.], [0., 0., 3.]])
+        layer_names = ['drivable_area']
+        type_map['VEHICLE'] = GeometricMap(data=map_mask_tensor, homography=homography, description=', '.join(layer_names))
+
+        scene.map = type_map
+        del map_mask
+        del map_mask_cropped
+        del Xs
+        del Ys
+
     for node_id in scene_ids:
         node_frequency_multiplier = 1
         node_df = buffer.buffer_frame[buffer.buffer_frame['node_id'] == node_id]
@@ -461,7 +509,18 @@ if __name__ == '__main__':
 
     args.set_params(input_topic, prediction_horizon, show_log)
     
-
+    global g_map_mask
+    # change your numpy file here
+    map_name = "itri_map"
+    map_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "map_mask/", map_name + ".npy")
+    timer = []
+    timer.append(time.time())
+    print('Loading map...')
+    g_map_mask = np.load(map_file)
+    timer.append(time.time())
+    print('Load map time: ', timer[1] - timer[0])
+    del timer
+    
     # for i in range(10):
     #     heading = math.atan(i*(-1))
     #     print(i,heading, math.degrees(heading))
