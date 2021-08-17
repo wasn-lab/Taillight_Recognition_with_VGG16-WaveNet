@@ -78,5 +78,23 @@ constexpr int npp_bottom_border = npp_top_border;
 static_assert(yolov3_letterbox_visible_height + npp_top_border + npp_top_border == yolov3_image_height,
               "visible height + border should be 608");
 }  // namespace camera
+
+/*
+ * Camera cable length for CAR_MODEL C2
+ * It need a test cable when measureing resistence
+ * total resistance = camera cable resistence + test cable resistence
+ *
+ * Camera name               total resistance   cable length  
+ * front_bottom_60           2.2 ohm            12 meter
+ * front_top_far_30          2.3 ohm            12 meter
+ * front_top_close_120       2.3 ohm            12 meter
+ * right_front_60            2.3 ohm            12 meter
+ * right_back_60             2.2 ohm            12 meter
+ * left_front_60             2.3 ohm            12 meter
+ * left_back_60              2.3 ohm            12 meter
+ * back_top_120              2.2 ohm            12 meter
+ */
+ 
+
 #endif  // CAR_MODEL_IS_C2
 #endif  // __CAMERA_PARAMS_C2_H__
