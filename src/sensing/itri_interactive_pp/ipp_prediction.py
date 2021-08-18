@@ -88,7 +88,7 @@ def create_scene(scene_ids, present_id,buffer):
         type_map['VEHICLE'] = GeometricMap(data=map_mask_tensor, homography=homography, description=', '.join(layer_names))
 
         scene.map = type_map
-        del map_mask
+        del g_map_mask
         del map_mask_cropped
         del Xs
         del Ys
