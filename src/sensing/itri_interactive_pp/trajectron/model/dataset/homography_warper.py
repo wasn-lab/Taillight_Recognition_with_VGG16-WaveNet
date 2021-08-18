@@ -44,7 +44,7 @@ def angle_to_rotation_matrix(angle # type: torch.Tensor
     cos_a = torch.cos(ang_rad)
     sin_a = torch.sin(ang_rad)
     # original return
-    print(angle.shape)
+    # print(angle.shape)
     return torch.stack([cos_a, sin_a, -sin_a, cos_a], dim=-1).view(-1, 2, 2)
 
 
@@ -293,8 +293,8 @@ def homography_warp(patch_src, # type: torch.Tensor
 
     out_height, out_width = dsize
     image_height, image_width = patch_src.shape[-2:]
-    print("homo check h", image_height)
-    print("homo check w", image_width)
+    # print("homo check h", image_height)
+    # print("homo check w", image_width)
     x_min = 2. * (centers[..., 0] - out_width/2) / image_width - 1.
     y_min = 2. * (centers[..., 1] - out_height/2) / image_height - 1.
     x_max = 2. * (centers[..., 0] + out_width/2) / image_width - 1.
@@ -448,7 +448,7 @@ class HomographyWarper(nn.Module):
                             Got patch.device: {} dst_H_src.device: {}."
                             .format(patch_src.device, dst_homo_src.device))
 
-        print("homo_foward check patch_src", patch_src.shape)
+        # print("homo_foward check patch_src", patch_src.shape)
         return F.grid_sample(patch_src, self.warp_grid(dst_homo_src),  # type: ignore
                              mode=self.mode, padding_mode=self.padding_mode, align_corners=True)
 
@@ -512,6 +512,6 @@ def warp_affine_crop(src, # type: torch.Tensor
 
     # launches the warper
     h, w = src.shape[-2:]
-    print("homo warp_affine h", h)
-    print("homo warp_affine h", w)
+    # print("homo warp_affine h", h)
+    # print("homo warp_affine h", w)
     return transform_warp_impl(src, centers, M_3x3, (h, w), dsize, flags, padding_mode)
