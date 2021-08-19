@@ -110,8 +110,8 @@ def lane2array(args):
         if args.target > 0:
           w = 12 * int(args.target)
           ImageDraw.Draw(img).line(xys, width=w)
-    save_img = str(map_name[:-4] + "_img.png")
-    img.save(save_img)
+    # save_img = str(map_name[:-4] + "_img.png")
+    # img.save(save_img)
     img_np = np.array(img)
     # print(img_np.shape)
     # np.save(map_name[:-4], img_np)
@@ -128,7 +128,7 @@ def lane2array(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--map", help="assign the map you use here", default='src_sensing_map_map_loader_data_lanelet2_map')
+    parser.add_argument("--map", help="assign the map you use here", default='ITRI_lanelet2_map')
     parser.add_argument("--output", type=int, help="0=numpy, 1=numpy+figure", default=0)
     parser.add_argument("--target", type=int, help="0=vehicle, 1=motorcycle, 2=pedestrian", default=0)
     args = parser.parse_args()
