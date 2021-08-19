@@ -68,8 +68,9 @@ Example:
 The terminal should look like this.
 ![](https://i.imgur.com/vRe3ec8.png)
 
-
 And now you should be able to find the `ITRI_lanelet2_map.npy` file in your local lanelet2/lanelet2_maps folder.
+
+
 2. Test it again with the default file but generate both npy array mask and figure this time.
 `python lane2array.py --output 1`
 Now you can see a `ITRI_lanelet2_map_fig.png` looking like this in the local folder.
@@ -78,6 +79,7 @@ Now you can see a `ITRI_lanelet2_map_fig.png` looking like this in the local fol
 
 3. Run the code with your map. You don't need to type in ".osm".
 `python lane2array.py --map your_map_name`
+
 
 4. Run the code with target pedestrian and output the figure.
 `python lane2array.py --output 1 --target 2`
