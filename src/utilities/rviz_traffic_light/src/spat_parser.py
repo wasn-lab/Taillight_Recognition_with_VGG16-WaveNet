@@ -37,10 +37,10 @@ def callback(spat):
    state_8_bit = state.zfill(8)
    intersection_id = str(spat.intersection_id)
    
-   green =  state_8_bit[2]
-   greeb_left = state_8_bit[3]
-   green_strait = state_8_bit[4]
-   green_right = state_8_bit[5]
+   green =  state_8_bit[5]
+   greeb_left = state_8_bit[4]
+   green_strait = state_8_bit[3]
+   green_right = state_8_bit[2]
    yellow = state_8_bit[6]
    red = state_8_bit[7]
    print(f"red = {red} yellow = {yellow} green = {green}")

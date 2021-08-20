@@ -47,6 +47,10 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_web_video_server.sh^M"
 screen -t run_sys_check_gateway
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_sys_check_gateway.sh^M"
 
+# Interation with pad (esp. self-driving)
+screen -t run_adv_op_gateway.sh
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_adv_op_gateway.sh^M"
+
 screen -t init_tracking_3d
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_3d.sh^M"
 

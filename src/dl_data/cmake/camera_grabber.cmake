@@ -12,10 +12,10 @@ else()
         DESTINATION "${CAMERA_GRABBER_DATA_DIR}/ar0231_22fps.ko"
         MD5 800ed0c012e8bdc778d951dcdb2118f6)
     download_file(
-        URL "http://nas.itriadv.co:8888/git_data/B1/camera_grabber/jetson_xavier/init_ar0231_1207_9286trigger_v2.sh"
-        DESTINATION "${CAMERA_GRABBER_DATA_DIR}/init_ar0231_1207_9286trigger_v2.sh"
-        MD5 29a3382f2f3b64dc28fdfd8444e8150b)
-    execute_process(COMMAND chmod +x ${CAMERA_GRABBER_DATA_DIR}/init_ar0231_1207_9286trigger_v2.sh)
+        URL "http://nas.itriadv.co:8888/git_data/B1/camera_grabber/jetson_xavier/init_ar0231_20210331v3_2.sh"
+        DESTINATION "${CAMERA_GRABBER_DATA_DIR}/init_ar0231_20210331v3_2.sh"
+        MD5 7902f7370b306a9949dd83dedbfe613d)
+    execute_process(COMMAND chmod +x ${CAMERA_GRABBER_DATA_DIR}/init_ar0231_20210331v3_2.sh)
     download_file(
         URL "http://nas.itriadv.co:8888/git_data/B1/camera_grabber/jetson_xavier/libmvextractor_standalone.so.1.0.1"
         DESTINATION "${CAMERA_GRABBER_DATA_DIR}/libmvextractor_standalone.so.1.0.1"

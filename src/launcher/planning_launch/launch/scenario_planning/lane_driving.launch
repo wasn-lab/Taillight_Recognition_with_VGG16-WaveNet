@@ -1,6 +1,6 @@
 <!-- -*- mode: XML -*- -->
 <launch>
-
+	<arg name="location_name" default="ITRI"/>
   <!-- lane_driving scenario -->
   <group ns="lane_driving">
     <!-- behavior planning module -->
@@ -10,7 +10,8 @@
 
     <!-- motion planning module -->
     <group ns="motion_planning">
-      <include file="$(find planning_launch)/launch/scenario_planning/lane_driving/motion_planning/motion_planning.launch">
+      <include file="$(find planning_launch)/launch/scenario_planning/lane_driving/motion_planning/motion_planning.launch" pass_all_args="true">
+	<param name="location_name" value="$(arg location_name)" />
       </include>
     </group>
   </group>

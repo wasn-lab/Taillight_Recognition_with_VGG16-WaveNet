@@ -10,5 +10,9 @@ python scripts/wait_topic.py --topic-name /cam/front_bottom_60/raw
 python scripts/wait_topic.py --topic-name /cam/front_top_far_30/raw
 
 cd $CWD
-
+readonly car_model=$(rosparam get /car_model)
+if [[ "${car_model}" == "C1" ]]; then
 roslaunch --wait drivenet c1_drivenet_group_a.launch
+elif [[ "${car_model}" == "C2" ]]; then
+roslaunch --wait drivenet c2_drivenet_group_a.launch
+fi

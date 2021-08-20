@@ -1,6 +1,8 @@
 #include "roi_fusion.h"
 #include "drivenet/object_label_util.h"
 
+using namespace sensor_msgs_itri;
+
 std::vector<std::vector<sensor_msgs::RegionOfInterest>>
 RoiFusion::getLidar2DROI(const std::vector<std::vector<DriveNet::MinMax2D>>& cam_pixels_obj)
 {
@@ -46,7 +48,9 @@ RoiFusion::getCam2DROI(const std::vector<msgs::DetectedObjectArray>& objects_arr
 }
 std::vector<std::vector<std::pair<int, int>>>
 RoiFusion::getRoiFusionResult(const std::vector<std::vector<sensor_msgs::RegionOfInterest>>& object_camera_roi,
-                              const std::vector<std::vector<sensor_msgs::RegionOfInterest>>& object_lidar_roi)
+                              const std::vector<std::vector<sensor_msgs::RegionOfInterest>>& object_lidar_roi,
+                              const std::vector<std::vector<DetectedObjectClassId>>& object_camera_class_id,
+                              const std::vector<std::vector<DetectedObjectClassId>>& object_lidar_class_id)
 {
   std::vector<std::vector<std::pair<int, int>>> fusion_index(object_camera_roi.size());
   for (size_t cam_order = 0; cam_order < object_camera_roi.size(); cam_order++)
@@ -58,27 +62,30 @@ RoiFusion::getRoiFusionResult(const std::vector<std::vector<sensor_msgs::RegionO
       double max_iou = 0.0;
       for (size_t lidar_index = 0; lidar_index < object_lidar_roi[cam_order].size(); lidar_index++)
       {
-        double iou(0.0), iou_x(0.0), iou_y(0.0);
-        if (roi_fusion_nodelet.use_iou_)
+        if(object_camera_class_id[cam_order][cam_index] == object_lidar_class_id[cam_order][lidar_index])
         {
-          iou = roi_fusion_nodelet.calcIoU(object_lidar_roi[cam_order][lidar_index],
-                                           object_camera_roi[cam_order][cam_index]);
-        }
-        if (roi_fusion_nodelet.use_iou_x_)
-        {
-          iou_x = roi_fusion_nodelet.calcIoUX(object_lidar_roi[cam_order][lidar_index],
-                                              object_camera_roi[cam_order][cam_index]);
-        }
-        if (roi_fusion_nodelet.use_iou_y_)
-        {
-          iou_y = roi_fusion_nodelet.calcIoUY(object_lidar_roi[cam_order][lidar_index],
-                                              object_camera_roi[cam_order][cam_index]);
-        }
-        if (max_iou < iou + iou_x + iou_y)
-        {
-          max_iou_lidar_index = lidar_index;
-          max_iou_cam_index = cam_index;
-          max_iou = iou + iou_x + iou_y;
+          double iou(0.0), iou_x(0.0), iou_y(0.0);
+          if (roi_fusion_nodelet.use_iou_)
+          {
+            iou = roi_fusion_nodelet.calcIoU(object_lidar_roi[cam_order][lidar_index],
+                                            object_camera_roi[cam_order][cam_index]);
+          }
+          if (roi_fusion_nodelet.use_iou_x_)
+          {
+            iou_x = roi_fusion_nodelet.calcIoUX(object_lidar_roi[cam_order][lidar_index],
+                                                object_camera_roi[cam_order][cam_index]);
+          }
+          if (roi_fusion_nodelet.use_iou_y_)
+          {
+            iou_y = roi_fusion_nodelet.calcIoUY(object_lidar_roi[cam_order][lidar_index],
+                                                object_camera_roi[cam_order][cam_index]);
+          }
+          if (max_iou < iou + iou_x + iou_y)
+          {
+            max_iou_lidar_index = lidar_index;
+            max_iou_cam_index = cam_index;
+            max_iou = iou + iou_x + iou_y;
+          }
         }
       }
 
@@ -117,4 +124,54 @@ void RoiFusion::getFusionCamObj(const std::vector<msgs::DetectedObjectArray>& ob
       cam_pixels_obj[cam_order].push_back(min_max_2d_bbox);
     }
   }
+}
+
+std::vector<std::vector<DetectedObjectClassId>>
+RoiFusion::getCamObjSpecialClassId(const std::vector<msgs::DetectedObjectArray>& objects_array)
+{
+  std::vector<std::vector<DetectedObjectClassId>> object_class_id(objects_array.size());
+  DetectedObjectClassId class_id = DetectedObjectClassId::Unknown; // LidarNet SpecialClassId: Person, Motobike, Car
+  for (size_t cam_order = 0; cam_order < objects_array.size(); cam_order++)
+  {
+    for (const auto& obj : objects_array[cam_order].objects)
+    {
+      switch (obj.classId)
+      {
+        case (DetectedObjectClassId::Person):
+          class_id = DetectedObjectClassId::Person;
+          break;
+        case (DetectedObjectClassId::Bicycle):
+          class_id = DetectedObjectClassId::Motobike;
+          break;
+        case (DetectedObjectClassId::Motobike):
+          class_id = DetectedObjectClassId::Motobike;
+          break;
+        case (DetectedObjectClassId::Car):
+          class_id = DetectedObjectClassId::Car;
+          break;
+        case (DetectedObjectClassId::Bus):
+          class_id = DetectedObjectClassId::Car;
+          break;
+        case (DetectedObjectClassId::Truck):
+          class_id = DetectedObjectClassId::Car;
+          break;
+      }
+      object_class_id[cam_order].push_back(class_id);
+    }
+  }
+  return object_class_id;
+}
+
+std::vector<std::vector<DetectedObjectClassId>>
+RoiFusion::getLidarObjSpecialClassId(const std::vector<std::vector<msgs::DetectedObject>>& objects_array)
+{
+  std::vector<std::vector<DetectedObjectClassId>> object_class_id(objects_array.size());
+  for (size_t cam_order = 0; cam_order < objects_array.size(); cam_order++)
+  {
+    for (const auto& obj : objects_array[cam_order])
+    {
+      object_class_id[cam_order].push_back(static_cast<DetectedObjectClassId>(obj.classId));
+    }
+  }
+  return object_class_id;
 }

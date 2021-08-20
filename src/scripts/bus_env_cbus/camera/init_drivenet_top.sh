@@ -11,4 +11,9 @@ python scripts/wait_topic.py --topic-name /cam/front_top_close_120/raw
 
 cd $CWD
 
+readonly car_model=$(rosparam get /car_model)
+if [[ "${car_model}" == "C1" ]]; then
 roslaunch --wait drivenet c1_drivenet_top.launch
+elif [[ "${car_model}" == "C2" ]]; then
+roslaunch --wait drivenet c2_drivenet_top.launch
+fi

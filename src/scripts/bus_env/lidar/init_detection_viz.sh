@@ -16,4 +16,4 @@ python scripts/wait_node.py --node-name /pedestrian_event
 python scripts/wait_topic.py --topic-name /CameraDetection
 
 cd $CWD
-roslaunch detection_viz itriadv_viz.launch rviz_config:="U3_b5_lanelet2_pedcross"
+roslaunch detection_viz itriadv_viz.launch rviz_config:="U3_b6_for_demo"
