@@ -160,7 +160,8 @@ sudo bash /home/nvidia/itriadv/src/scripts/bus_env/xavier/init_car_mode_camera_d
 **Add camera driver install command to /etc/rc.local. Install camera driver for laboratory mode**
 ```
 bash /home/nvidia/itriadv/src/scripts/bus_env/xavier/init_laboratory_mode_camera_driver_to_bootup_script_b1_v3.sh
-```/home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar0231_driver_c3.sh
+/home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar0231_driver_c3.sh
+```
 
 
 ### Install camera driver (CAR_MODEL = C1)
