@@ -17,8 +17,8 @@ if [ -f "/etc/rc.local" ]; then
     then
             echo "init_ar0231_driver_c2.sh always in $file"
     else
-            echo "#wait camera hardware ready"               | sudo tee -a $file
-            echo "sleep 5"                          | sudo tee -a $file    
+            echo "#wait camera hardware ready, wait /home/nvidia/itriadv link ready"               | sudo tee -a $file
+            echo "sleep 15"                          | sudo tee -a $file    
             echo "#init camera driver for laoratory mode, setup EQ and Pre-Emp" | sudo tee -a $file
             echo "# parameter 1 : the path of camera driver" | sudo tee -a $file
             echo "# parameter 2 : the root password" | sudo tee -a $file
@@ -42,8 +42,8 @@ else
     echo "#init max clock"                  | sudo tee -a $file
     echo "sleep 5"                          | sudo tee -a $file
     echo "jetson_clocks"                    | sudo tee -a $file
-    echo "#wait camera hardware ready"               | sudo tee -a $file
-    echo "sleep 5"                          | sudo tee -a $file    
+    echo "#wait camera hardware ready, wait /home/nvidia/itriadv link ready"               | sudo tee -a $file
+    echo "sleep 15"                          | sudo tee -a $file    
     echo "#init camera driver for laoratory mode, setup EQ and Pre-Emp" | sudo tee -a $file
     echo "# parameter 1 : the path of camera driver" | sudo tee -a $file
     echo "# parameter 2 : the root password" | sudo tee -a $file
