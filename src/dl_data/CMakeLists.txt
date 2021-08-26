@@ -47,7 +47,7 @@ function(download_file)
         file(MD5 "${OPT_DESTINATION}" file_md5)
         if(NOT "${file_md5}" STREQUAL "${OPT_MD5}")
             message(WARNING "Expected hash of ${OPT_DESTINATION} is ${OPT_MD5}, "
-                "but the actual hash is ${file_md5{")
+                "but the actual hash is ${file_md5}")
         endif()
     else()
         message(STATUS "File ${OPT_DESTINATION} is up to date")
