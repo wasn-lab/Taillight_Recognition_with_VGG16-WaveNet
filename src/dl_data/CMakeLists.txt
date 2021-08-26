@@ -24,6 +24,7 @@ set(LIGHTNET_TAINAN_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_ligh
 set(LOCALIZATION_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/localization)
 set(VEHICLE_DAE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../vehicle/vehicle_description/vehicle_body_description/b_bus_description/mesh)
 set(IPP_MODELS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_interactive_pp/models)
+set(IPP_MAP_MASKS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_interactive_pp/map_mask)
 
 
 function(download_file)
@@ -46,7 +47,7 @@ function(download_file)
         file(MD5 "${OPT_DESTINATION}" file_md5)
         if(NOT "${file_md5}" STREQUAL "${OPT_MD5}")
             message(WARNING "Expected hash of ${OPT_DESTINATION} is ${OPT_MD5}, "
-                "but the actual hash is ${file_md5}")
+                "but the actual hash is ${file_md5{")
         endif()
     else()
         message(STATUS "File ${OPT_DESTINATION} is up to date")

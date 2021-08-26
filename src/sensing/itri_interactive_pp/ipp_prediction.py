@@ -511,7 +511,11 @@ if __name__ == '__main__':
     
     global g_map_mask
     # change your numpy file here
-    map_name = "itri_map"
+    # for ITRI
+    map_name = "ITRI_lanelet2_map"
+    # for Zhubei
+    # map_name = "Zhubei_lanelet2_map"
+    
     map_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "map_mask/", map_name + ".npy")
     timer = []
     timer.append(time.time())
