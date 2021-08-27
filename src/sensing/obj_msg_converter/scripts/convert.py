@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# pylint: disable=no-name-in-module
 
 import rospy
 import tf2_ros
