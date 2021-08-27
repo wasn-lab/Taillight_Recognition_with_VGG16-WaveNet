@@ -311,7 +311,7 @@ void callback_flag_info02(const msgs::Flag_Info::ConstPtr& input)
 
 void callback_flag_info04(const msgs::Flag_Info::ConstPtr& input)
 {
-    g_vs.speed = input->Dspace_Flag01;
+    //g_vs.speed = input->Dspace_Flag01;
     g_vs.steering_wheel =  input->Dspace_Flag04;
     g_vs.accelerator = input->Dspace_Flag05;
     g_vs.brake_pos = input->Dspace_Flag06;
@@ -496,7 +496,7 @@ void callbackBI(const msgs::BackendInfo::ConstPtr& input)
   g_vs.steer = input->steer; //轉向
   g_vs.localization = input->localization; //定位
   g_vs.odometry = input->odometry; //里程
-  //g_vs.speed = input->speed; //車速 km/hr
+  g_vs.speed = input->speed; //車速 km/hr
   //vs.rotating_speed = input->speed ; //轉速
   g_vs.bus_stop = input->bus_stop; //站點
   g_vs.vehicle_number = input->vehicle_number; //車號
@@ -675,7 +675,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["bearing"] = g_current_gnss_pose.yaw * 180 / PI;
     j1["heading"] = g_current_gnss_pose.yaw * 180 / PI;;
     j1["milage"] =  g_vs.odometry; //行駛距離//0.0;
-    j1["speed"] = g_vs.speed; //vs.speed 車速 目前來源CAN
+    j1["speed"] = g_vs.speed; //vs.speed 車速 目前來源PLC
     j1["rotate"] = g_vs.rotating_speed; //轉速 //0.0;
     j1["gear"] = g_vs.gear; //檔位 //1;
     j1["handcuffs"] = convertBoolean(g_vs.hand_brake); //手煞車 //true;
