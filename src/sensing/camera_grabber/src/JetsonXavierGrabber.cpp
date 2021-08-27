@@ -70,6 +70,8 @@ void JetsonXavierGrabber::InitParameters()
   std::string ar0231_sh_file_path = camera_grabber_pkg_path + "/src/CameraGrabber/init_ar0231_driver_c1.sh";
 #elif CAR_MODEL_IS_C2
   std::string ar0231_sh_file_path = camera_grabber_pkg_path + "/src/CameraGrabber/init_ar0231_driver_c2.sh";
+#elif CAR_MODEL_IS_C3
+  std::string ar0231_sh_file_path = camera_grabber_pkg_path + "/src/CameraGrabber/init_ar0231_driver_c3.sh";
 #endif
   // std::cout << "ar0231_sh_file_path : " << ar0231_sh_file_path << std::endl;
 

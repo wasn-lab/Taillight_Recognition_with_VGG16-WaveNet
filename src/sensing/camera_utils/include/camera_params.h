@@ -15,6 +15,8 @@
 #include "camera_params_c1.h"  // TODO: generate and use C1 car param.
 #elif CAR_MODEL_IS_C2
 #include "camera_params_c2.h"
+#elif CAR_MODEL_IS_C3
+#include "camera_params_c3.h"
 #else
 #error "Car model is not defined"
 #endif
