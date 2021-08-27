@@ -42,10 +42,15 @@ catkin_make -DCATKIN_WHITELIST_PACKAGES="msgs;camera_utils;car_model;camera_grab
 catkin_make -DCATKIN_WHITELIST_PACKAGES="msgs;camera_utils;car_model;camera_grabber;dl_data" -DCAR_MODEL=C2
 ```
 
+**CAR_MODEL = C3:**
+```
+catkin_make -DCATKIN_WHITELIST_PACKAGES="msgs;camera_utils;car_model;camera_grabber;dl_data" -DCAR_MODEL=C3
+```
+
 ### How to run
 
 
-**CAR_MODEL = B1_V3 or C1 or C2:**
+**CAR_MODEL = B1_V3 or C1 or C2 or C3:**
 
 ```
 source ./devel/setup.bash
@@ -155,6 +160,7 @@ sudo bash /home/nvidia/itriadv/src/scripts/bus_env/xavier/init_car_mode_camera_d
 **Add camera driver install command to /etc/rc.local. Install camera driver for laboratory mode**
 ```
 bash /home/nvidia/itriadv/src/scripts/bus_env/xavier/init_laboratory_mode_camera_driver_to_bootup_script_b1_v3.sh
+/home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar0231_driver_c3.sh
 ```
 
 
@@ -206,6 +212,31 @@ bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_car_mode_camera_d
 **Add camera driver install command to /etc/rc.local. Install camera driver for laboratory mode**
 ```
 bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_laboratory_mode_camera_driver_to_bootup_script_c2.sh
+```
 
+### Install camera driver (CAR_MODEL = C3)
+
+**install camera driver for car mode**
+```
+bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar0231_driver_c3.sh /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber nvidia true
+bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/exposure-setup-day-or-night.sh /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber
+```
+
+**install camera driver for laboratory mode**
+```
+bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar0231_driver_c3.sh /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber nvidia false
+bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/exposure-setup-day-or-night.sh /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber
+```
+
+### How to install camera driver when xavier bootup (CAR_MODEL = C3)
+**Add camera driver install command to /etc/rc.local. Install camera driver for car mode**
+```
+bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_car_mode_camera_driver_to_bootup_script_c3.sh
+```
+
+**Add camera driver install command to /etc/rc.local. Install camera driver for laboratory mode**
+```
+bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_laboratory_mode_camera_driver_to_bootup_script_c3.sh
+```
 
 

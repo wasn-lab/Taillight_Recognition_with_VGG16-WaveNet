@@ -22,7 +22,7 @@ public:
 
 protected:
   void InitParameters();
-#if CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1 || CAR_MODEL_IS_C2 // Camera use Gstreamer
+#if CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1 || CAR_MODEL_IS_C2 || CAR_MODEL_IS_C3 // Camera use Gstreamer
 
   const std::vector<int> cam_ids_{ camera::id::front_bottom_60,     camera::id::front_top_far_30,
 
