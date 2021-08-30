@@ -129,8 +129,8 @@ TEST(PC2CompressorTest, test_ouster64_to_xyzir)
   EXPECT_EQ(msg->fields[3].name, "intensity");
   EXPECT_EQ(msg->fields[4].name, "ring");
   EXPECT_EQ(msg->header, g_org_ros_pc2_ptr->header);
-  EXPECT_EQ(msg->width, 1024U);
-  EXPECT_EQ(msg->height, 64U);
+  EXPECT_EQ(msg->width, 1024);
+  EXPECT_EQ(msg->height, 64);
   EXPECT_EQ(msg->is_bigendian, g_org_ros_pc2_ptr->is_bigendian);
   EXPECT_EQ(msg->is_dense, g_org_ros_pc2_ptr->is_dense);
   EXPECT_EQ(msg->header, g_org_ros_pc2_ptr->header);

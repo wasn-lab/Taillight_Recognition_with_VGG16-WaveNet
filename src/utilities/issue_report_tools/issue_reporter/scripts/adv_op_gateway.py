@@ -4,6 +4,7 @@ Interaction between IPCs and pad. The latter will sends self-drving commands.
 """
 import threading
 import time
+import json
 #
 
 # MQTT
@@ -35,8 +36,7 @@ VAR_ADVOP_SYS_READY = False
 # ROS Publishers
 ROS_ADVOP_SYNC_PUB = rospy.Publisher('/ADV_op/sync', Empty, queue_size=10)
 ROS_ADVOP_REQ_RUN_STOP_PUB = rospy.Publisher('/ADV_op/req_run_stop', Bool, queue_size=10)
-
-
+ROS_SET_XBYWIRE_STATE_PUB = rospy.Publisher('/control/set_xbywire_state', Bool, queue_size=10)
 
 # MQTT
 #------------------------------------------------------------#
@@ -49,6 +49,7 @@ MQTT_TOPIC_NAMESPACE = 'ADV_op'
 #------------------------#
 MQTT_ADVOP_SYNC_SUBT = MQTT_TOPIC_NAMESPACE + '/sync'
 MQTT_ADVOP_REQ_RUN_STOP_SUBT = MQTT_TOPIC_NAMESPACE + '/req_run_stop'
+MQTT_SET_XBYWIRE_STATE_SUBT = 'control/set_xbywire_state'
 
 
 # The subscription list
@@ -57,11 +58,14 @@ MQTT_SUBSCRIPTION_LIST = list()
 # NOTE: since that we are subscrbing to local broker, the loading is tiny for QoS=2
 MQTT_SUBSCRIPTION_LIST.append((MQTT_ADVOP_SYNC_SUBT, 2))
 MQTT_SUBSCRIPTION_LIST.append((MQTT_ADVOP_REQ_RUN_STOP_SUBT, 2))
+MQTT_SUBSCRIPTION_LIST.append((MQTT_SET_XBYWIRE_STATE_SUBT, 2))
 #------------------------#
 
 # Published topics (MQTT --> dock)
 #------------------------#
 MQTT_ADVOP_RUN_STATE_PUBT = MQTT_TOPIC_NAMESPACE + '/run_state' #
+MQTT_XBYWIRE_ON_OFF_PUBT = 'xbywire/on_off'
+
 #mqtt_advop_event_json_pubT = MQTT_TOPIC_NAMESPACE + '/event_json' #
 #------------------------#
 
@@ -149,15 +153,32 @@ def mqtt_advop_sync_cb(client, userdata, mqtt_msg):
     ROS_ADVOP_SYNC_PUB.publish(Empty())
     mqtt_publish_all_states()
 
+def parse_advop_req_run_stop(mqtt_msg_str):
+    jdoc = json.loads(mqtt_msg_str)
+    if isinstance(jdoc, dict):
+        # jdoc is something like {"state":1,"timestamp":1628832738652}
+        return bool(jdoc.get("state", 0))
+    # raw string, mqtt_msg_str is either "0" or "1"
+    return bool(jdoc)
+
 def mqtt_advop_req_run_stop_cb(client, userdata, mqtt_msg):
     """
     This is the callback function at receiving req_run_stop signal.
     ** On receiving this message, bypass to ROS.
     """
     rospy.loginfo("[MQTT] %s payload = %s", mqtt_msg.topic, mqtt_msg.payload)
-    req_run_stop = mqtt_char_to_bool(mqtt_msg.payload)
+    req_run_stop = parse_advop_req_run_stop(mqtt_msg.payload)
     ROS_ADVOP_REQ_RUN_STOP_PUB.publish(req_run_stop) # "1" or "0"
     rospy.loginfo("[MQTT] Request to go" if req_run_stop else "[MQTT] Request to stop")
+
+
+def mqtt_set_xbywire_state_cb(client, userdata, mqtt_msg):
+    rospy.loginfo("[MQTT] %s payload = %s", mqtt_msg.topic, mqtt_msg.payload)
+    ros_msg = Bool()
+    ros_msg.data = True if mqtt_msg.payload == "1" else False
+    ROS_SET_XBYWIRE_STATE_PUB.publish(ros_msg)
+
+
 #------------------------------------------------------#
 # end MQTT --> ROS
 
@@ -194,6 +215,18 @@ def ros_advop_sys_ready_cb(msg):
         return
     set_timer_sys_ready()
 
+
+def ros_xbywire_on_off_cb(msg):
+    if MQTT_CLIENT is None:
+        rospy.logwarn("MQTT broker is down. Cannot publish xbywire/on_off!")
+        return
+    mqtt_payload = "1" if msg.data else "0"
+    MQTT_CLIENT.publish(MQTT_XBYWIRE_ON_OFF_PUBT,
+                        payload=mqtt_payload,
+                        qos=2,
+                        retain=False)
+
+
 def ros_advop_event_json_cb(msg):
     """
     This is the callback function for sys_ready.
@@ -229,6 +262,7 @@ def main():
     #
     rospy.Subscriber("ADV_op/sys_ready", Bool, ros_advop_sys_ready_cb)
     rospy.Subscriber("ADV_op/event_json", String, ros_advop_event_json_cb)
+    rospy.Subscriber("xbywire/on_off", Bool, ros_xbywire_on_off_cb)
     #-----------------------------#
 
 
@@ -242,6 +276,7 @@ def main():
     # Subscriber callbacks
     MQTT_CLIENT.message_callback_add(MQTT_ADVOP_SYNC_SUBT, mqtt_advop_sync_cb)
     MQTT_CLIENT.message_callback_add(MQTT_ADVOP_REQ_RUN_STOP_SUBT, mqtt_advop_req_run_stop_cb)
+    MQTT_CLIENT.message_callback_add(MQTT_SET_XBYWIRE_STATE_SUBT, mqtt_set_xbywire_state_cb)
 
     # Connect
     is_connected = False

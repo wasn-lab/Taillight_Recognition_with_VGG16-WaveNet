@@ -45,17 +45,14 @@
 
 /// namespace
 using namespace DriveNet;
+using namespace sensor_msgs_itri;
 
 /// camera layout
-#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
 const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30,
                                          camera::id::left_back_60, camera::id::right_back_60,
                                          camera::id::front_top_close_120, camera::id::left_front_60,
                                          camera::id::right_front_60};
-#elif CAR_MODEL_IS_C1
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::right_front_60,
-                                         camera::id::right_back_60, camera::id::left_front_60,
-                                         camera::id::left_back_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -909,7 +906,7 @@ void image_publisher(const std::vector<cv::Mat>& image, const std_msgs::Header& 
   }
 }
 void object_publisher(const std::vector<msgs::DetectedObjectArray>& object_array_camera,
-                      const msgs::DetectedObjectArray& object_array_lidar,
+                      const std_msgs::Header header_lidar,
                       const std::vector<std::vector<msgs::DetectedObject>>& object_array_lidar_filter,
                       const std::vector<std::vector<std::pair<int, int>>>& fusion_index)
 {
@@ -924,7 +921,7 @@ void object_publisher(const std::vector<msgs::DetectedObjectArray>& object_array
       int lidar_index = fusion_index[cam_order][pair_index].second;
 
       msgs::DetectedObject msg_obj;
-      msg_obj.header = object_array_lidar.header;
+      msg_obj.header = header_lidar;
       msg_obj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
       msg_obj.distance = 0;
 
@@ -942,7 +939,7 @@ void object_publisher(const std::vector<msgs::DetectedObjectArray>& object_array
   std::vector<msgs::DetectedObject> msg_objs_after_fusion;
   msg_objs_after_fusion = g_box_fusion.multi_cambox_fuse(msg_objs);
 
-  msg_det_obj_arr.header = object_array_lidar.header;
+  msg_det_obj_arr.header = header_lidar;
   msg_det_obj_arr.header.frame_id = "lidar";  // mapping to lidar coordinate
   msg_det_obj_arr.objects = msg_objs_after_fusion;
   g_object_pub.publish(msg_det_obj_arr);
@@ -995,13 +992,17 @@ void runInference()
       g_is_data_sync = false;
       // getPointCloudInAllImageFOV(lidarall_ptr, cams_points_ptr, cam_pixels, g_image_w, g_image_h);
       getBoxInImageFOV(object_lidar, object_lidar_filter, lidar_pixels_obj, g_alignments);
+      std::vector<std::vector<DetectedObjectClassId>> object_camera_class_id =
+        g_roi_fusion.getCamObjSpecialClassId(object_arrs);
+      std::vector<std::vector<DetectedObjectClassId>> object_lidar_class_id =
+        g_roi_fusion.getLidarObjSpecialClassId(object_lidar_filter);
       std::vector<std::vector<sensor_msgs::RegionOfInterest>> object_lidar_roi =
           g_roi_fusion.getLidar2DROI(lidar_pixels_obj);
       std::vector<std::vector<sensor_msgs::RegionOfInterest>> object_camera_roi = g_roi_fusion.getCam2DROI(object_arrs);
       std::vector<std::vector<std::pair<int, int>>> fusion_index =
-          g_roi_fusion.getRoiFusionResult(object_camera_roi, object_lidar_roi);
+          g_roi_fusion.getRoiFusionResult(object_camera_roi, object_lidar_roi, object_camera_class_id, object_lidar_class_id);
       g_roi_fusion.getFusionCamObj(object_arrs, fusion_index, cam_pixels_obj);
-      object_publisher(object_arrs, object_lidar, object_lidar_filter, fusion_index);
+      object_publisher(object_arrs, object_lidar.header, object_lidar_filter, fusion_index);
 
       if (g_img_result_publish || g_is_display)
       {
@@ -1177,7 +1178,7 @@ int main(int argc, char** argv)
   message_filters::Subscriber<msgs::DetectedObjectArray> sub_filter_lidar_detection;
 
   /// get callback function
-#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
   static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = {
     callback_cam_front_bottom_60, callback_cam_front_top_far_30, callback_cam_left_back_60,
     callback_cam_right_back_60,  callback_cam_front_top_close_120,    callback_cam_left_front_60,
@@ -1187,15 +1188,6 @@ int main(int argc, char** argv)
     callback_object_cam_front_bottom_60, callback_object_cam_front_top_far_30, callback_object_cam_left_back_60,
     callback_object_cam_right_back_60,  callback_object_cam_front_top_close_120,    callback_object_cam_left_front_60,
     callback_object_cam_right_front_60
-  };
-#elif CAR_MODEL_IS_C1
-  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = {
-    callback_cam_front_bottom_60, callback_cam_right_front_60, callback_cam_right_back_60, callback_cam_left_front_60,
-    callback_cam_left_back_60
-  };
-  static void (*f_callbacks_object[])(const msgs::DetectedObjectArray::ConstPtr&) = {
-    callback_object_cam_front_bottom_60, callback_object_cam_right_front_60, callback_object_cam_right_back_60,
-    callback_object_cam_left_front_60, callback_object_cam_left_back_60
   };
 #endif
 

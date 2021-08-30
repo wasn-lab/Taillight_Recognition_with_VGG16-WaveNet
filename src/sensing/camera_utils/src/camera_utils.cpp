@@ -39,6 +39,8 @@ int get_undistortion_maps(cv::Mat& mapx, cv::Mat& mapy)
   fs.open(CAMERA_UTILS_DATA_DIR "/camera_calibration/on_ar0231_gmsl_120h_1280x720.yml", cv::FileStorage::READ);
 #elif CAR_MODEL_IS_C2
   fs.open(CAMERA_UTILS_DATA_DIR "/camera_calibration/on_ar0231_gmsl_120h_1280x720.yml", cv::FileStorage::READ);
+#elif CAR_MODEL_IS_C3
+  fs.open(CAMERA_UTILS_DATA_DIR "/camera_calibration/on_ar0231_gmsl_120h_1280x720.yml", cv::FileStorage::READ);
 #else
 #error "Car model is not defined"
 #endif

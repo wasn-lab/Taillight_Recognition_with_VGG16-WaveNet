@@ -16,6 +16,8 @@
 #include "pc2_args_parser.h"
 #include "itri_pcd_reader.h"
 #include "itri_pcd_writer.h"
+#include "point_os1.h"
+#include "point_xyzir.h"
 
 #define NO_UNUSED_VAR_CHECK(x) ((void)(x))
 
@@ -90,41 +92,58 @@ sensor_msgs::PointCloud2Ptr ouster64_to_xyzir(const sensor_msgs::PointCloud2Cons
 {
   // Ouster has 9 fields: x y z intensity t reflectivity ring noise range
   // We only needs 5 fields: x, y, z, intensity and ring.
-  constexpr int32_t msg_ring_field_idx = 6;
-  constexpr int32_t res_ring_field_idx = 4;
+  pcl::PointCloud<ouster_ros::OS1::PointXYZIR> xyzir_cloud;
+
+  size_t npoints = msg->width * msg->height;
+  // CHECK(npoints == 65536);
+  xyzir_cloud.points.resize(npoints);
+  xyzir_cloud.width = msg->width;
+  xyzir_cloud.height = msg->height;
+  size_t offset_x = 0;
+  size_t offset_y = 0;
+  size_t offset_z = 0;
+  size_t offset_intensity = 0;
+  size_t offset_ring = 0;
+  for (const auto& field : msg->fields)
+  {
+    if (field.name == "x")
+    {
+      offset_x = field.offset;
+    }
+    else if (field.name == "y")
+    {
+      offset_y = field.offset;
+    }
+    else if (field.name == "z")
+    {
+      offset_z = field.offset;
+    }
+    else if (field.name == "intensity")
+    {
+      offset_intensity = field.offset;
+    }
+    else if (field.name == "ring")
+    {
+      offset_ring = field.offset;
+    }
+  }
+
+  for (size_t i = 0, poffset = 0; i < npoints; i++, poffset += msg->point_step)
+  {
+    const unsigned char* msg_point_ptr = &msg->data[0] + poffset;
+    auto& point = xyzir_cloud.points[i];
+    point.x = *reinterpret_cast<const float*>(msg_point_ptr + offset_x);
+    point.y = *reinterpret_cast<const float*>(msg_point_ptr + offset_y);
+    point.z = *reinterpret_cast<const float*>(msg_point_ptr + offset_z);
+    point.intensity = *reinterpret_cast<const float*>(msg_point_ptr + offset_intensity);
+    point.ring = *reinterpret_cast<const uint8_t*>(msg_point_ptr + offset_ring);
+  }
   sensor_msgs::PointCloud2Ptr res{ new sensor_msgs::PointCloud2 };
-  res->fields.reserve(res_ring_field_idx + 1);
-  for (int32_t i = 0; i < res_ring_field_idx; i++)
-  {
-    res->fields.push_back(msg->fields[i]);
-  }
-  res->fields.push_back(msg->fields[msg_ring_field_idx]);
+  pcl::toROSMsg(xyzir_cloud, *res);
+  res->header.seq = msg->header.seq;
+  res->header.stamp = msg->header.stamp;
+  res->header.frame_id = msg->header.frame_id;
 
-  res->point_step = 0;
-  for (const auto& field : res->fields)
-  {
-    res->point_step += pcl::getFieldSize(field.datatype);
-  }
-  // dest_front_size = 16 (x, y, z, intensity: 4 bytes each)
-  const int32_t ring_size = pcl::getFieldSize(res->fields[res_ring_field_idx].datatype);
-  const int32_t dest_front_size = res->point_step - ring_size;
-  res->fields[res_ring_field_idx].offset = dest_front_size;
-  const int32_t num_points = msg->width * msg->height;
-  const int32_t msg_ring_field_offset = msg->fields[msg_ring_field_idx].offset;
-  res->data.resize(num_points * res->point_step);
-  for (int32_t i = 0, src_offset = 0, dest_offset = 0; i < num_points;
-       i++, src_offset += msg->point_step, dest_offset += res->point_step)
-  {
-    memcpy(&(res->data[dest_offset]), &(msg->data[src_offset]), dest_front_size);
-    memcpy(&(res->data[dest_offset + dest_front_size]), &(msg->data[src_offset + msg_ring_field_offset]), ring_size);
-  }
-
-  res->header = msg->header;
-  res->width = msg->width;
-  res->height = msg->height;
-  res->is_bigendian = msg->is_bigendian;
-  res->row_step = msg->width * res->point_step;
-  res->is_dense = msg->is_dense;
   return res;
 }
 
