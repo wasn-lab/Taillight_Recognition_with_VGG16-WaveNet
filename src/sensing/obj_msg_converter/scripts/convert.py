@@ -1,7 +1,9 @@
 #!/usr/bin/env python2
+# pylint: disable=no-name-in-module
 
 import rospy
 import tf2_ros
+from tf2_ros import ConnectivityException, LookupException
 import tf2_geometry_msgs
 from geometry_msgs.msg import PointStamped, PoseStamped
 from msgs.msg import DetectedObjectArray
@@ -24,7 +26,9 @@ class MsgConvert2(object):
             self.input_topic_, DetectedObjectArray, self.callback)
         # Publishers
         self.pub_ = rospy.Publisher(
-            str("filtered_objs/aw"), DynamicObjectWithFeatureArray, queue_size=1)
+            str("filtered_objs/aw"),
+            DynamicObjectWithFeatureArray,
+            queue_size=1)
 
     def run(self):
         tf_listener = tf2_ros.TransformListener(self.tf_buffer_)
@@ -71,7 +75,8 @@ class MsgConvert2(object):
         pose_in_lidar.pose.orientation.z = q.z
         pose_in_lidar.pose.orientation.w = q.w
 
-        pose_in_map = tf2_geometry_msgs.do_transform_pose(pose_in_lidar, tf_stamped)
+        pose_in_map = tf2_geometry_msgs.do_transform_pose(
+            pose_in_lidar, tf_stamped)
         p.x = pose_in_map.pose.position.x
         p.y = pose_in_map.pose.position.y
         p.z = pose_in_map.pose.position.z
@@ -82,18 +87,36 @@ class MsgConvert2(object):
 
     def convert_all_to_map_tf(self, obj):
         if obj.header.frame_id != self.frame_id_target_:
-            tf_stamped = self.tf_buffer_.lookup_transform(
-                self.frame_id_target_, self.frame_id_source_, rospy.Time(0))
-
-            self.convert_pose(obj.center_point, obj.heading, tf_stamped)
-            self.convert_point(obj.bPoint.p0, tf_stamped)
-            self.convert_point(obj.bPoint.p1, tf_stamped)
-            self.convert_point(obj.bPoint.p2, tf_stamped)
-            self.convert_point(obj.bPoint.p3, tf_stamped)
-            self.convert_point(obj.bPoint.p4, tf_stamped)
-            self.convert_point(obj.bPoint.p5, tf_stamped)
-            self.convert_point(obj.bPoint.p6, tf_stamped)
-            self.convert_point(obj.bPoint.p7, tf_stamped)
+            try:
+                tf_stamped = self.tf_buffer_.lookup_transform(
+                    self.frame_id_target_, self.frame_id_source_, rospy.Time(0))
+                self.convert_pose(obj.center_point, obj.heading, tf_stamped)
+                self.convert_point(obj.bPoint.p0, tf_stamped)
+                self.convert_point(obj.bPoint.p1, tf_stamped)
+                self.convert_point(obj.bPoint.p2, tf_stamped)
+                self.convert_point(obj.bPoint.p3, tf_stamped)
+                self.convert_point(obj.bPoint.p4, tf_stamped)
+                self.convert_point(obj.bPoint.p5, tf_stamped)
+                self.convert_point(obj.bPoint.p6, tf_stamped)
+                self.convert_point(obj.bPoint.p7, tf_stamped)
+            except ConnectivityException as e1:
+                d = 1000000000
+                print(
+                    '[{0}.{1}] ConnectivityException: {2}'.format(
+                        obj.header.stamp.to_nsec() //
+                        d,
+                        obj.header.stamp.to_nsec() %
+                        d,
+                        str(e1)))
+            except LookupException as e2:
+                d = 1000000000
+                print(
+                    '[{0}.{1}] LookupException: {2}'.format(
+                        obj.header.stamp.to_nsec() //
+                        d,
+                        obj.header.stamp.to_nsec() %
+                        d,
+                        str(e2)))
 
     def msg_convert(self, in_list):
         out_list = DynamicObjectWithFeatureArray()

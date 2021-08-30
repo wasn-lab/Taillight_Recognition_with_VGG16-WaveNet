@@ -1,6 +1,6 @@
 #!/bin/sh
 searchString1="jetson_clocks" 
-searchString2="bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar0231_driver_c2.sh /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber nvidia true"
+searchString2="bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar0231_driver_c3.sh /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber nvidia false"
 searchString3="bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/exposure-setup-day-or-night.sh /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber"
 file="/etc/rc.local"
 if [ -f "/etc/rc.local" ]; then    
@@ -15,15 +15,15 @@ if [ -f "/etc/rc.local" ]; then
     fi
     if grep -Fxq "$searchString2" $file
     then
-            echo "init_ar0231_driver_c2.sh always in $file"
+            echo "init_ar0231_driver_c3.sh always in $file"
     else
             echo "#wait camera hardware ready, wait /home/nvidia/itriadv link ready"               | sudo tee -a $file
             echo "sleep 15"                          | sudo tee -a $file    
-            echo "#init camera driver for car mode, setup EQ and Pre-Emp" | sudo tee -a $file
+            echo "#init camera driver for laoratory mode, setup EQ and Pre-Emp" | sudo tee -a $file
             echo "# parameter 1 : the path of camera driver" | sudo tee -a $file
             echo "# parameter 2 : the root password" | sudo tee -a $file
             echo "# parameter 3 : True mean car mode, False mean laboratory mode" | sudo tee -a $file
-            echo "bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar0231_driver_c2.sh /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber nvidia true" | sudo tee -a $file  
+            echo "bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar0231_driver_c3.sh /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber nvidia false" | sudo tee -a $file  
     fi
     if grep -Fxq "$searchString3" $file
     then
@@ -44,11 +44,11 @@ else
     echo "jetson_clocks"                    | sudo tee -a $file
     echo "#wait camera hardware ready, wait /home/nvidia/itriadv link ready"               | sudo tee -a $file
     echo "sleep 15"                          | sudo tee -a $file    
-    echo "#init camera driver for car mode, setup EQ and Pre-Emp" | sudo tee -a $file
+    echo "#init camera driver for laoratory mode, setup EQ and Pre-Emp" | sudo tee -a $file
     echo "# parameter 1 : the path of camera driver" | sudo tee -a $file
     echo "# parameter 2 : the root password" | sudo tee -a $file
     echo "# parameter 3 : True mean car mode, False mean laboratory mode" | sudo tee -a $file
-    echo "bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar0231_driver_c2.sh /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber nvidia true" | sudo tee -a $file
+    echo "bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/init_ar0231_driver_c3.sh /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber nvidia false" | sudo tee -a $file
     echo "#init camera exposure" | sudo tee -a $file
     echo "# parameter 1 : the path of camera exposure script" | sudo tee -a $file
     echo "bash /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber/exposure-setup-day-or-night.sh /home/nvidia/itriadv/src/sensing/camera_grabber/src/CameraGrabber" | sudo tee -a $file  
