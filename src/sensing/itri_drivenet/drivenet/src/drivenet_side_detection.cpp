@@ -30,6 +30,11 @@ const std::vector<int> crop_offset{ 0, 50, 50, 0 };
 #elif CAR_MODEL_IS_C2
 const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
                                          camera::id::left_front_60, camera::id::left_back_60 };
+const std::vector<int> crop_size{ 50, 52, 35, 51 };
+const std::vector<int> crop_offset{ 0, 52, 35, 0 };
+#elif CAR_MODEL_IS_C3
+const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
+                                         camera::id::left_front_60, camera::id::left_back_60 };
 const std::vector<int> crop_size;
 const std::vector<int> crop_offset;
 #else
