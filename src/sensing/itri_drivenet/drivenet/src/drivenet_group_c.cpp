@@ -547,8 +547,11 @@ void* run_yolo(void* /*unused*/)
           class_color = get_label_color(box.label);
           PixelPosition position_1{ int(box.x1), int(box.y1) };
           PixelPosition position_2{ int(box.x2), int(box.y2) };
-          transferPixelScaling(position_1);
-          transferPixelScaling(position_2);
+          if (g_input_resize)
+          {
+            transferPixelScaling(position_1);
+            transferPixelScaling(position_2);
+          }
           cv::rectangle(m_display[cam_order], cvPoint(position_1.u, position_1.v), cvPoint(position_2.u, position_2.v),
                         class_color, 3);
         }

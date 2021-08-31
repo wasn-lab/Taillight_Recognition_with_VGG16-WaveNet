@@ -215,7 +215,7 @@ int main(int argc, char** argv)
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     cam_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]];
-    cam_raw_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]] + std::string("/raw");
+    cam_raw_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]];
     bbox_topic_names[cam_order] = camera::topics_obj[g_cam_ids[cam_order]];
 
     /// Wait for all message
@@ -496,8 +496,11 @@ void* run_yolo(void* /*unused*/)
           class_color = get_label_color(box.label);
           PixelPosition position_1{ int(box.x1), int(box.y1) };
           PixelPosition position_2{ int(box.x2), int(box.y2) };
-          transferPixelScaling(position_1);
-          transferPixelScaling(position_2);
+          if(g_input_resize)
+          {
+            transferPixelScaling(position_1);
+            transferPixelScaling(position_2);
+          }
           cv::rectangle(m_display[cam_order], cvPoint(position_1.u, position_1.v), cvPoint(position_2.u, position_2.v),
                         class_color, 3);
         }
