@@ -146,7 +146,9 @@ float* DsImage::preprocessing(const cv::Mat& srcImg, const int inputH, const int
     std::cout << "Input size is not equal to " << std::to_string(camera::raw_image_width) << "x"
               << std::to_string(camera::raw_image_height) << std::endl;
     assert(0);
-
+  }
+  else if (m_Height == camera::raw_image_height && m_Width == camera::raw_image_width)
+  {
     // resize the DsImage with scale
     float dim = std::max(m_Height, m_Width);
     int resizeH = ((m_Height / dim) * nppSizeNet.height);
