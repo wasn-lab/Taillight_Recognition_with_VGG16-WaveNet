@@ -40,6 +40,9 @@
 	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_os1sensor"  args="0 0 0 -3.1415926 0 0 base_link os1_sensor" />
 	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_lidar"  args="0 0 0 0 0 0 base_link lidar" />
 
+<!-- driver-->
+	 <include file="$(find lidar)/launch/drivers.launch" if="$(arg hardware_enable)" />
+
 <!-- Old Stitch ******************************************************************* -->
 	<group if="$(arg use_old_stitch)">
         <rosparam param="LidarFrontLeft_Fine_Param">[0.459, 1.098, -1.858, 0.027, -0.002, 1.771]</rosparam>
@@ -84,36 +87,5 @@
 		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node" respawn="true"  />
 		<!-- <include file="$(find lidar_point_pillars)/launch/lidar_point_pillars.launch" /> -->
 	</group>
-
-<!-- Lidar Driver ********************************************************************************** -->
-    <!-- Left-->
-    <include file="$(find ouster_ros)/ouster.launch" if="$(arg hardware_enable)">
-        <arg name="group_name" value="/LidarFrontLeft" />
-        <arg name="tf_prefix" value="lidar_front_left" doc="as frame_id" />
-        <arg name="sensor_hostname" value="192.168.0.230" />
-        <arg name="udp_dest" value="192.168.0.1" />
-        <arg name="lidar_port" value="7501" />
-        <arg name="imu_port" value="7511" />
-    </include>
-
-    <!-- Right -->
-    <include file="$(find ouster_ros)/ouster.launch" if="$(arg hardware_enable)">
-        <arg name="group_name" value="/LidarFrontRight" />
-        <arg name="tf_prefix" value="lidar_front_right" doc="as frame_id" />
-        <arg name="sensor_hostname" value="192.168.0.225" />
-        <arg name="udp_dest" value="192.168.0.1" />
-        <arg name="lidar_port" value="7502" />
-        <arg name="imu_port" value="7512" />
-    </include>
-
-    <!-- Top-->
-    <include file="$(find ouster_ros)/ouster.launch" if="$(arg hardware_enable)">
-		<arg name="group_name" value="/LidarFrontTop" />
-		<arg name="tf_prefix" value="lidar" doc="as frame_id" />
-		<arg name="sensor_hostname" value="192.168.0.226" />
-		<arg name="udp_dest" value="192.168.0.1" />
-		<arg name="lidar_port" value="7503" />
-		<arg name="imu_port" value="7513" />
-    </include>
 
 </launch>

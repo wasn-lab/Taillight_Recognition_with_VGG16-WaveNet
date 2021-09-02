@@ -41,7 +41,7 @@
 	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_lidar"  args="0 0 0 0 0 0 base_link lidar" />
 
 <!-- driver-->
-	<include file="$(find lidar)/launch/drivers.launch" if="$(arg hardware_enable)" />
+	 <include file="$(find lidar)/launch/drivers.launch" if="$(arg hardware_enable)" />
 
 <!-- Mode Switch ************************************************************ -->
 	<group if="$(eval arg('mode') == 0)">
