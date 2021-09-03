@@ -104,9 +104,11 @@ class GeometricMap(Map):
         :param device: Device on which the rotated tensors should be returned.
         :return: Rotated and cropped tensor patches.
         """
-        # For ITRIADV map: map_origin = torch.tensor([[2008.5, 41172.9]])
-        # For ZhuBei map: map_origin = torch.tensor([[633.0, 44853.9]])
-        map_origin = torch.tensor([[2008.5, 41172.9]])
+        # For ITRIADV map: 
+        # map_origin = torch.tensor([[2008.592, 41172.968]])
+
+        # For ZhuBei map:
+        map_origin = torch.tensor([[631.426, 44853.906]])
         
         scene_pts = scene_pts - map_origin
         batch_size = scene_pts.shape[0]
@@ -140,7 +142,7 @@ class GeometricMap(Map):
         padded_map = [s_map.get_padded_map(context_padding_x, context_padding_y, device=device) for s_map in maps]
         # print("padded_map len", len(padded_map))
         # print("padded_map[0].shape ", padded_map[0].shape)
-        # print("padded_map[0]", padded_map[0])
+        print("padded_map[0]", padded_map[0])
         
         for i in range(centers.shape[0]):
             # print(i)
@@ -159,8 +161,8 @@ class GeometricMap(Map):
             if int(centers[i, 1] + context_padding_y) > padded_map[i].shape[2]:
                 p_size = int(centers[i, 1] + context_padding_y) - padded_map[i].shape[2]
                 padder = torch.zeros(3, padded_map[i].shape[1], p_size, dtype=torch.uint8)
-                print("Ytype of padded_map[i]", type(padded_map[i]))
-                print("Ytype of padder[i]", type(padder[i]))
+                # print("Ytype of padded_map[i]", type(padded_map[i]))
+                # print("Ytype of padder[i]", type(padder[i]))
                 padded_map[i] = torch.cat((padded_map[i], padder), dim = 2)
         
         # print("padded_map len", len(padded_map))
@@ -172,7 +174,7 @@ class GeometricMap(Map):
                                           for i in range(centers.shape[0])], dim=0)
         
         # 0 appears here
-        # print("padded_map_batched shape", padded_map_batched.shape)
+        print("padded_map_batched shape", padded_map_batched.shape)
         center_patches = torch.tensor([[context_padding_y, context_padding_x]],
                                       dtype=torch.int,
                                       device=device).repeat(batch_size, 1)
@@ -181,15 +183,17 @@ class GeometricMap(Map):
             angles = torch.Tensor(rotation)
         else:
             angles = torch.zeros(batch_size)
-        
-        rotated_map_batched = cls.batch_rotate(padded_map_batched/255.,
+                                                
+        rotated_map_batched = cls.batch_rotate(padded_map_batched/1.,
                                                 center_patches.float(),
                                                 angles,
                                                 long_size,
-                                                lat_size)
+                                                lat_size) 
 
         del padded_map_batched
-
+	
+	print("rotated_map_batched shape", rotated_map_batched.shape)
+	print("rotated_map_batched[0]", rotated_map_batched[0])
         return rotated_map_batched[...,
                long_size_half - patch_size[1]:(long_size_half + patch_size[3]),
                lat_size_half - patch_size[0]:(lat_size_half + patch_size[2])]
