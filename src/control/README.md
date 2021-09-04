@@ -77,22 +77,29 @@
 
 根據自車車道繪製出drivalbe area,並且將左邊變寬,此grid map使用在obstacle avoidance需要車道變寬時
 
-1. 重要參數
-
-(1) right_waylength:從車道中心線向右延伸距離
-(2) left_waylength:從車道中心線向左延伸距離
+* 重要參數
+ 1. right_waylength:從車道中心線向右延伸距離
+ 2. left_waylength:從車道中心線向左延伸距離
 
 ### planning_initial
 
 ```使用車輛：B and C```
 
+幾乎所有需要接進planning module的topic都由此node轉換
+詳細到planning_initial的README.md
+
+
 ### plc_fatek
 
 ```使用車輛：B and C```
 
+與PLC溝通之程式
+
 ### rad_grab
 
 ```使用車輛：B and C```
+
+rad grabber,將radar 資料拋出,須注意是否有PathPredictionOutput/radar這個topic
 
 ### smash
 
@@ -102,10 +109,21 @@
 
 ```使用車輛：B```
 
+1. to_dspace:將topic轉成can傳給dspace
+
+```使用車輛：B and C```
+2. bus_stop_info:判斷預約站號及傳CAN到dspace
+
+備註：詳細內容可至to_dspace裡的README.md
+
 ### trimble_grabber
 
 ```使用車輛：B and C```
 
+gnss grabber for trimble bx992,若換gnss則須重寫grabber,其中此grabber包含座標轉換,目前主要以UTM格式為主
+
 ### vehinfo_pub
 
 ```使用車輛：B```
+
+從dspace讀取can訊號並且轉發成veh_info,目前此topic僅有ego_speed有在使用
