@@ -115,13 +115,13 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(
           input_cloud_tmp, LidarFrontLeft_Fine_Param[0], LidarFrontLeft_Fine_Param[1], LidarFrontLeft_Fine_Param[2],
           LidarFrontLeft_Fine_Param[3], LidarFrontLeft_Fine_Param[4], LidarFrontLeft_Fine_Param[5]);
-      *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -7.0, 2, -1.3, 1.3, -3.0, 1);
+      *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.2, 1.2, -3.0, 1);
 
       //-------------------------- ROI
       if (g_use_roi)
       {
         // additial remove outliner for front-left lidar
-        *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -25, 2, -25, 1.5, -3.0, 0);
+        *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -50, 1, -50, 0.8, -4.0, 4);
       }
 
       // assign
@@ -200,13 +200,13 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(
           input_cloud_tmp, LidarFrontRight_Fine_Param[0], LidarFrontRight_Fine_Param[1], LidarFrontRight_Fine_Param[2],
           LidarFrontRight_Fine_Param[3], LidarFrontRight_Fine_Param[4], LidarFrontRight_Fine_Param[5]);
-      *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -7.0, 2, -1.3, 1.3, -3.0, 1);
+      *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.2, 1.2, -3.0, 1);
 
       // ROI
       if (g_use_roi)
       {
         // additial remove outliner for front-right lidar
-        *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -25, 2, -1.5, 25, -3.0, 0);
+        *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -50, 1, -0.8, 50, -4.0, 4);
       }
 
       // assign
@@ -263,7 +263,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 #elif CAR_MODEL_IS_C2
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
 #elif CAR_MODEL_IS_C3
-      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
+      *g_cloudPtr_LidarFrontTop = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0.023, 0.3, 0);
 #else
       #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
@@ -280,18 +280,13 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 #elif CAR_MODEL_IS_C2
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
 #elif CAR_MODEL_IS_C3
-      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
+      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0.023, 0.3, 0);
 #else
       #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
-      *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -7.0, 2, -1.3, 1.3, -3.0, 1);
+      *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.2, 1.2, -3.0, 1);
       if (g_use_roi)
-      {
-        //*input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 2, -1.2, 1.2, -3.0, 0.3,
-        // -50, 50.0, -25.0, 25.0, -5.0, 0.01);
-        //*ptr_cur_cloud = CuboidFilter().pass_through_soild<PointXYZI>(ptr_cur_cloud, -50, 50, -25, 25, -5, 1);
-      }
-
+      { }
       // assign
       *g_cloudPtr_LidarFrontTop = *input_cloud_tmp;
 
@@ -331,24 +326,6 @@ void lidarAll_Pub(int lidarNum)
 
   g_cloudPtr_LidarAll->header.stamp = biggest_stamp;
   g_cloudPtr_LidarAll->header.frame_id = "lidar";
-
-  // if (g_cloudPtr_LidarFrontTop->header.stamp != 0)
-  // {
-  //   g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontTop->header.stamp;
-  // }
-  // else
-  // {
-  //   if (g_cloudPtr_LidarFrontLeft->header.stamp >= g_cloudPtr_LidarFrontRight->header.stamp)
-  //   {
-  //     g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontLeft->header.stamp;
-  //   }
-  //   else
-  //   {
-  //     g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontRight->header.stamp;
-  //   }
-  // }
-
-  // g_cloudPtr_LidarAll->header.stamp = ros::Time::now().toNSec() / 1000ull;
 
   //------ pub LidarAll
   if (g_cloudPtr_LidarAll->size() > 100 && g_cloudPtr_LidarAll->header.stamp != g_all_last_time)
@@ -435,14 +412,6 @@ int main(int argc, char** argv)
     n.param("/LidarFrontRight_Fine_Param", LidarFrontRight_Fine_Param, vector<double>());
     cout << "STITCHING PARAMETER FIND!" << endl;
   }
-
-  // ROS_INFO("Wait for /LidarFrontTop/Raw");
-  // ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/LidarFrontTop/Raw");
-  // ROS_INFO("Wait for /LidarFrontLeft/Raw");
-  // ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/LidarFrontLeft/Raw");
-  // ROS_INFO("Wait for /LidarFrontRight/Raw");
-  // ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/LidarFrontRight/Raw");
-  // ROS_INFO("/LidarFrontTop/Raw, /LidarFrontLeft/Raw, /LidarFrontRight/Raw are ready.");
 
   // subscriber
   ros::Subscriber sub_LidarFrontLeft =

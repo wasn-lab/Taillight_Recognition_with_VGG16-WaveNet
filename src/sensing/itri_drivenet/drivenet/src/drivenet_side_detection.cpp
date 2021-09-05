@@ -30,6 +30,11 @@ const std::vector<int> crop_offset{ 0, 50, 50, 0 };
 #elif CAR_MODEL_IS_C2
 const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
                                          camera::id::left_front_60, camera::id::left_back_60 };
+const std::vector<int> crop_size{ 50, 52, 35, 51 };
+const std::vector<int> crop_offset{ 0, 52, 35, 0 };
+#elif CAR_MODEL_IS_C3
+const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
+                                         camera::id::left_front_60, camera::id::left_back_60 };
 const std::vector<int> crop_size;
 const std::vector<int> crop_offset;
 #else
@@ -518,8 +523,11 @@ void* run_yolo(void* /*unused*/)
           class_color = get_label_color(box.label);
           PixelPosition position_1{ int(box.x1), int(box.y1) };
           PixelPosition position_2{ int(box.x2), int(box.y2) };
-          transferPixelScaling(position_1);
-          transferPixelScaling(position_2);
+          if (g_input_resize)
+          {
+            transferPixelScaling(position_1);
+            transferPixelScaling(position_2);
+          }
           cv::rectangle(m_display[cam_order], cvPoint(position_1.u, position_1.v), cvPoint(position_2.u, position_2.v),
                         class_color, 3);
         }

@@ -97,6 +97,10 @@ int PCTransformNode::set_transform_parameters()
   std::vector<double> transform_params{ 0, 0, 0, 0, 0.2, 0 };
 #elif CAR_MODEL_IS_C1
   std::vector<double> transform_params{ 0, 0, 0, 0.023, 0.21, 0 };
+#elif CAR_MODEL_IS_C2
+  std::vector<double> transform_params{ 0, 0, 0, 0, 0.2, 0 };
+#elif CAR_MODEL_IS_C3
+  std::vector<double> transform_params{ 0, 0, 0, 0.023, 0.3, 0 };
 #else
   std::vector<double> transform_params{ 0, 0, 0, 0, 0, 0 };
 #endif
