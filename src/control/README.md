@@ -17,6 +17,11 @@
 3. lateral_control : lateral controller,主要調整側向控制器的參數,所使用的方法為target and control
 4. long_control : longitude controller,主要調整縱向控制器參數,包含throttle和brake,其中switching_module為計算切換throttle/brake之時機點
 5. speed_profile : 計算最終車速cmd,其中包含acc和acc_pp,並且從flag_management接收flag狀態,如light_flag,bus_stop_flag,idle_flag,static_flag等,去調整車速cmd
+6. throttle_control : 發送油門訊號及油門relay,並且讀取車速訊號
+7. xbywire_can_io
+ * brake_can_io : 發送brake訊號及接收brake fb
+ * steer_can_io : 發送steer訊號及接收steer fb
+ * xbywire_checker : check xbywire及油門是否有正常連線
 
 ### from_dspace
 
