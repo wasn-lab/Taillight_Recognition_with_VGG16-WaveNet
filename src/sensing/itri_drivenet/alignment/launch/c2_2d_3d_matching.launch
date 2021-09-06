@@ -1,0 +1,7 @@
+<launch>
+        <node name="alignment_c2_match_2d_3d_bbox" pkg="alignment" type="alignment_c2_match_2d_3d_bbox"  output="screen">
+                <param name="imgResult_publish" type="bool" value="true" />
+                <param name="camera_detection_on_2d" type="bool" value="true" />
+                <param name="lidar_detection_on_2d" type="bool" value="true" />
+        </node>
+</launch>
