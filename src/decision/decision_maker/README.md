@@ -4,7 +4,7 @@
 
 ### Input
 
-* node.subscribe("Flag_Info01", 1, avoidstatesubCallback);
+* node.subscribe("Flag_Info01", 1, avoidstatesubCallback); //ACC判斷要繞越之flag
 * node.subscribe("Geofence_original", 1, obsdisbaseCallback);
 * node.subscribe("veh_overshoot_orig_dis", 1, overshootorigdisCallback);
 * node.subscribe("lane_event", 1, laneeventCallback); //已無使用
