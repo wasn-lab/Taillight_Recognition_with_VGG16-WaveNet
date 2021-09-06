@@ -16,7 +16,7 @@
 using namespace DriveNet;
 
 /// camera layout
-#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1 || CAR_MODEL_IS_C2
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1 || CAR_MODEL_IS_C2 || CAR_MODEL_IS_C3
 const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30 };
 #else
 #error "car model is not well defined"
@@ -473,8 +473,11 @@ void* run_yolo(void* /*unused*/)
           class_color = get_label_color(box.label);
           PixelPosition position_1{ int(box.x1), int(box.y1) };
           PixelPosition position_2{ int(box.x2), int(box.y2) };
-          transferPixelScaling(position_1);
-          transferPixelScaling(position_2);
+          if (g_input_resize)
+          {
+            transferPixelScaling(position_1);
+            transferPixelScaling(position_2);
+          }
           cv::rectangle(m_display[cam_order], cvPoint(position_1.u, position_1.v), cvPoint(position_2.u, position_2.v),
                         class_color, 3);
         }

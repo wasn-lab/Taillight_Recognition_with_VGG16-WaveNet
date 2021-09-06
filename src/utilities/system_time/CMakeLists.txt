@@ -20,6 +20,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-cuda_add_executable(${PROJECT_NAME}_ros_time src/ros_time.cpp)
+add_executable(${PROJECT_NAME}_ros_time EXCLUDE_FROM_ALL src/ros_time.cpp)
 target_link_libraries(${PROJECT_NAME}_ros_time ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME}_ros_time ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
