@@ -83,8 +83,8 @@
 根據自車車道繪製出drivalbe area,並且將左邊變寬,此grid map使用在obstacle avoidance需要車道變寬時
 
 * 重要參數
-  * right_waylength:從車道中心線向右延伸距離
-  * left_waylength:從車道中心線向左延伸距離
+	* right_waylength:從車道中心線向右延伸距離
+	* left_waylength:從車道中心線向左延伸距離
 
 ### planning_initial
 
