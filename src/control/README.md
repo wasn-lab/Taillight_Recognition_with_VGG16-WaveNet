@@ -19,9 +19,9 @@
 * speed_profile : 計算最終車速cmd,其中包含acc和acc_pp,並且從flag_management接收flag狀態,如light_flag,bus_stop_flag,idle_flag,static_flag等,去調整車速cmd
 * throttle_control : 發送油門訊號及油門relay,並且讀取車速訊號
 * xbywire_can_io
- * brake_can_io : 發送brake訊號及接收brake fb
- * steer_can_io : 發送steer訊號及接收steer fb
- * xbywire_checker : check xbywire及油門是否有正常連線
+	* brake_can_io : 發送brake訊號及接收brake fb
+	* steer_can_io : 發送steer訊號及接收steer fb
+	* xbywire_checker : check xbywire及油門是否有正常連線
 
 ### from_dspace
 
@@ -83,8 +83,8 @@
 根據自車車道繪製出drivalbe area,並且將左邊變寬,此grid map使用在obstacle avoidance需要車道變寬時
 
 * 重要參數
- * right_waylength:從車道中心線向右延伸距離
- * left_waylength:從車道中心線向左延伸距離
+  * right_waylength:從車道中心線向右延伸距離
+  * left_waylength:從車道中心線向左延伸距離
 
 ### planning_initial
 
