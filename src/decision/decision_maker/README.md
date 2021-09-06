@@ -25,8 +25,8 @@
 ### Supplymentary
 
 * ```obstacle_lane_change_approval與obstacle_avoidance_planner/enable_avoidance```
- * 目前兩者都由同一個判斷式判斷是否要繞越,因此只能擇一,未來需要修改此判斷邏輯
- * 目前繞越主要由ACC作為判斷,當ACC速度cmd為0維持5秒後進入繞越模式
+	* 目前兩者都由同一個判斷式判斷是否要繞越,因此只能擇一,未來需要修改此判斷邏輯
+	* 目前繞越主要由ACC作為判斷,當ACC速度cmd為0維持5秒後進入繞越模式
 * avoidpath_reach_goal
- * 當前方無障礙物且車輛回到原車道後發出到達繞越終點
+	* 當前方無障礙物且車輛回到原車道後發出到達繞越終點
 
