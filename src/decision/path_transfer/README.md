@@ -43,5 +43,5 @@
 ### Supplymentary
 
 * ```nav_path_astar_final與nav_path_astar_base_30```的主要差異
- 1. nav_path_astar_final : 經過最後obstacle avoidance的path,此為最終車輛控制要控制到的path
- 2. nav_path_astar_base_30 : 經過lane change後的path,此為主要車輛要行駛的車道path
+	* nav_path_astar_final : 經過最後obstacle avoidance的path,此為最終車輛控制要控制到的path
+	* nav_path_astar_base_30 : 經過lane change後的path,此為主要車輛要行駛的車道path

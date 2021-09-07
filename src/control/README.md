@@ -12,11 +12,16 @@
 
 此部份主要為從B車dspace的simulink code轉譯成C++,故此模組僅在C車上執行
 
-1. dspace_tx : 將dspace_code的topic合成B車dspace傳到xavier上之code,可使control checker順利執行
-2. flag_management : 產生各類型flag,如light_flag,bus_stop_flag,idle_flag等
-3. lateral_control : lateral controller,主要調整側向控制器的參數,所使用的方法為target and control
-4. long_control : longitude controller,主要調整縱向控制器參數,包含throttle和brake,其中switching_module為計算切換throttle/brake之時機點
-5. speed_profile : 計算最終車速cmd,其中包含acc和acc_pp,並且從flag_management接收flag狀態,如light_flag,bus_stop_flag,idle_flag,static_flag等,去調整車速cmd
+* dspace_tx : 將dspace_code的topic合成B車dspace傳到xavier上之code,可使control checker順利執行
+* flag_management : 產生各類型flag,如light_flag,bus_stop_flag,idle_flag等
+* lateral_control : lateral controller,主要調整側向控制器的參數,所使用的方法為target and control
+* long_control : longitude controller,主要調整縱向控制器參數,包含throttle和brake,其中switching_module為計算切換throttle/brake之時機點
+* speed_profile : 計算最終車速cmd,其中包含acc和acc_pp,並且從flag_management接收flag狀態,如light_flag,bus_stop_flag,idle_flag,static_flag等,去調整車速cmd
+* throttle_control : 發送油門訊號及油門relay,並且讀取車速訊號
+* xbywire_can_io
+	* brake_can_io : 發送brake訊號及接收brake fb
+	* steer_can_io : 發送steer訊號及接收steer fb
+	* xbywire_checker : check xbywire及油門是否有正常連線
 
 ### from_dspace
 
@@ -78,14 +83,15 @@
 根據自車車道繪製出drivalbe area,並且將左邊變寬,此grid map使用在obstacle avoidance需要車道變寬時
 
 * 重要參數
- 1. right_waylength:從車道中心線向右延伸距離
- 2. left_waylength:從車道中心線向左延伸距離
+	* right_waylength:從車道中心線向右延伸距離
+	* left_waylength:從車道中心線向左延伸距離
 
 ### planning_initial
 
 ```使用車輛：B and C```
 
 幾乎所有需要接進planning module的topic都由此node轉換
+
 詳細到planning_initial的README.md
 
 
@@ -109,10 +115,11 @@ rad grabber,將radar 資料拋出,須注意是否有PathPredictionOutput/radar�
 
 ```使用車輛：B```
 
-1. to_dspace:將topic轉成can傳給dspace
+* to_dspace:將topic轉成can傳給dspace
 
 ```使用車輛：B and C```
-2. bus_stop_info:判斷預約站號及傳CAN到dspace
+
+* bus_stop_info:判斷預約站號及傳CAN到dspace
 
 備註：詳細內容可至to_dspace裡的README.md
 
