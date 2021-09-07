@@ -12,8 +12,8 @@ def maskCrop(patch_box, mask_numpy):
     mask_numpy: binary numpy array of lanelet2 map drivable area
     '''
     # for itri_map
-    map_x_min = 2008.592
-    map_y_min = 41172.968
+    map_x_min = 2008.593
+    map_y_min = 41154.38
     
     # for zhubei_map
     # map_x_min = 633.018

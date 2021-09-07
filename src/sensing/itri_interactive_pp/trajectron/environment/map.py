@@ -105,7 +105,7 @@ class GeometricMap(Map):
         :return: Rotated and cropped tensor patches.
         """
         # For ITRIADV map: 
-        # map_origin = torch.tensor([[2008.592, 41172.968]])
+        # map_origin = torch.tensor([[2008.593, 41154.38]])
 
         # For ZhuBei map:
         map_origin = torch.tensor([[631.426, 44853.906]])
