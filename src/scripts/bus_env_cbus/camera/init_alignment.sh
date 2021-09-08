@@ -21,4 +21,6 @@ cd $CWD
 readonly car_model=$(rosparam get /car_model)
 if [[ "${car_model}" == "C1" ]]; then
 roslaunch --wait alignment c1_2d_3d_matching.launch
+elif [[ "${car_model}" == "C2" ]]; then
+roslaunch --wait alignment c2_2d_3d_matching.launch
 fi
