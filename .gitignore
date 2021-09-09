@@ -65,3 +65,5 @@ itriadv_install
 src/sensing/itri_interactive_pp/Ade_fde.txt
 src/sensing/itri_interactive_pp/map_mask
 src/sensing/itri_interactive_pp/Ade_fde_map.txt
+src/sensing/camera_grabber/CMakeLists.txt
+*.bash
