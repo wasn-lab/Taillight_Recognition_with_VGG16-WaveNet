@@ -5,7 +5,8 @@ from environment import Environment, Scene, derivative_of, Node
 
 class parameter():
     def __init__(self):
-        self.model = 'models/int_ee'
+        # adjust to map encoding HJQ
+        self.model = 'models/int_ee_me'
         self.checkpoint = 12
         self.node_type = 'VEHICLE'
         self.log_printer = None
