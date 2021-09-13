@@ -15,4 +15,6 @@ if [[ "${car_model}" == "C1" ]]; then
 roslaunch --wait drivenet c1_drivenet_group_a.launch
 elif [[ "${car_model}" == "C2" ]]; then
 roslaunch --wait drivenet c2_drivenet_group_a.launch
+elif [[ "${car_model}" == "C3" ]]; then
+roslaunch --wait drivenet c3_drivenet_group_a.launch
 fi
