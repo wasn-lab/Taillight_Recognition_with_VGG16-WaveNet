@@ -79,7 +79,4 @@
 		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node" respawn="true"  />
 	</group>
 
-   
-
-
 </launch>

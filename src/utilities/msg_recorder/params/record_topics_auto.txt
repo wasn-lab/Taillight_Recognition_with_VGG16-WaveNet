@@ -131,10 +131,58 @@
 /PathPredictionOutput/radar
 /RadarMarker
 /Geofence_PC
-/control/lateral_cumulativoffset
 
+# control
+/control/acc_cmd
+/control/acc_on
+/control/acc_pp_cmd
+/control/acc_trig
+/control/brake_cmd
+/control/brake_cmd_setting
+/control/brake_status
+/control/brake_trig_cc
+/control/bus_stop_state_info
+/control/cons_headway
+/control/end_path_flag
+/control/fbrake_interrupt
+/control/geofence/deviate_path
+/control/geofence/final
+/control/geofence/pcloud
+/control/geofence/radar
+/control/geofence_pp/final
+/control/geofence_pp/pedcross
+/control/geofence_pp/pp
+/control/lateral_cumulative_offset
+/control/lkc/look_ahead_S0
+/control/lkc/look_ahead_time
+/control/lkc/uturn
+/control/lkc/ytarget
+/control/longitudinal/decelcmd
+/control/longitudinal/speed_profile
+/control/plc_info
+/control/plc_write
+/control/self_driving_state
+/control/speed_cmd
+/control/speed_set
+/control/state_control_flag
+/control/static_flag
+/control/steer_cmd_setting
+/control/steerwheelcmd
+/control/throttle_cmd
+/control/traffic_light_state_info
+/control/xbywire_on
+/control_checker
 
+#xbywire
+/xbywire/brake_fb
+/xbywire/can_err
+/xbywire/on_off
+/xbywire/speed_info
+/xbywire/speed_info/duty_cycle
+/xbywire/steer_anglefb
 
+/bus_stop_register_info
+/traffic_light_register_info
 /mm_tp_topic
 /nav_path # Dyna-plan
 /nav_path_astar_final # A-star

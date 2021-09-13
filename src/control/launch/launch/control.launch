@@ -3,12 +3,10 @@
 	<!-- declare arg to be passed in -->
 	<!-- 0=fusion, 1=lidar, 2=camera -->
  	<arg name="pp_input_type" default="1"/>
-
+	<arg name="use_canbus" default="true"/> <!--for dspace-->
 	<arg name="can_name" default="can1"/>
-	<arg name="time_threshold" default="2.0"/>
-
 	<arg name="location_name" default="ITRI"/>
- 
+	<arg name="time_threshold" default="2.0"/>
 	<arg name="input_objects" default="objects/filtered"/>
 
 	<!-- nodes -->
@@ -19,6 +17,7 @@
 		<param name="can_name" value="$(arg can_name)"/>
 	</node>
 	<node pkg="to_dspace" type="bus_stop_info" name="bus_stop_info" output="screen" cwd="node" respawn="true"  >
+		<param name="use_canbus" value="$(arg use_canbus)"/>
 		<param name="can_name" value="$(arg can_name)"/>
 	</node>
 	<node pkg="trimble_grabber" type="trimble_grabber" name="trimble_grabber" output="screen" cwd="node" respawn="true"  >
@@ -34,13 +33,16 @@
 		<param name="location_name" value="$(arg location_name)"/>
 	</node>
 	<node pkg="geofence" type="geofence" name="geofence" output="screen" cwd="node" respawn="true"  >
+		<param name="use_canbus" value="$(arg use_canbus)"/>
 		<param name="can_name" value="$(arg can_name)"/>
 	</node>
 	<!--node pkg="geofence_pp" type="geofence_pp" name="geofence_pp" output="screen" cwd="node" respawn="true"  >
+		<param name="use_canbus" value="$(arg use_canbus)"/>
 		<param name="can_name" value="$(arg can_name)"/>
 		<param name="pp_input_type" value="$(arg pp_input_type)" type="int"/>
         </node-->
 	<node pkg="geofence_map_pp" type="geofence_map_pp" name="geofence_map_pp" output="screen" cwd="node" respawn="true"  >
+		<param name="use_canbus" value="$(arg use_canbus)"/>
 		<param name="can_name" value="$(arg can_name)"/>
 		<param name="time_threshold" value="$(arg time_threshold)"/>
 		<remap from="objects" to="$(arg input_objects)"/>

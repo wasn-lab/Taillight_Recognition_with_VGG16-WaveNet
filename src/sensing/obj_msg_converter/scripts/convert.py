@@ -89,7 +89,7 @@ class MsgConvert2(object):
         if obj.header.frame_id != self.frame_id_target_:
             try:
                 tf_stamped = self.tf_buffer_.lookup_transform(
-                    self.frame_id_target_, self.frame_id_source_, rospy.Time(0))
+                    self.frame_id_target_, self.frame_id_source_, obj.header.stamp)
                 self.convert_pose(obj.center_point, obj.heading, tf_stamped)
                 self.convert_point(obj.bPoint.p0, tf_stamped)
                 self.convert_point(obj.bPoint.p1, tf_stamped)

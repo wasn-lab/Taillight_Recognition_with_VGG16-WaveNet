@@ -1,5 +1,5 @@
 #! /bin/bash
-source /home/camera/itriadv/devel/setup.bash
+source ~/itriadv/devel/setup.bash
 export ROS_MASTER_URI=http://192.168.1.3:11311
 export ROS_IP=192.168.3.4
 
@@ -21,4 +21,6 @@ cd $CWD
 readonly car_model=$(rosparam get /car_model)
 if [[ "${car_model}" == "C1" ]]; then
 roslaunch --wait alignment c1_2d_3d_matching.launch
+elif [[ "${car_model}" == "C2" ]]; then
+roslaunch --wait alignment c2_2d_3d_matching.launch
 fi

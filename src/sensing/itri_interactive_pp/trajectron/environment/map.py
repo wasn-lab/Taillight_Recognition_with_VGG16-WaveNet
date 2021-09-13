@@ -51,6 +51,9 @@ class GeometricMap(Map):
             return self._last_padded_map
         else:
             self._last_padding = (padding_x, padding_y)
+            # print("get_padded_map data.shape[0]", self.data.shape[0])
+            # print("get_padded_map data.shape[1]", self.data.shape[1])
+            # print("get_padded_map data.shape[1]", self.data.shape[2])
             self._last_padded_map = torch.full((self.data.shape[0],
                                                 self.data.shape[1] + 2 * padding_x,
                                                 self.data.shape[2] + 2 * padding_y),
@@ -73,8 +76,9 @@ class GeometricMap(Map):
         :return:
         """
         M = get_rotation_matrix2d(centers, angles, torch.ones_like(angles))
+        # print("map batch_rotate", map_batched.shape)
         rotated_map_batched = warp_affine_crop(map_batched, centers, M,
-                                               dsize=(out_height, out_width), padding_mode='zeros')
+                                               dsize=(out_height, out_width), flags='bilinear', padding_mode='zeros')
 
         return rotated_map_batched
 
@@ -100,7 +104,17 @@ class GeometricMap(Map):
         :param device: Device on which the rotated tensors should be returned.
         :return: Rotated and cropped tensor patches.
         """
+        # For ITRIADV map: 
+        # map_origin = torch.tensor([[2008.593, 41154.38]])
+
+        # For ZhuBei map:
+        map_origin = torch.tensor([[631.426, 44853.906]])
+        
+        scene_pts = scene_pts - map_origin
         batch_size = scene_pts.shape[0]
+        
+        # print("scene_pts", scene_pts)
+        # print("batch_size", batch_size)
         lat_size = 2 * np.max((patch_size[0], patch_size[2]))
         long_size = 2 * np.max((patch_size[1], patch_size[3]))
         assert lat_size % 2 == 0, "Patch width must be divisible by 2"
@@ -110,18 +124,57 @@ class GeometricMap(Map):
 
         context_padding_x = int(np.ceil(np.sqrt(2) * lat_size))
         context_padding_y = int(np.ceil(np.sqrt(2) * long_size))
-
-        centers = torch.tensor([s_map.to_map_points(scene_pts[np.newaxis, i]) for i, s_map in enumerate(maps)],
-                               dtype=torch.long, device=device).squeeze(dim=1) \
+        # print("context_padding_x", context_padding_x)
+        # print("context_padding_y", context_padding_y)
+        # print("centers part I", scene_pts)
+        # print("centers part II", torch.tensor([context_padding_x, context_padding_y], device=device, dtype=torch.long))
+        
+        # to_map_points
+        # centers = torch.tensor([s_map.to_map_points(scene_pts[np.newaxis, i]) for i, s_map in enumerate(maps)],
+        #                        dtype=torch.long, device=device).squeeze(dim=1) \
+        #           + torch.tensor([context_padding_x, context_padding_y], device=device, dtype=torch.long)
+        centers = scene_pts \
                   + torch.tensor([context_padding_x, context_padding_y], device=device, dtype=torch.long)
+        # print("centers shape", centers.shape)
+        # print("centers", centers)
 
+        # get_padded_map
         padded_map = [s_map.get_padded_map(context_padding_x, context_padding_y, device=device) for s_map in maps]
-
-        padded_map_batched = torch.stack([padded_map[i][...,
-                                          centers[i, 0] - context_padding_x: centers[i, 0] + context_padding_x,
-                                          centers[i, 1] - context_padding_y: centers[i, 1] + context_padding_y]
+        # print("padded_map len", len(padded_map))
+        # print("padded_map[0].shape ", padded_map[0].shape)
+        # print("padded_map[0]", padded_map[0])
+        
+        for i in range(centers.shape[0]):
+            # print(i)
+            # print("padded_map_batched X-padding: ", padded_map[i].shape[1])
+            # print("padded_map_batched Y-padding: ", padded_map[i].shape[2])
+            # print("centers.x - padding_x: ", int(centers[i, 0] - context_padding_x))
+            # print("centers.x + padding_x: ", int(centers[i, 0] + context_padding_x))
+            # print("centers.y - padding_y: ", int(centers[i, 1] - context_padding_y))
+            # print("centers.y + padding_y: ", int(centers[i, 1] + context_padding_y))
+            
+            # pad the padded map if x or y exceed the map to avoid runtime dimension mismatch error
+            if int(centers[i, 0] + context_padding_x) > padded_map[i].shape[1]:
+                p_size = int(centers[i, 0] + context_padding_x) - padded_map[i].shape[1]
+                padder = torch.zeros(3, p_size, padded_map[i].shape[2], dtype=torch.uint8)
+                padded_map[i] = torch.cat((padded_map[i], padder), dim = 1)
+            if int(centers[i, 1] + context_padding_y) > padded_map[i].shape[2]:
+                p_size = int(centers[i, 1] + context_padding_y) - padded_map[i].shape[2]
+                padder = torch.zeros(3, padded_map[i].shape[1], p_size, dtype=torch.uint8)
+                # print("Ytype of padded_map[i]", type(padded_map[i]))
+                # print("Ytype of padder[i]", type(padder[i]))
+                padded_map[i] = torch.cat((padded_map[i], padder), dim = 2)
+        
+        # print("padded_map len", len(padded_map))
+        # print("padded_map[0].shape ", padded_map[0].shape)
+        
+        padded_map_batched = torch.stack([padded_map[i][Ellipsis,
+                                          int(centers[i, 0] - context_padding_x): int(centers[i, 0] + context_padding_x),
+                                          int(centers[i, 1] - context_padding_y): int(centers[i, 1] + context_padding_y)]
                                           for i in range(centers.shape[0])], dim=0)
-
+        
+        # 0 appears here
+        # print("padded_map_batched shape", padded_map_batched.shape)
         center_patches = torch.tensor([[context_padding_y, context_padding_x]],
                                       dtype=torch.int,
                                       device=device).repeat(batch_size, 1)
@@ -130,15 +183,17 @@ class GeometricMap(Map):
             angles = torch.Tensor(rotation)
         else:
             angles = torch.zeros(batch_size)
-
+                                                
         rotated_map_batched = cls.batch_rotate(padded_map_batched/255.,
                                                 center_patches.float(),
                                                 angles,
                                                 long_size,
-                                                lat_size)
+                                                lat_size) 
 
         del padded_map_batched
-
+	
+	    # print("rotated_map_batched shape", rotated_map_batched.shape)
+	    # print("rotated_map_batched[0]", rotated_map_batched[0])
         return rotated_map_batched[...,
                long_size_half - patch_size[1]:(long_size_half + patch_size[3]),
                lat_size_half - patch_size[0]:(lat_size_half + patch_size[2])]
@@ -174,11 +229,14 @@ class GeometricMap(Map):
         N, dims = scene_pts.shape
         points_with_one = np.ones((dims + 1, N))
         points_with_one[:dims] = scene_pts.T
-        map_points = (self.homography @ points_with_one).T[..., :dims]
+        # python 3
+        # map_points = (self.homography @ points_with_one).T[..., :dims]
+
+        # python2
+        map_points = np.matmul(self.homography, points_with_one).T[..., :dims]
         if org_shape is not None:
             map_points = map_points.reshape(org_shape)
         return map_points
-
 
 class ImageMap(Map):  # TODO Implement for image maps -> watch flipped coordinate system
     def __init__(self):
