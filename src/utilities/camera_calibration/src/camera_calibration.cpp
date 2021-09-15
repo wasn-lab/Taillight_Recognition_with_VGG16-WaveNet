@@ -18,7 +18,7 @@
 #include "camera_params.h"  // include camera topic name
 
 /// camera layout
-#if CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
+#if CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1 || CAR_MODEL_IS_C2 || CAR_MODEL_IS_C3
 const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60,     camera::id::front_top_far_30,
                                    camera::id::front_top_close_120, camera::id::right_front_60,
                                    camera::id::right_back_60,       camera::id::left_front_60,

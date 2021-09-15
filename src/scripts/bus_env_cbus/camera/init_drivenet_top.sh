@@ -1,5 +1,5 @@
 #! /bin/bash
-source /home/camera/itriadv/devel/setup.bash
+source ~/itriadv/devel/setup.bash
 export ROS_MASTER_URI=http://192.168.1.3:11311
 export ROS_IP=192.168.3.4
 
@@ -16,4 +16,6 @@ if [[ "${car_model}" == "C1" ]]; then
 roslaunch --wait drivenet c1_drivenet_top.launch
 elif [[ "${car_model}" == "C2" ]]; then
 roslaunch --wait drivenet c2_drivenet_top.launch
+elif [[ "${car_model}" == "C3" ]]; then
+roslaunch --wait drivenet c3_drivenet_top.launch
 fi

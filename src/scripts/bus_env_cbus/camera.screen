@@ -30,37 +30,38 @@ sessionname "adv"
 # We first make light-weight load_monitor to successfully connect to master,
 # and then bring up other nodes.
 screen -t init_load_monitor
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_load_monitor.sh^M"
+#when camera ipc correct to right user name, then replace "~" to "/home/camera"
+stuff "~/itriadv/src/scripts/bus_env_cbus/camera/init_load_monitor.sh^M"
 
 screen -t init_drivenet_group_a
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_drivenet_group_a.sh^M"
+stuff "~/itriadv/src/scripts/bus_env_cbus/camera/init_drivienet_group_a.sh^M"
 
 screen -t init_drivenet_side
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_drivenet_side.sh^M"
+stuff "~/itriadv/src/scripts/bus_env_cbus/camera/init_drivenet_side.sh^M"
 
 screen -t init_drivenet_top
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_drivenet_top.sh^M"
+stuff "~/itriadv/src/scripts/bus_env_cbus/camera/init_drivenet_top.sh^M"
 
 screen -t init_alignment
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_alignment.sh^M"
+stuff "~/itriadv/src/scripts/bus_env_cbus/camera/init_alignment.sh^M"
 
 screen -t init_repub_cam_raw
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_repub_cam_raw.sh^M"
+stuff "~/itriadv/src/scripts/bus_env_cbus/camera/init_repub_cam_raw.sh^M"
 
 screen -t init_image_compressor
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_image_compressor.sh^M"
+stuff "~/itriadv/src/scripts/bus_env_cbus/camera/init_image_compressor.sh^M"
 
 screen -t init_detect_image_web_streaming.sh
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_detect_image_web_streaming.sh^M"
+stuff "~/itriadv/src/scripts/bus_env_cbus/camera/init_detect_image_web_streaming.sh^M"
 
 screen -t init_rosbag_sender
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_rosbag_sender.sh^M"
+stuff "~/itriadv/src/scripts/bus_env_cbus/camera/init_rosbag_sender.sh^M"
 
 screen -t init_fail_safe
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh^M"
+stuff "~/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh^M"
 
 #screen -t init_lightnet
 #stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_lightnet.sh^M"
 
 screen -t init_msg_recorder
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_msg_recorder.sh^M"
+stuff "~/itriadv/src/scripts/bus_env_cbus/camera/init_msg_recorder.sh^M"

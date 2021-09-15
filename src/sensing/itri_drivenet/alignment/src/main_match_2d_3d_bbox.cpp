@@ -48,7 +48,7 @@ using namespace DriveNet;
 using namespace sensor_msgs_itri;
 
 /// camera layout
-#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1 || CAR_MODEL_IS_C2
 const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30,
                                          camera::id::left_back_60, camera::id::right_back_60,
                                          camera::id::front_top_close_120, camera::id::left_front_60,
@@ -1178,7 +1178,6 @@ int main(int argc, char** argv)
   message_filters::Subscriber<msgs::DetectedObjectArray> sub_filter_lidar_detection;
 
   /// get callback function
-#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
   static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = {
     callback_cam_front_bottom_60, callback_cam_front_top_far_30, callback_cam_left_back_60,
     callback_cam_right_back_60,  callback_cam_front_top_close_120,    callback_cam_left_front_60,
@@ -1189,7 +1188,6 @@ int main(int argc, char** argv)
     callback_object_cam_right_back_60,  callback_object_cam_front_top_close_120,    callback_object_cam_left_front_60,
     callback_object_cam_right_front_60
   };
-#endif
 
   /// set topic name
   std::string lidar_raw_topic = "/LidarAll";
