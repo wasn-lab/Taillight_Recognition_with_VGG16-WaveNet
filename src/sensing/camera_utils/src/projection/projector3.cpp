@@ -180,7 +180,6 @@ void Projector3::init(int camera_id)
       std::cerr << " No match camera id, init failed." << std::endl;
       break;
   }
-
 #elif CAR_MODEL_IS_C2
   camera_id_ = camera_id;
   switch (camera_id)
@@ -238,6 +237,63 @@ void Projector3::init(int camera_id)
       std::cerr << " No match camera id, init failed." << std::endl;
       break;
   }
+#elif CAR_MODEL_IS_C3
+  camera_id_ = camera_id;
+  switch (camera_id)
+  {
+    case camera::id::front_bottom_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c3_front_bottom_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::front_top_far_30:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c3_front_top_far_30.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::front_top_close_120:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c3_front_top_close_120.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::right_back_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c3_right_back_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::left_back_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c3_left_back_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::right_front_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c3_right_front_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::left_front_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c3_left_front_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    default:
+      std::cerr << " No match camera id, init failed." << std::endl;
+      break;
+  }
 #endif
 }
 
@@ -284,12 +340,18 @@ bool Projector3::outOfFov(float x, float y, float z)
     double tan = point.at<double>(0, 0) / point.at<double>(2, 0);
     double angle = atan(tan) * 180 / M_PI;
 
+    double tan_h = point.at<double>(1, 0) / point.at<double>(2, 0);
+    double angle_h = atan(tan_h) * 180 / M_PI;
 #if CAR_MODEL_IS_B1_V2
     switch (camera_id_)
     {
       case camera::id::front_bottom_60: case camera::id::right_back_60: case camera::id::left_back_60: case camera::id::right_front_60: case camera::id::left_front_60:
       {
-        if (angle > 30 || angle < -30)
+        if (angle > 40 || angle < -40)
+        {
+          return true;
+        }
+        if (angle_h > 40 || angle_h < -40)
         {
           return true;
         }
@@ -298,7 +360,11 @@ bool Projector3::outOfFov(float x, float y, float z)
 
       case camera::id::front_top_far_30:
       {
-        if (angle > 15 || angle < -15)
+        if (angle > 25 || angle < -25)
+        {
+          return true;
+        }
+        if (angle_h > 25 || angle_h < -25)
         {
           return true;
         }
@@ -307,7 +373,11 @@ bool Projector3::outOfFov(float x, float y, float z)
 
       case camera::id::front_top_close_120:
       {
-        if (angle > 60 || angle < -60)
+        if (angle > 70 || angle < -70)
+        {
+          return true;
+        }
+        if (angle_h > 70 || angle_h < -70)
         {
           return true;
         }
@@ -323,7 +393,11 @@ bool Projector3::outOfFov(float x, float y, float z)
     {
       case camera::id::front_bottom_60: case camera::id::right_back_60: case camera::id::left_back_60: case camera::id::right_front_60: case camera::id::left_front_60:
       {
-        if (angle > 30 || angle < -30)
+        if (angle > 40 || angle < -40)
+        {
+          return true;
+        }
+        if (angle_h > 40 || angle_h < -40)
         {
           return true;
         }
@@ -332,7 +406,11 @@ bool Projector3::outOfFov(float x, float y, float z)
 
       case camera::id::front_top_far_30:
       {
-        if (angle > 15 || angle < -15)
+        if (angle > 25 || angle < -25)
+        {
+          return true;
+        }
+        if (angle_h > 25 || angle_h < -25)
         {
           return true;
         }
@@ -341,7 +419,11 @@ bool Projector3::outOfFov(float x, float y, float z)
 
       case camera::id::front_top_close_120:
       {
-        if (angle > 60 || angle < -60)
+        if (angle > 70 || angle < -70)
+        {
+          return true;
+        }
+        if (angle_h > 70 || angle_h < -70)
         {
           return true;
         }
@@ -357,7 +439,11 @@ bool Projector3::outOfFov(float x, float y, float z)
     {
       case camera::id::front_bottom_60: case camera::id::right_back_60: case camera::id::left_back_60: case camera::id::right_front_60: case camera::id::left_front_60:
       {
-        if (angle > 30 || angle < -30)
+        if (angle > 40 || angle < -40)
+        {
+          return true;
+        }
+        if (angle_h > 40 || angle_h < -40)
         {
           return true;
         }
@@ -366,7 +452,11 @@ bool Projector3::outOfFov(float x, float y, float z)
 
       case camera::id::front_top_far_30:
       {
-        if (angle > 15 || angle < -15)
+        if (angle > 25 || angle < -25)
+        {
+          return true;
+        }
+        if (angle_h > 25 || angle_h < -25)
         {
           return true;
         }
@@ -375,7 +465,103 @@ bool Projector3::outOfFov(float x, float y, float z)
 
       case camera::id::front_top_close_120:
       {
-        if (angle > 60 || angle < -60)
+        if (angle > 70 || angle < -70)
+        {
+          return true;
+        }
+        if (angle_h > 70 || angle_h < -70)
+        {
+          return true;
+        }
+      }
+      break;
+
+      default:
+        std::cerr << " No match camera id, init failed." << std::endl;
+      break;
+    }
+#elif CAR_MODEL_IS_C2
+    switch (camera_id_)
+    {
+      case camera::id::front_bottom_60: case camera::id::right_back_60: case camera::id::left_back_60: case camera::id::right_front_60: case camera::id::left_front_60:
+      {
+        if (angle > 40 || angle < -40)
+        {
+          return true;
+        }
+        if (angle_h > 40 || angle_h < -40)
+        {
+          return true;
+        }
+      }
+      break;
+
+      case camera::id::front_top_far_30:
+      {
+        if (angle > 25 || angle < -25)
+        {
+          return true;
+        }
+        if (angle_h > 25 || angle_h < -25)
+        {
+          return true;
+        }
+      }
+      break;
+
+      case camera::id::front_top_close_120:
+      {
+        if (angle > 70 || angle < -70)
+        {
+          return true;
+        }
+        if (angle_h > 70 || angle_h < -70)
+        {
+          return true;
+        }
+      }
+      break;
+
+      default:
+        std::cerr << " No match camera id, init failed." << std::endl;
+      break;
+    }
+#elif CAR_MODEL_IS_C3
+    switch (camera_id_)
+    {
+      case camera::id::front_bottom_60: case camera::id::right_back_60: case camera::id::left_back_60: case camera::id::right_front_60: case camera::id::left_front_60:
+      {
+        if (angle > 40 || angle < -40)
+        {
+          return true;
+        }
+        if (angle_h > 40 || angle_h < -40)
+        {
+          return true;
+        }
+      }
+      break;
+
+      case camera::id::front_top_far_30:
+      {
+        if (angle > 25 || angle < -25)
+        {
+          return true;
+        }
+        if (angle_h > 25 || angle_h < -25)
+        {
+          return true;
+        }
+      }
+      break;
+
+      case camera::id::front_top_close_120:
+      {
+        if (angle > 70 || angle < -70)
+        {
+          return true;
+        }
+        if (angle_h > 70 || angle_h < -70)
         {
           return true;
         }
