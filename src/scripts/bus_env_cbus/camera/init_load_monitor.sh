@@ -2,7 +2,7 @@
 export ROS_MASTER_URI=http://192.168.1.3:11311
 export ROS_IP=192.168.1.4
 
-until ls /home/camera/itriadv/devel/setup.bash
+until ls ~/itriadv/devel/setup.bash
 do
   echo "Wait auto mount operational"
   sleep 1

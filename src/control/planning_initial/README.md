@@ -45,7 +45,7 @@
 ### Supplymentary
 
 * ```ring_edge_point_cloud與occupancy_grid```的差異
- * 兩者皆為edge_detection發出的freespace topic,不同點為
-  1. ring_edge_point_cloud是以ring方式表示環周碰撞最近點,一圈點數較少,適合用在快速判斷碰撞點的node,如geofence與obstacle_stop_planning
-  2. occupancy_grid是以grid map表示,以格子表示有無lidar point,適合用在路徑規劃上,如obstacle_avoidance_planning
+ 	* 兩者皆為edge_detection發出的freespace topic,不同點為
+  		* ring_edge_point_cloud是以ring方式表示環周碰撞最近點,一圈點數較少,適合用在快速判斷碰撞點的node,如geofence與obstacle_stop_planning
+  		* occupancy_grid是以grid map表示,以格子表示有無lidar point,適合用在路徑規劃上,如obstacle_avoidance_planning
 
