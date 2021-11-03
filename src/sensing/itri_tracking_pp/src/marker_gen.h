@@ -45,14 +45,10 @@ private:
   visualization_msgs::MarkerArray m_id_;
   visualization_msgs::MarkerArray m_speed_;
   visualization_msgs::MarkerArray m_box_;
-  visualization_msgs::MarkerArray m_pp_;
   visualization_msgs::MarkerArray m_vel_;
 
   // create markers
   visualization_msgs::Marker create_seq_marker(const unsigned int idx, const geometry_msgs::Point point);
-
-  visualization_msgs::Marker create_box_marker(const unsigned int idx, const msgs::BoxPoint bbox,
-                                               std_msgs::Header obj_header);
 
   std::string parse_class_id(unsigned int class_id);
   std::string parse_source_id(unsigned int source_id);
@@ -64,23 +60,11 @@ private:
                                                  std_msgs::Header obj_header, const float relspeed,
                                                  const float absspeed);
 
-  visualization_msgs::Marker create_pp_marker_ellipse(const unsigned int idx, const msgs::PointXY pos,
-                                                      std_msgs::Header obj_header, const PPLongDouble pp,
-                                                      const unsigned int forecast_seq, const float abs_speed_kmph);
-
-  visualization_msgs::Marker create_pp_marker_point(const unsigned int idx, const msgs::PointXY pos,
-                                                    std_msgs::Header obj_header);
-
   visualization_msgs::Marker create_vel_marker(const unsigned int idx, const geometry_msgs::Point point, const float vx,
                                                const float vy, std_msgs::Header obj_header);
 
   // process markers
   void process_text_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
-
-  void process_box_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
-
-  void process_pp_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs,
-                         std::vector<std::vector<PPLongDouble> >& ppss);
 
   void process_vel_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
 };

@@ -36,17 +36,9 @@
 
 #include "detected_object_class_id.h"
 
-#define TTC_TEST 0
-#if TTC_TEST
-#include <std_msgs/Int32.h>
-#include <std_msgs/Float64.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
-#else
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
-#endif
 
 #include <std_msgs/ColorRGBA.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -65,13 +57,14 @@
 #define MyPoint32 msgs::PointXYZ
 #define Vector3_32 msgs::PointXYZ
 
+#define HEARTBEAT 1
+
 #define FPS 0
 #define ENABLE_PROFILING_MODE 0
 
 // virtual input test
 #define VIRTUAL_INPUT 0
 #define SAME_OBJ_MARKER_HEADER 0
-#define SAVE_OUTPUT_TXT 0
 
 #define SPEEDUP_KALMAN_VEL_EST 1  // speed up kalman velocity estimation
 
@@ -91,7 +84,10 @@
 #define INPUT_ALL_CLASS 1
 
 #define EIGEN3_ROTATION 1
-#define FILL_CONVEX_HULL 1
+
+// save_output_txt
+#define OBJECT_YAW_FROM_HEADING 0
+#define EGO_AS_DETECTED_OBJ 0
 
 #define PP_WAYAREA 1
 
@@ -114,7 +110,7 @@
 #define O_P std::setprecision(8)
 
 #define USE_GLOG 0
-#if USE_GLOG
+#if USE_GLOG == 1
 #include "glog/logging.h"
 #define LOG_INFO LOG(INFO)
 #define LOG_WARNING LOG(WARNING)
@@ -142,8 +138,6 @@ struct PoseRPY32
 
 struct MarkerConfig
 {
-  ros::Publisher pub_bbox;
-  ros::Publisher pub_pp;
   ros::Publisher pub_vel;
 
   ros::Publisher pub_id;
@@ -157,13 +151,8 @@ struct MarkerConfig
   bool show_source = 0;
   bool show_distance = 0;
   bool show_absspeed = 0;  // km/h
-  unsigned int show_pp = 0;
 
   std_msgs::ColorRGBA color;
-  std_msgs::ColorRGBA color_lidar_tpp;
-  std_msgs::ColorRGBA color_radar_tpp;
-  std_msgs::ColorRGBA color_camera_tpp;
-  std_msgs::ColorRGBA color_fusion_tpp;
 };
 }  // namespace tpp
 

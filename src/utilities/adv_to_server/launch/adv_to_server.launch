@@ -1,0 +1,3 @@
+<launch>
+    <node name="events" pkg="adv_to_server" type="events.py" output="screen"/>
+</launch>

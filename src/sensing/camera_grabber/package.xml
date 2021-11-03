@@ -23,6 +23,7 @@
   <exec_depend>image_transport</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
   <depend>camera_utils</depend>
+  <depend>dl_data</depend>
   <depend>car_model</depend>
 
   <!-- The export tag contains other, unspecified, tags -->

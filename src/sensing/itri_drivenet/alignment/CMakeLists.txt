@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   cv_bridge
   msgs
+  autoware_perception_msgs
   car_model
   camera_utils
 )  
@@ -98,16 +99,8 @@ set(LIBS ${OpenCV_USER_LIBRARIES}
          drivenet
          libs)
 
-if (CAR_MODEL_IS_B1)
-  cuda_add_executable(${PROJECT_NAME}_b1 src/main_b1.cpp src/alignment.cpp src/visualization_util.cpp src/point_preprocessing.cpp src/points_in_image_area.cpp src/sync_message.cpp src/object_generator.cpp src/cloud_cluster.cpp)
-  target_link_libraries(${PROJECT_NAME}_b1 ${LIBS} ${catkin_LIBRARIES})
-  add_dependencies(${PROJECT_NAME}_b1 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-  cuda_add_executable(${PROJECT_NAME}_b1_ssn_sub src/lidar_ssn_sub.cpp src/ssn_util.cpp)
-  target_link_libraries(${PROJECT_NAME}_b1_ssn_sub ${LIBS} ${catkin_LIBRARIES})
-  add_dependencies(${PROJECT_NAME}_b1_ssn_sub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-elseif(CAR_MODEL_IS_B1_V2)
-  cuda_add_executable(${PROJECT_NAME}_b1_v2 src/main_b1_v2.cpp src/alignment.cpp src/visualization_util.cpp src/point_preprocessing.cpp src/points_in_image_area.cpp src/sync_message.cpp src/object_generator.cpp src/cloud_cluster.cpp)
+if(CAR_MODEL_IS_B1_V2)
+  cuda_add_executable(${PROJECT_NAME}_b1_v2 src/main_3d_object_detection.cpp src/alignment.cpp src/box_fusion.cpp src/visualization_util.cpp src/point_preprocessing.cpp src/points_in_image_area.cpp src/sync_message.cpp src/object_generator.cpp src/cloud_cluster.cpp)
   target_link_libraries(${PROJECT_NAME}_b1_v2 ${LIBS} ${catkin_LIBRARIES})
   add_dependencies(${PROJECT_NAME}_b1_v2 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
@@ -118,5 +111,31 @@ elseif(CAR_MODEL_IS_B1_V2)
   cuda_add_executable(${PROJECT_NAME}_b1_v2_ssn_sub src/lidar_ssn_sub.cpp src/ssn_util.cpp)
   target_link_libraries(${PROJECT_NAME}_b1_v2_ssn_sub ${LIBS} ${catkin_LIBRARIES})
   add_dependencies(${PROJECT_NAME}_b1_v2_ssn_sub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-endif ()
 
+  cuda_add_executable(${PROJECT_NAME}_b1_v2_match_2d_3d_bbox src/main_match_2d_3d_bbox.cpp src/alignment.cpp src/point_preprocessing.cpp src/cloud_cluster.cpp src/points_in_image_area.cpp  src/sync_message.cpp src/visualization_util.cpp src/roi_cluster_fusion/roi_cluster_fusion_node.cpp src/roi_fusion.cpp src/box_fusion.cpp)
+  target_link_libraries(${PROJECT_NAME}_b1_v2_match_2d_3d_bbox ${LIBS} ${catkin_LIBRARIES})
+  add_dependencies(${PROJECT_NAME}_b1_v2_match_2d_3d_bbox ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+elseif(CAR_MODEL_IS_B1_V3)
+  cuda_add_executable(${PROJECT_NAME}_b1_v3 src/main_3d_object_detection.cpp src/alignment.cpp src/box_fusion.cpp src/visualization_util.cpp src/point_preprocessing.cpp src/points_in_image_area.cpp src/sync_message.cpp src/object_generator.cpp src/cloud_cluster.cpp)
+  target_link_libraries(${PROJECT_NAME}_b1_v3 ${LIBS} ${catkin_LIBRARIES})
+  add_dependencies(${PROJECT_NAME}_b1_v3 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+  cuda_add_executable(${PROJECT_NAME}_b1_v3_match_2d_3d_bbox src/main_match_2d_3d_bbox.cpp src/alignment.cpp src/point_preprocessing.cpp src/cloud_cluster.cpp src/points_in_image_area.cpp  src/sync_message.cpp src/visualization_util.cpp src/roi_cluster_fusion/roi_cluster_fusion_node.cpp src/roi_fusion.cpp src/box_fusion.cpp)
+  target_link_libraries(${PROJECT_NAME}_b1_v3_match_2d_3d_bbox ${LIBS} ${catkin_LIBRARIES})
+  add_dependencies(${PROJECT_NAME}_b1_v3_match_2d_3d_bbox ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+elseif(CAR_MODEL_IS_C1)
+  cuda_add_executable(${PROJECT_NAME}_c1_match_2d_3d_bbox src/main_match_2d_3d_bbox.cpp src/alignment.cpp src/point_preprocessing.cpp src/cloud_cluster.cpp src/points_in_image_area.cpp  src/sync_message.cpp src/visualization_util.cpp src/roi_cluster_fusion/roi_cluster_fusion_node.cpp src/roi_fusion.cpp src/box_fusion.cpp)
+  target_link_libraries(${PROJECT_NAME}_c1_match_2d_3d_bbox ${LIBS} ${catkin_LIBRARIES})
+  add_dependencies(${PROJECT_NAME}_c1_match_2d_3d_bbox ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+elseif(CAR_MODEL_IS_C2)
+  cuda_add_executable(${PROJECT_NAME}_c2_match_2d_3d_bbox src/main_match_2d_3d_bbox.cpp src/alignment.cpp src/point_preprocessing.cpp src/cloud_cluster.cpp src/points_in_image_area.cpp  src/sync_message.cpp src/visualization_util.cpp src/roi_cluster_fusion/roi_cluster_fusion_node.cpp src/roi_fusion.cpp src/box_fusion.cpp)
+  target_link_libraries(${PROJECT_NAME}_c2_match_2d_3d_bbox ${LIBS} ${catkin_LIBRARIES})
+  add_dependencies(${PROJECT_NAME}_c2_match_2d_3d_bbox ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+elseif(CAR_MODEL_IS_C3)
+  cuda_add_executable(${PROJECT_NAME}_c3_match_2d_3d_bbox src/main_match_2d_3d_bbox.cpp src/alignment.cpp src/point_preprocessing.cpp src/cloud_cluster.cpp src/points_in_image_area.cpp  src/sync_message.cpp src/visualization_util.cpp src/roi_cluster_fusion/roi_cluster_fusion_node.cpp src/roi_fusion.cpp src/box_fusion.cpp)
+  target_link_libraries(${PROJECT_NAME}_c3_match_2d_3d_bbox ${LIBS} ${catkin_LIBRARIES})
+  add_dependencies(${PROJECT_NAME}_c3_match_2d_3d_bbox ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+endif ()

@@ -3,6 +3,7 @@
 
 #include "trt_utils.h"
 #include "npp_resizer_dn.h"
+#include "camera_params.h"  // include camera topic name
 
 namespace DriveNet
 {
@@ -13,38 +14,40 @@ class DsImage
 public:
   DsImage();
   ~DsImage();
-  void init(int inputW, int inputH);
-  float* preprocessing(const cv::Mat& srcImg, const int& inputH, const int& inputW);
-  float* preprocessing(const cv::Mat& srcImg, const int& inputH, const int& inputW, int input_resize);
+  void init(int inputW, int input);
+  void init(int inputW, int inputH, const std::vector<int>& crop_size);
+  float* preprocessing(const cv::Mat& srcImg, const int inputH, const int inputW);
+  float* preprocessing(const cv::Mat& srcImg, const int inputH, const int inputW, int input_resize);
+  float* preprocessing(const cv::Mat& srcImg, const int inputH, const int inputW, int input_resize, int crop_size,
+                       int crop_offset);
 
 private:
   DriveNet_npp::NPPResizer* resizer;
-  DriveNet_npp::NPPResizer* resizer2;
 
+  int cam_number = 0;
   int dummy = 0;
   int BGROrder[3];
   Npp8u pixelArr[3];
   NppiSize nppSizeNet;
   NppiSize nppSizeResize;
+  std::vector<NppiSize> nppSizeCrop;
 
   Npp8u* srcImg_npp8u_ptr;
-  Npp8u* srcImg_npp8u_ptr1;
-  Npp8u* srcImg_npp8u_ptr2;
-  Npp8u* ResizeImg_npp8u_ptr1;
-  Npp8u* ResizeImg_npp8u_ptr2;
+  Npp8u* ResizeImg_npp8u_ptr;
   float* srcImg_32f_ptr;
   float* RGBImg_32f_ptr;
   float* CHWImg_32f_ptr;
   // Npp8u* dst;
+  std::vector<Npp8u*> CropImg_npp8u_ptrs;
   Npp8u* LetterBoxImg_npp8u_ptr;  // letterboxed Image given to the network as input
 
   cv::Mat Img8UC3;
   cv::Mat ImgFloat32C3;
 
-  int m_InputWidth1;
-  int m_InputHeight1;
-  int m_InputWidth2;
-  int m_InputHeight2;
+  int m_InputWidthRaw;
+  int m_InputHeightRaw;
+  int m_InputWidthResize;
+  int m_InputHeightResize;
   int m_Height;
   int m_Width;
   int m_Channel;

@@ -37,7 +37,6 @@ BOX_ORDER = [
 ]
 
 
-
 class Node:
 
     def __init__(self):
@@ -49,17 +48,22 @@ class Node:
         self.delay_prefix = rospy.get_param("~delay_prefix", "")
         self.delay_pos_x = rospy.get_param("~delay_pos_x", 3.0)
         self.delay_pos_y = rospy.get_param("~delay_pos_y", 30.0)
-        self.is_ignoring_empty_obj = rospy.get_param("~is_ignoring_empty_obj", True)
+        self.is_ignoring_empty_obj = rospy.get_param(
+            "~is_ignoring_empty_obj", True)
         self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
+        self.is_output_class_name = rospy.get_param(
+            "~is_output_class_name", False)
         self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
-        self.is_using_costmap_listener = rospy.get_param("~is_using_costmap_listener", False)
+        self.is_using_costmap_listener = rospy.get_param(
+            "~is_using_costmap_listener", False)
         self.t_clock = rospy.Time()
         # FPS
         self.fps_cal = FPS.FPS()
         # Costmap listener
         if self.is_using_costmap_listener:
             param_dict = dict()
-            param_dict['costmap_topic_name'] = "/occupancy_grid_wayarea" # "occupancy_grid" #
+            # "occupancy_grid" #
+            param_dict['costmap_topic_name'] = "/occupancy_grid_wayarea"
             param_dict['is_using_ITRI_origin'] = True
             self.costmap_listener = CLN.COSTMAP_LISTENER(param_dict)
             print("[%s] Using costmap listener!" % self.delay_prefix)
@@ -71,18 +75,23 @@ class Node:
         self.is_overwrite_txt_frame_id = (len(self.txt_frame_id) != 0)
         # Checkers
         #------------------------#
-        self.checker_event_pub = rospy.Publisher("/d_viz/checker_event", String, queue_size=1000)
+        self.checker_event_pub = rospy.Publisher(
+            "/d_viz/checker_event", String, queue_size=1000)
         self.setup_checkers()
         #------------------------#
         # Publishers
-        self.box_mark_pub = rospy.Publisher(self.inputTopic + "/bbox", MarkerArray, queue_size=1)
-        self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
+        self.box_mark_pub = rospy.Publisher(
+            self.inputTopic + "/bbox", MarkerArray, queue_size=1)
+        self.delay_txt_mark_pub = rospy.Publisher(
+            self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
+        # Subscribers
         # self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
-        self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
-        self.is_showing_depth_sub = rospy.Subscriber("/d_viz/req_show_depth", Bool, self.req_show_depth_CB)
-        self.is_showing_track_id_sub = rospy.Subscriber("/d_viz/req_show_track_id", Bool, self.req_show_track_id_CB)
-
-
+        self.detection_sub = rospy.Subscriber(
+            self.inputTopic, DetectedObjectArray, self.detection_callback)
+        self.is_showing_depth_sub = rospy.Subscriber(
+            "/d_viz/req_show_depth", Bool, self.req_show_depth_CB)
+        self.is_showing_track_id_sub = rospy.Subscriber(
+            "/d_viz/req_show_track_id", Bool, self.req_show_track_id_CB)
 
     def run(self):
         rospy.spin()
@@ -116,17 +125,26 @@ class Node:
         # param_dict["timeout"] = {"threshold":0.7}
         # self.checker_timeout = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
         # prob, closest object
-        self.checker_nearProb_couting_range = 30.0 # Object in the range will be counted
-        self.checker_nearProb_y_range = 10.0 # The valid range of y value of objects
+        # Object in the range will be counted
+        self.checker_nearProb_couting_range = 30.0
+        self.checker_nearProb_y_range = 10.0  # The valid range of y value of objects
         signal_name = "nearProb"
         param_dict = dict()
-        param_dict["low_avg_threshold"] = {"threshold":0.75} # 0.65 0.7 0.8
-        self.checker_nearProb = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        param_dict["low_avg_threshold"] = {"threshold": 0.75}  # 0.65 0.7 0.8
+        self.checker_nearProb = SA.SIGNAL_ANALYZER(
+            module_name=self.delay_prefix,
+            signal_name=signal_name,
+            event_publisher=self.checker_event_pub,
+            param_dict=param_dict)
         # prob, average
         signal_name = "avgProb"
         param_dict = dict()
-        param_dict["low_avg_threshold"] = {"threshold":0.65}
-        self.checker_avgProb = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        param_dict["low_avg_threshold"] = {"threshold": 0.65}
+        self.checker_avgProb = SA.SIGNAL_ANALYZER(
+            module_name=self.delay_prefix,
+            signal_name=signal_name,
+            event_publisher=self.checker_event_pub,
+            param_dict=param_dict)
 
     def get_confidence_scores(self, objects):
         """
@@ -137,10 +155,10 @@ class Node:
             (avg_prob, d_min_prob)
         """
         try:
-            d_range = self.checker_nearProb_couting_range # float("inf")
-        except:
+            d_range = self.checker_nearProb_couting_range  # float("inf")
+        except BaseException:
             d_range = float("inf")
-        d_min = d_range # float("inf")
+        d_min = d_range  # float("inf")
         d_min_idx = None
         d_min_prob = 1.0
         #
@@ -158,14 +176,15 @@ class Node:
 
             # Check with map
             #-----------------------#
-            is_valid = self.check_bPoint_in_wayarea(  _obj.bPoint )
+            is_valid = self.check_bPoint_in_wayarea(_obj.bPoint)
             if not is_valid:
                 continue
             #-----------------------#
 
             # find the closest one
-            depth = self._calculate_distance_bbox( _obj.bPoint )
-            if _obj.bPoint.p0.x > 0.0 and abs(_obj.bPoint.p0.y) < self.checker_nearProb_y_range:
+            depth = self._calculate_distance_bbox(_obj.bPoint)
+            if _obj.bPoint.p0.x > 0.0 and abs(
+                    _obj.bPoint.p0.y) < self.checker_nearProb_y_range:
                 # Frontal object and the object is not empty
                 if (depth < d_min):
                     # Update
@@ -177,7 +196,7 @@ class Node:
         if obj_count == 0:
             avg_prob = 1.0
         else:
-            avg_prob = sum_prob/obj_count
+            avg_prob = sum_prob / obj_count
         #
         return (avg_prob, d_min_prob, d_min)
 
@@ -185,10 +204,18 @@ class Node:
         is_valid = True
         if self.costmap_listener is not None:
             is_occ_list = []
-            is_occ_list.append( self.costmap_listener.is_occupied_at_point2D( (bPoint.p0.x, bPoint.p0.y) ) )
-            is_occ_list.append( self.costmap_listener.is_occupied_at_point2D( (bPoint.p3.x, bPoint.p3.y) ) )
-            is_occ_list.append( self.costmap_listener.is_occupied_at_point2D( (bPoint.p4.x, bPoint.p4.y) ) )
-            is_occ_list.append( self.costmap_listener.is_occupied_at_point2D( (bPoint.p7.x, bPoint.p7.y) ) )
+            is_occ_list.append(
+                self.costmap_listener.is_occupied_at_point2D(
+                    (bPoint.p0.x, bPoint.p0.y)))
+            is_occ_list.append(
+                self.costmap_listener.is_occupied_at_point2D(
+                    (bPoint.p3.x, bPoint.p3.y)))
+            is_occ_list.append(
+                self.costmap_listener.is_occupied_at_point2D(
+                    (bPoint.p4.x, bPoint.p4.y)))
+            is_occ_list.append(
+                self.costmap_listener.is_occupied_at_point2D(
+                    (bPoint.p7.x, bPoint.p7.y)))
             for is_occ in is_occ_list:
                 is_valid &= (not is_occ) if (is_occ is not None) else False
             # is_occ = self.costmap_listener.is_occupied_at_point2D( (bPoint.p0.x, bPoint.p0.y))
@@ -221,13 +248,27 @@ class Node:
         """
         The distance of a bbox is the Euclidean distance between origin and (p0+p4)/2.
         """
-        point_1 = np.array( (bbox.p0.x, bbox.p0.y) )
-        point_2 = np.array( (bbox.p4.x, bbox.p4.y) )
-        return (0.5 * np.linalg.norm( (point_1 + point_2) ) )
+        point_1 = np.array((bbox.p0.x, bbox.p0.y))
+        point_2 = np.array((bbox.p4.x, bbox.p4.y))
+        return (0.5 * np.linalg.norm((point_1 + point_2)))
+
+    def class_id_to_class_name(self, class_id):
+        return {
+            0: 'Unknown',
+            1: 'Person',
+            2: 'Bicycle',
+            3: 'Motorbike',
+            4: 'Car',
+            5: 'Bus',
+            6: 'Truck',
+            7: 'Sign',
+            8: 'Light',
+        }.get(class_id, 'Undefined')
 
     def detection_callback(self, message):
         current_stamp = rospy.get_rostime()
-        current_latency = (current_stamp - message.header.stamp).to_sec() # sec.
+        # sec.
+        current_latency = (current_stamp - message.header.stamp).to_sec()
         self.fps_cal.step()
         # print("fps = %f" % self.fps_cal.fps)
 
@@ -236,7 +277,8 @@ class Node:
         _objects = None
         _num_removed_obj = None
         if self.is_ignoring_empty_obj:
-            _objects = [_obj for _obj in message.objects if _obj.distance >= 0.0]
+            _objects = [
+                _obj for _obj in message.objects if _obj.distance >= 0.0]
             _num_removed_obj = len(message.objects) - len(_objects)
         else:
             _objects = message.objects
@@ -248,19 +290,26 @@ class Node:
         # self.checker_abs_latency.update(current_latency)
         # self.checker_timeout.update()
         #
-        avg_prob, d_min_prob, d_min = self.get_confidence_scores(_objects)
+        #avg_prob, d_min_prob, d_min = self.get_confidence_scores(_objects)
         # if d_min_prob > 0.0 and d_min_prob < 1.0:
         #     print("avg_prob = %f, d_min_prob = %f, d_min = %f" % (avg_prob, d_min_prob, d_min))
-        self.checker_nearProb.update(d_min_prob)
-        self.checker_avgProb.update(avg_prob)
+        # self.checker_nearProb.update(d_min_prob)
+        # self.checker_avgProb.update(avg_prob)
         #-------------------------------------------#
-
-
 
         box_list = MarkerArray()
         delay_list = MarkerArray()
-        box_list.markers.append(self.create_bounding_box_list_marker(1, message.header, _objects ) )
-        delay_list.markers.append( self.create_delay_text_marker( 1, message.header, current_stamp, self.text_marker_position_origin(), self.fps_cal.fps, _num_removed_obj ) )
+        box_list.markers.append(
+            self.create_bounding_box_list_marker(
+                1, message.header, _objects))
+        delay_list.markers.append(
+            self.create_delay_text_marker(
+                1,
+                message.header,
+                current_stamp,
+                self.text_marker_position_origin(),
+                self.fps_cal.fps,
+                _num_removed_obj))
         # idx = 1
         # for i in range(len(_objects)):
         #     # point = self.text_marker_position(_objects[i].bPoint)
@@ -272,61 +321,34 @@ class Node:
             if self.is_showing_track_id:
                 for i in range(len(_objects)):
                     obj_id = _objects[i].track.id
-                    box_list.markers.append( self.create_tracking_text_marker( idx, message.header, _objects[i].bPoint, obj_id) )
+                    box_list.markers.append(
+                        self.create_tracking_text_marker(
+                            idx, message.header, _objects[i].bPoint, obj_id))
                     idx += 1
         else:
             if self.is_showing_depth:
                 for i in range(len(_objects)):
                     # Decide the source of id
                     obj_id = _objects[i].track.id if self.is_showing_track_id else i
-                    prob_ = _objects[i].camInfo.prob if _objects[i].camInfo.prob > 0.0 else None
-                    box_list.markers.append( self.create_depth_text_marker( idx, message.header, _objects[i].bPoint, obj_id, prob=prob_ ) )
+                    #prob_ = _objects[i].camInfo.prob if _objects[i].camInfo.prob > 0.0 else None
+                    #box_list.markers.append( self.create_depth_text_marker(idx, message.header, _objects[i].bPoint, obj_id, prob=prob_ ) )
                     idx += 1
+
+        if self.is_output_class_name:
+            for i in range(len(_objects)):
+                class_name = self.class_id_to_class_name(_objects[i].classId)
+                box_list.markers.append(
+                    self.create_class_name_text_marker(
+                        idx, message.header, _objects[i].bPoint, class_name))
+                idx += 1
+
         #
         self.box_mark_pub.publish(box_list)
         self.delay_txt_mark_pub.publish(delay_list)
 
-
-    # def create_bounding_box_marker(self, idx, header, bbox):
-    #     marker = Marker()
-    #     marker.header.frame_id = header.frame_id
-    #     marker.header.stamp = header.stamp
-    #     marker.ns = self.inputTopic
-    #     marker.action = Marker.ADD
-    #     marker.pose.orientation.w = 1.0
-    #     marker.id = idx
-    #     marker.type = Marker.LINE_LIST
-    #     marker.scale.x = 0.2
-    #     marker.lifetime = rospy.Duration(1.0)
-    #     marker.color.r = self.c_red
-    #     marker.color.g = self.c_green
-    #     marker.color.b = self.c_blue
-    #     marker.color.a = 1.0
-    #
-    #     point_list = [
-    #         bbox.p0,
-    #         bbox.p1,
-    #         bbox.p2,
-    #         bbox.p3,
-    #         bbox.p4,
-    #         bbox.p5,
-    #         bbox.p6,
-    #         bbox.p7
-    #     ]
-    #
-    #     for index in BOX_ORDER:
-    #         point = point_list[index]
-    #         point_msg = Point()
-    #         point_msg.x = point.x
-    #         point_msg.y = point.y
-    #         point_msg.z = point.z
-    #         marker.points.append(point_msg)
-    #
-    #     return marker
-
     def create_bounding_box_list_marker(self, idx, header, objects):
         marker = Marker()
-        marker.header.frame_id = header.frame_id
+        marker.header.frame_id = 'base_link'
         marker.header.stamp = header.stamp
         marker.ns = self.inputTopic
         marker.action = Marker.ADD
@@ -339,7 +361,6 @@ class Node:
         marker.color.g = self.c_green
         marker.color.b = self.c_blue
         marker.color.a = 1.0
-
 
         for _i in range(len(objects)):
             bbox = objects[_i].bPoint
@@ -364,8 +385,14 @@ class Node:
 
         return marker
 
-
-    def create_delay_text_marker(self, idx, header, current_stamp, point, fps=None, _num_removed_obj=None):
+    def create_delay_text_marker(
+            self,
+            idx,
+            header,
+            current_stamp,
+            point,
+            fps=None,
+            _num_removed_obj=None):
         """
         Generate a text marker for showing latency and FPS.
         """
@@ -375,45 +402,78 @@ class Node:
         else:
             text = ""
         text += "%.3fms" % ((current_stamp - header.stamp).to_sec() * 1000.0)
-        if not fps is None:
+        if fps is not None:
             text += " fps = %.1f" % fps
-        if not _num_removed_obj is None:
+        if _num_removed_obj is not None:
             text += " -%d objs" % _num_removed_obj
         # Overwrite the frame_id of the text
         header_txt = copy.deepcopy(header)
         if self.is_overwrite_txt_frame_id:
             header_txt.frame_id = self.txt_frame_id
         #
-        return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_delay"), scale=2.0 )
+        return self.text_marker_prototype(
+            idx, header, text, point=point, ns=(
+                self.inputTopic + "_delay"), scale=2.0)
 
-    def create_depth_text_marker(self, idx, header, bbox, bbox_id=None, prob=None):
+    def create_depth_text_marker(
+            self,
+            idx,
+            header,
+            bbox,
+            bbox_id=None,
+            prob=None):
         """
         Generate a text marker for showing depth/distance of object
         """
-        point = self.text_marker_position( bbox )
+        point = self.text_marker_position(bbox)
         # depth = self._calculate_depth_bbox( bbox )
-        depth = self._calculate_distance_bbox( bbox )
+        depth = self._calculate_distance_bbox(bbox)
         # Generate text
         if bbox_id is None:
-            text = "D=%.2fm" % ( depth )
+            text = "D=%.2fm" % (depth)
         else:
-            text = "[%d]D=%.2fm" % (bbox_id, depth )
+            text = "[%d]D=%.2fm" % (bbox_id, depth)
         if prob is not None:
             text += ",P=%.2f" % prob
         scale = 1.0
-        return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_depth"), scale=scale )
+        return self.text_marker_prototype(
+            idx, header, text, point=point, ns=(
+                self.inputTopic + "_depth"), scale=scale)
 
     def create_tracking_text_marker(self, idx, header, bbox, bbox_id=None):
         """
         Generate a text marker for showing tracking info.
         """
-        point = self.text_marker_position( bbox )
+        point = self.text_marker_position(bbox)
         # Generate text
-        text = "<%s>" % str(bbox_id )
+        text = "<%s>" % str(bbox_id)
         scale = 1.0
-        return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_tracking"), scale=scale )
+        return self.text_marker_prototype(
+            idx, header, text, point=point, ns=(
+                self.inputTopic + "_tracking"), scale=scale)
 
-    def text_marker_prototype(self, idx, header, text, point=Point(), ns="T", scale=2.0):
+    def create_class_name_text_marker(
+            self, idx, header, bbox, class_name=None):
+        """
+        Generate a text marker for showing class name info.
+        """
+        point = self.text_marker_position(bbox)
+        # Generate text
+        text = "%s" % str(class_name)
+        scale = 2.0
+        return self.text_marker_prototype(
+            idx, header, text, point=point, ns=(
+                self.inputTopic + "_class"), scale=scale)
+
+    def text_marker_prototype(
+            self,
+            idx,
+            header,
+            text,
+            point=Point(),
+            ns="T",
+            scale=2.0,
+            lifetime=0.15):
         """
         Generate the prototype of text
         """
@@ -427,7 +487,7 @@ class Node:
         # marker.scale.x = 10.0
         # marker.scale.y = 1.0
         marker.scale.z = scale
-        marker.lifetime = rospy.Duration(1.0)
+        marker.lifetime = rospy.Duration(lifetime)
         marker.color.r = self.c_red
         marker.color.g = self.c_green
         marker.color.b = self.c_blue

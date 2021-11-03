@@ -1,4 +1,5 @@
 #!/bin/bash
+exit 0
 set -x
 set -e
 readonly repo_dir=$(git rev-parse --show-toplevel)
@@ -11,6 +12,8 @@ readonly weakness_detection_dir=${repo_dir}/src/utilities/weakness_detection
 readonly now=$(date "+%Y%m%d%H%M%S")
 export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages
 set +e
+git fetch
+git merge remotes/origin/master --no-ff
 git diff-index --quiet HEAD
 if [[ "$?" == "0" ]]; then
   readonly repo_status="clean"
@@ -50,6 +53,7 @@ function dl_drivenet_weights {
     rm ${weights_fov120}
   fi
   wget http://nas.itriadv.co:8888/git_data/B1/drivenet/yolov3_fov120_b1.weights -O ${weights_fov120}
+  md5sum ${weights_fov60} ${weights_fov120}
 }
 
 function mr_test {
@@ -64,7 +68,7 @@ function mr_test {
 
   find ${src_dir} -name "*.jpg" -exec cp {} ${dest_dir} \;
   find ${src_dir} -name "*.json" -exec cp {} ${dest_dir} \;
-  find ${dest_dir} -name "*.jpg" > ${dest_dir}/mr_images.txt
+  find ${dest_dir} -name "*.jpg" | grep -v _yolo.jpg | grep -v _expect.jpg > ${dest_dir}/mr_images.txt
   python3 ${weakness_detection_dir}/gen_yolo_detection_img.py --yolo-result-json ${dest_dir}/yolo_result.json --image-filenames ${dest_dir}/mr_images.txt
   for image_filename in `cat ${dest_dir}/mr_images.txt`; do
     python3 ${darknet_dir}/drivenet_weights_mr_test/draw_bbox.py -i ${image_filename} --output-dir ${dest_dir}
@@ -83,6 +87,7 @@ mr_test fov60
 set +e
 python3 drivenet_weights_mr_test/merge_fov60_120_result.py --artifacts-dir ${artifacts_dir} --branch-name ${branch_name} --commit-id ${commit_id} --repo-status ${repo_status}
 final_result=$?
+python3 drivenet_weights_mr_test/post_to_backend.py --json-result ${artifacts_dir}/check_result.json
 find ${artifacts_dir} -type d -exec chmod 755 {} \;
 find ${artifacts_dir} -type f -exec chmod 644 {} \;
 set +x

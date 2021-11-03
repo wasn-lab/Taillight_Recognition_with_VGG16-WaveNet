@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>car_model</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>Global definitions about the car model</description>
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

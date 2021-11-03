@@ -12,6 +12,16 @@ struct Point
   double Y;
   double Speed;
   double Direction;
+
+  Point& operator=(const Point& a)
+    {
+        X=a.X;
+        Y=a.Y;
+        Speed=a.Speed;
+        Direction=a.Direction;
+
+        return *this;
+    }
 };
 
 class Geofence
@@ -31,7 +41,7 @@ public:
                     double Heading);             // Update pointcloud, must set before fist execution of Calcuator
   int setPath(const vector<Point>& PathPoints);  // Update Path points in absolute coordibate, must set before fist
                                                  // execution of Calcuator
-  int Calculator();  // Calculate geofence by currently set Poly and PointCloud
+  int Calculator();                              // Calculate geofence by currently set Poly and PointCloud
 
 private:
   vector<Point> PathPoints;

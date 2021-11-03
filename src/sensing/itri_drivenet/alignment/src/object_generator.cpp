@@ -1,8 +1,8 @@
 #include "object_generator.h"
-#include <pcl/common/geometry.h> 
+#include <pcl/common/geometry.h>
 #include "drivenet/object_label_util.h"
 #include "UseApproxMVBB.h"
-#include "shape_estimator.hpp" // L-shape estimator
+#include "shape_estimator.hpp"  // L-shape estimator
 
 pcl::PointCloud<pcl::PointXYZ> ObjectGenerator::pointsToPolygon(const pcl::PointCloud<pcl::PointXYZI>& cloud)
 {
@@ -17,6 +17,27 @@ pcl::PointCloud<pcl::PointXYZ> ObjectGenerator::pointsToPolygon(const pcl::Point
 
   return convex_points;
 }
+OrientedBBox ObjectGenerator::clusterToOrientedBBox(const CLUSTER_INFO& cluster_vector)
+{
+  OrientedBBox obb;
+  if (!cluster_vector.obb_vertex.empty())
+  {
+    /// center_point
+    obb.obb_center.x = cluster_vector.obb_center.x;
+    obb.obb_center.y = cluster_vector.obb_center.y;
+    obb.obb_center.z = cluster_vector.obb_center.z;
+
+    /// Quatanion heading
+    obb.obb_orient = cluster_vector.obb_orient;
+
+    /// BoxSize dimension
+    obb.obb_dx = cluster_vector.obb_dx;
+    obb.obb_dy = cluster_vector.obb_dy;
+    obb.obb_dz = cluster_vector.obb_dz;
+  }
+  return obb;
+}
+
 msgs::BoxPoint ObjectGenerator::clusterToBoxPoint(const CLUSTER_INFO& cluster_vector)
 {
   msgs::BoxPoint box_point;
@@ -57,7 +78,8 @@ msgs::BoxPoint ObjectGenerator::clusterToBoxPoint(const CLUSTER_INFO& cluster_ve
   return box_point;
 }
 
-msgs::BoxPoint ObjectGenerator::pointsToLShapeBBox(const pcl::PointCloud<pcl::PointXYZI>& cloud, const int class_id)
+void ObjectGenerator::pointsToLShapeBBox(const pcl::PointCloud<pcl::PointXYZI>& cloud, const int class_id,
+                                         OrientedBBox& obb, msgs::BoxPoint& box_point)
 {
   /// Preprocessing
   CLUSTER_INFO cluster_vector;
@@ -70,51 +92,41 @@ msgs::BoxPoint ObjectGenerator::pointsToLShapeBBox(const pcl::PointCloud<pcl::Po
   cluster_vector.dy = fabs(cluster_vector.max.y - cluster_vector.min.y);
   cluster_vector.dz = fabs(cluster_vector.max.z - cluster_vector.min.z);
   cluster_vector.center = pcl::PointXYZ((cluster_vector.max.x + cluster_vector.min.x) / 2,
-                                          (cluster_vector.max.y + cluster_vector.min.y) / 2, 0);
+                                        (cluster_vector.max.y + cluster_vector.min.y) / 2, 0);
 
   cluster_vector.dis_center_origin = pcl::geometry::distance(cluster_vector.center, pcl::PointXYZ(0, 0, 0));
 
   cluster_vector.abb_vertex.resize(8);
-  cluster_vector.abb_vertex.at(0) =
-      pcl::PointXYZ(cluster_vector.min.x, cluster_vector.min.y, cluster_vector.min.z);
-  cluster_vector.abb_vertex.at(1) =
-      pcl::PointXYZ(cluster_vector.min.x, cluster_vector.min.y, cluster_vector.max.z);
-  cluster_vector.abb_vertex.at(2) =
-      pcl::PointXYZ(cluster_vector.max.x, cluster_vector.min.y, cluster_vector.max.z);
-  cluster_vector.abb_vertex.at(3) =
-      pcl::PointXYZ(cluster_vector.max.x, cluster_vector.min.y, cluster_vector.min.z);
-  cluster_vector.abb_vertex.at(4) =
-      pcl::PointXYZ(cluster_vector.min.x, cluster_vector.max.y, cluster_vector.min.z);
-  cluster_vector.abb_vertex.at(5) =
-      pcl::PointXYZ(cluster_vector.min.x, cluster_vector.max.y, cluster_vector.max.z);
-  cluster_vector.abb_vertex.at(6) =
-      pcl::PointXYZ(cluster_vector.max.x, cluster_vector.max.y, cluster_vector.max.z);
-  cluster_vector.abb_vertex.at(7) =
-      pcl::PointXYZ(cluster_vector.max.x, cluster_vector.max.y, cluster_vector.min.z);
+  cluster_vector.abb_vertex.at(0) = pcl::PointXYZ(cluster_vector.min.x, cluster_vector.min.y, cluster_vector.min.z);
+  cluster_vector.abb_vertex.at(1) = pcl::PointXYZ(cluster_vector.min.x, cluster_vector.min.y, cluster_vector.max.z);
+  cluster_vector.abb_vertex.at(2) = pcl::PointXYZ(cluster_vector.max.x, cluster_vector.min.y, cluster_vector.max.z);
+  cluster_vector.abb_vertex.at(3) = pcl::PointXYZ(cluster_vector.max.x, cluster_vector.min.y, cluster_vector.min.z);
+  cluster_vector.abb_vertex.at(4) = pcl::PointXYZ(cluster_vector.min.x, cluster_vector.max.y, cluster_vector.min.z);
+  cluster_vector.abb_vertex.at(5) = pcl::PointXYZ(cluster_vector.min.x, cluster_vector.max.y, cluster_vector.max.z);
+  cluster_vector.abb_vertex.at(6) = pcl::PointXYZ(cluster_vector.max.x, cluster_vector.max.y, cluster_vector.max.z);
+  cluster_vector.abb_vertex.at(7) = pcl::PointXYZ(cluster_vector.max.x, cluster_vector.max.y, cluster_vector.min.z);
 
   /// L-shape estimator
   ShapeEstimator estimator;
-  bool do_apply_filter = false; // default: false
+  bool do_apply_filter = false;  // default: false
   if (class_id == static_cast<int>(DriveNet::common_type_id::person))
   {
     estimator.getShapeAndPose(nnClassID::Person, cluster_vector, do_apply_filter);
   }
   else if (class_id == static_cast<int>(DriveNet::common_type_id::bicycle) ||
-      class_id == static_cast<int>(DriveNet::common_type_id::motorbike))
+           class_id == static_cast<int>(DriveNet::common_type_id::motorbike))
   {
     estimator.getShapeAndPose(nnClassID::Motobike, cluster_vector, do_apply_filter);
   }
   else if (class_id == static_cast<int>(DriveNet::common_type_id::car) ||
-      class_id == static_cast<int>(DriveNet::common_type_id::bus) ||
-      class_id == static_cast<int>(DriveNet::common_type_id::truck))
+           class_id == static_cast<int>(DriveNet::common_type_id::bus) ||
+           class_id == static_cast<int>(DriveNet::common_type_id::truck))
   {
     estimator.getShapeAndPose(nnClassID::Car, cluster_vector, do_apply_filter);
   }
 
-  msgs::BoxPoint box_point;
+  obb = clusterToOrientedBBox(cluster_vector);
   box_point = clusterToBoxPoint(cluster_vector);
-
-  return box_point;
 }
 msgs::BoxPoint ObjectGenerator::minMax3dToBBox(MinMax3D& cube)
 {

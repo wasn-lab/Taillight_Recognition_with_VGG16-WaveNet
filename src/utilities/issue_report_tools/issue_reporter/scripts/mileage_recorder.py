@@ -182,6 +182,7 @@ def calculate_mileage(speed_mps):
     if delta_t < 0.0:
         delta_t = 0.0
     last_speed_ros_time = now
+    speed_mps = int(speed_mps * 100) / 100.0  # round to cm to avoid floating point error
     #
     speed_mps_filtered += 0.1*(speed_mps - speed_mps_filtered)
     #

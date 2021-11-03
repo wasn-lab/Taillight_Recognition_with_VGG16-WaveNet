@@ -1,8 +1,0 @@
-<launch>
-        # Node
-        <node name="drivenet_util_node_obj_pub" pkg="drivenet" type="drivenet_util_node_obj_pub"  output="screen">
-
-        </node>
-
-</launch>
-

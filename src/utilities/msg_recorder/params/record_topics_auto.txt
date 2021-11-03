@@ -1,10 +1,18 @@
-/LidarAll
-/LidarFrontRight/Raw
-/LidarFrontLeft/Raw
-/LidarRearRight/Raw
-/LidarRearLeft/Raw
-/LidarFrontTop/Raw # For debugging localization
+# /LidarAll
+# /LidarFrontRight/Raw
+# /LidarFrontLeft/Raw
+# /LidarRearRight/Raw
+# /LidarRearLeft/Raw
+# /LidarFrontTop/Raw # For debugging localization
+# /LidarDetection
+
+#-- Update for New LiDARNet 
+/LidarFrontTop/Compressed
+/LidarFrontLeft/Compressed
+/LidarFrontRight/Compressed
 /LidarDetection
+/LidarDetection/Car
+/LidarDetection/Ped_Cyc
 
 # /points_map
 
@@ -21,16 +29,51 @@
 # /cam/B_top
 
 #-- 8-camera version
-/cam/front_bottom_60
-/cam/front_bottom_60_crop
-/cam/front_top_close_120
-/cam/front_top_far_30
-/cam/left_back_60
-/cam/left_front_60
-/cam/right_back_60
-/cam/right_front_60
-/cam/back_top_120
-
+#---- raw data
+# /cam/front_bottom_60/raw
+# /cam/front_top_close_120/raw
+# /cam/front_top_far_30/raw
+# /cam/left_back_60/raw
+# /cam/left_front_60/raw
+# /cam/right_back_60/raw
+# /cam/right_front_60/raw
+# /cam/back_top_120/raw
+#---- compressed data
+/cam/front_bottom_60/jpg
+/cam/front_top_close_120/jpg
+/cam/front_top_far_30/jpg
+/cam/left_back_60/jpg
+/cam/left_front_60/jpg
+/cam/right_back_60/jpg
+/cam/right_front_60/jpg
+/cam/back_top_120/jpg
+#---- motion vector
+/cam/front_bottom_60/motion_vector_msg
+/cam/front_top_close_120/motion_vector_msg
+/cam/front_top_far_30/motion_vector_msg
+/cam/left_back_60/motion_vector_msg
+/cam/left_front_60/motion_vector_msg
+/cam/right_back_60/motion_vector_msg
+/cam/right_front_60/motion_vector_msg
+/cam/back_top_120/motion_vector_msg
+#---- camera grabber heartbeat
+/cam/front_bottom_60/heartbeat
+/cam/front_top_close_120/heartbeat
+/cam/front_top_far_30/heartbeat
+/cam/left_back_60/heartbeat
+/cam/left_front_60/heartbeat
+/cam/right_back_60/heartbeat
+/cam/right_front_60/heartbeat
+/cam/back_top_120/heartbeat
+#---- drivenet subscriber heartbeat
+/cam/front_bottom_60/drivenet_sub/heartbeat
+/cam/front_top_close_120/drivenet_sub/heartbeat
+/cam/front_top_far_30/drivenet_sub/heartbeat
+/cam/left_back_60/drivenet_sub/heartbeat
+/cam/left_front_60/drivenet_sub/heartbeat
+/cam/right_back_60/drivenet_sub/heartbeat
+/cam/right_front_60/drivenet_sub/heartbeat
+/cam/back_top_120/drivenet_sub/heartbeat
 
 # Image with 2D bbox
 # /cam/F_right/detect_image
@@ -67,7 +110,7 @@
 #
 
 # Camera polygon
-/CameraDetection/polygon
+/CameraDetection
 
 /current_pose
 /veh_info
@@ -79,6 +122,7 @@
 /Flag_Info01
 /Flag_Info02
 /Flag_Info03
+/Flag_Info04
 /rel_virBB_array
 /abs_virBB_array
 /marker_array_topic
@@ -88,8 +132,57 @@
 /RadarMarker
 /Geofence_PC
 
+# control
+/control/acc_cmd
+/control/acc_on
+/control/acc_pp_cmd
+/control/acc_trig
+/control/brake_cmd
+/control/brake_cmd_setting
+/control/brake_status
+/control/brake_trig_cc
+/control/bus_stop_state_info
+/control/cons_headway
+/control/end_path_flag
+/control/fbrake_interrupt
+/control/geofence/deviate_path
+/control/geofence/final
+/control/geofence/pcloud
+/control/geofence/radar
+/control/geofence_pp/final
+/control/geofence_pp/pedcross
+/control/geofence_pp/pp
+/control/lateral_cumulative_offset
+/control/lkc/look_ahead_S0
+/control/lkc/look_ahead_time
+/control/lkc/uturn
+/control/lkc/ytarget
+/control/longitudinal/decelcmd
+/control/longitudinal/speed_profile
+/control/plc_info
+/control/plc_write
+/control/self_driving_state
+/control/speed_cmd
+/control/speed_set
+/control/state_control_flag
+/control/static_flag
+/control/steer_cmd_setting
+/control/steerwheelcmd
+/control/throttle_cmd
+/control/traffic_light_state_info
+/control/xbywire_on
+/control_checker
 
+#xbywire
+/xbywire/brake_fb
+/xbywire/can_err
+/xbywire/on_off
+/xbywire/speed_info
+/xbywire/speed_info/duty_cycle
+/xbywire/steer_anglefb
 
+/bus_stop_register_info
+/traffic_light_register_info
 /mm_tp_topic
 /nav_path # Dyna-plan
 /nav_path_astar_final # A-star
@@ -146,20 +239,87 @@
 /LightResultOutput
 
 #
-/RadFront
-/RadFrontFilter
 /PP_geofence_line
+/debug/geofence_map_pp/time_speed
 /Geofence_line # marker
 /gnss_speed_data
 /gnss2local_data
 /gnss_twd97_data
 
 
-# Pedcross
-/PedCross/Alert
+# Pedcross (old)
+# /PedCross/Alert
 /PedCross/Pedestrians
-/PedCross/3D_marker
+# /PedCross/3D_marker
 /Tracking2D
+# Pedcross (new, 2020/09/28)
+/PedCross/Alert
+/PedCross/Alert/front_bottom_60
+/PedCross/Alert/left_back_60
+/PedCross/Alert/right_back_60
+/PedCross/Alert/front_top_far_30
+/PedCross/Pedestrians/front_bottom_60
+/PedCross/Pedestrians/left_back_60
+/PedCross/Pedestrians/right_back_60
+/PedCross/Pedestrians/front_top_far_30
+/PedCross/Polygon
+/PedCross/3D_marker
+/Tracking2D/front_bottom_60
+/Tracking2D/left_back_60
+/Tracking2D/right_back_60
+/Tracking2D/front_top_far_30
+
+#
+/traffic
+/gnss_utm_data
+/map/vector_map_marker
+/objects
+/objects/filtered
+/planning/mission_planning/route_marker
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/blind_spot
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/crosswalk
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/intersection
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/path
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/stop_line
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/traffic_light
+/planning/scenario_planning/lane_driving/behavior_planning/path
+/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/marker
+/planning/scenario_planning/trajectory
+/veh_predictpath
 
 
+/DelphiFront
+/AlphaFrontCenter
+/AlphaFrontLeft
+/AlphaFrontRight
+/AlphaSideLeft
+/AlphaSideRight
+/AlphaBackLeft
+/AlphaBackRight
+/CubtekFront
+/RadFront
+/RadFrontFilter
+/RadAlpha
+/RadAlphaPCL
 
+
+/traffic_light_register_info
+/control_checker
+/BusStop/Info
+/avoidpath_reach_goal
+/reserve/request
+/reserve/route
+/ADV_op/req_run_stop
+
+# For debugging how sys_ready changes.
+/vehicle/report/itri/fail_safe_status
+/vehicle/report/itri/sensor_status
+/vehicle/report/car_info
+/vehicle/report/system_loads
+/vehicle/report/lidar/load
+/vehicle/report/camera/load
+/vehicle/report/localization/load
+/vehicle/report/xavier/load
+
+# streamed rviz
+/xwin_grabber/rviz/jpg

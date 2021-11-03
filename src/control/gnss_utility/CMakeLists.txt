@@ -32,7 +32,7 @@ include_directories(gnss_utility
 )
 
 
-add_library(${PROJECT_NAME} src/gnss_utility.cpp)
+add_library(${PROJECT_NAME} src/gnss_utility.cpp src/gnss_utility_utm.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
@@ -49,6 +49,6 @@ install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ## Install project namespaced headers
-install(DIRECTORY include/${PROJECT_NAME}
+install(DIRECTORY include
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.h")

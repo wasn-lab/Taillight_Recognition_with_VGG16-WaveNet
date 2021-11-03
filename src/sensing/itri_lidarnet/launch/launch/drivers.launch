@@ -1,0 +1,36 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+<!-- Lidar Driver ********************************************************************************** -->
+<!-- Left -->
+	<include file="$(find ouster_ros)/ouster.launch" >
+		<arg name="group_name" value="/LidarFrontLeft" />
+		<arg name="tf_prefix" value="lidar_front_left" doc="as frame_id" />
+		<arg name="sensor_hostname" value="192.168.0.221" />
+		<arg name="udp_dest" value="192.168.0.1" />
+		<arg name="lidar_port" value="7501" />
+		<arg name="imu_port" value="7511" />
+    </include>
+
+    <!-- Right -->
+    <include file="$(find ouster_ros)/ouster.launch" >
+		<arg name="group_name" value="/LidarFrontRight" />
+		<arg name="tf_prefix" value="lidar_front_right" doc="as frame_id" />
+		<arg name="sensor_hostname" value="192.168.0.222" />
+		<arg name="udp_dest" value="192.168.0.1" />
+		<arg name="lidar_port" value="7502" />
+		<arg name="imu_port" value="7512" />
+    </include>
+
+    <!-- Top-->
+    <include file="$(find ouster_ros)/ouster.launch" >
+		<arg name="group_name" value="/LidarFrontTop" />
+		<arg name="tf_prefix" value="lidar" doc="as frame_id" />
+		<arg name="sensor_hostname" value="192.168.0.223" />
+		<arg name="udp_dest" value="192.168.0.1" />
+		<arg name="lidar_port" value="7503" />
+		<arg name="imu_port" value="7513" />
+    </include>
+
+
+</launch>

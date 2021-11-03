@@ -32,7 +32,7 @@ def main():
     """Prog entry"""
     parser = argparse.ArgumentParser()
     parser.add_argument("--package", default="sdb")
-    parser.add_argument("--launch", default="camera.launch")
+    parser.add_argument("--launch", default="camera_b1_v3.launch")
     args = parser.parse_args()
     gen_drivenet_engine(args.package, args.launch)
 

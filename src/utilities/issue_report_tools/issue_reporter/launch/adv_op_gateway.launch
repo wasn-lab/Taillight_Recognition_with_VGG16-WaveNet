@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <!--ADV_op gateway-->
+    <node pkg="issue_reporter" type="adv_op_gateway.py" name="adv_op_gateway" output="screen" />
+
+</launch>

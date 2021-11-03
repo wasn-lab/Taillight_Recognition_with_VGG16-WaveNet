@@ -1,0 +1,12 @@
+<launch>
+        # Node
+        <node name="drivenet_detect_node_top_c1" pkg="drivenet" type="drivenet_detect_node_top_c1"  output="screen">
+                <param name="input_resize" type="bool" value="1" />
+                <param name="standard_fps" type="bool" value="0" />
+                <param name="imgResult_publish" type="bool" value="1" />
+                <param name="display" type="bool" value="0" />
+                <param name="dist_esti_mode" type="int" value="0" />
+        </node>
+
+</launch>
+

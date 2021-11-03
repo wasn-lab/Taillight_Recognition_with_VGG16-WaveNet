@@ -16,6 +16,16 @@ if (CMAKE_COMPILER_IS_GNUCXX OR COMPILER_IS_CLANG)
     set(COMPILER_IS_GCC_OR_CLANG ON)
 endif ()
 
+set(CPU_IS_X86 FALSE)
+set(CPU_IS_ARM FALSE)
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+  set(CPU_IS_X86 TRUE)
+elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+  set(CPU_IS_ARM TRUE)
+else ()
+  message(FATAL_ERROR "Cannot decide cpu type")
+endif ()
+
 set(CMAKE_CXX_STANDARD 14)  # -std=c++14
 set(CMAKE_C_STANDARD 11)  # -std=gnu11
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)  # -fPIC -fPIE
@@ -41,22 +51,34 @@ endmacro()
 macro(ENABLE_SANITIZER sanitizer_t)
     APPEND_GLOBAL_COMPILER_FLAGS(-fno-omit-frame-pointer
                                  -fno-optimize-sibling-calls)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=${sanitizer_t}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=${sanitizer_t}")
+    set(SANITIZER_FLAGS "-fsanitize=${sanitizer_t}")
+#    if (COMPILER_IS_GNUCXX)
+#      if (${sanitizer_t} STREQUAL "address")
+#        set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-libasan")
+#      elseif (${sanitizer_t} STREQUAL "thread")
+#        set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-libtsan")
+#      elseif (${sanitizer_t} STREQUAL "leak")
+#        set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-liblsan")
+#      elseif (${sanitizer_t} STREQUAL "undefined")
+#        set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-libubsan")
+#      endif ()
+#    endif()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZER_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZER_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS
-        "-lpthread ${CMAKE_EXE_LINKER_FLAGS} -fsanitize=${sanitizer_t}")
+        "-lpthread ${CMAKE_EXE_LINKER_FLAGS} ${SANITIZER_FLAGS}")
     set(CMAKE_SHARED_LINKER_FLAGS
-        "-lpthread ${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=${sanitizer_t}")
+        "-lpthread ${CMAKE_SHARED_LINKER_FLAGS} ${SANITIZER_FLAGS}")
     set(CMAKE_MODULE_LINKER_FLAGS
-        "-lpthread ${CMAKE_MODULE_LINKER_FLAGS} -fsanitize=${sanitizer_t}")
+        "-lpthread ${CMAKE_MODULE_LINKER_FLAGS} ${SANITIZER_FLAGS}")
 endmacro()
 
 # Warning messages:
 # yolo_src contains too many warnings, so full warnings only apply to *.cpp
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror=reorder")
 
 APPEND_GLOBAL_COMPILER_FLAGS(
-    -Werror=reorder
+    -D_FORTIFY_SOURCE=2
     -Wno-deprecated-declarations
     -Wno-comment
     -Wno-unused-parameter

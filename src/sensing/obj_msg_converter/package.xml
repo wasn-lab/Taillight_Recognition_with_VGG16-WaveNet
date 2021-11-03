@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<package>
+    <name>obj_msg_converter</name>
+    <version>0.0.0</version>
+    <description>Detected object message converter</description>
+    <maintainer email="chinghao.liu@itri.org.tw">Ching-Hao Liu</maintainer>
+    <license>ITRI</license>
+    <buildtool_depend>catkin</buildtool_depend>
+</package>

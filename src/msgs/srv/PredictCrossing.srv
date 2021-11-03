@@ -1,0 +1,10 @@
+# transfer bbox and stored_skeleton to pedcross tf server
+
+# cam_index 0:center 1:left 2:right 3:fov30
+uint16 cam_index
+CamInfo[] bboxes
+Keypoints[] keypoints
+---
+# predict result
+float32 result_0
+float32 result_1

@@ -7,14 +7,16 @@
 #define __CAMERA_PARAMS_H__
 #include "car_model.h"
 
-#if CAR_MODEL_IS_B1
-#include "camera_params_b1.h"
-#elif CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_OMNIBUS
+#if CAR_MODEL_IS_B1_V2
 #include "camera_params_b1_v2.h"
-#elif CAR_MODEL_IS_HINO
-#include "camera_params_hino.h"
-#elif CAR_MODEL_IS_C
-#error "Camera parameters for car C is not defined yet."
+#elif CAR_MODEL_IS_B1_V3
+#include "camera_params_b1_v3.h"
+#elif CAR_MODEL_IS_C1
+#include "camera_params_c1.h"  // TODO: generate and use C1 car param.
+#elif CAR_MODEL_IS_C2
+#include "camera_params_c2.h"
+#elif CAR_MODEL_IS_C3
+#include "camera_params_c3.h"
 #else
 #error "Car model is not defined"
 #endif

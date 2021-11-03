@@ -164,4 +164,4 @@ void YoloPluginCtxDeinit(YoloPluginCtx* ctx)
   delete ctx->inferenceNetwork;
   delete ctx;
 }
-}
+}  // namespace DriveNet

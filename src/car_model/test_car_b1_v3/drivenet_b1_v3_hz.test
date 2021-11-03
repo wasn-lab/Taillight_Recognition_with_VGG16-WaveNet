@@ -1,0 +1,12 @@
+<launch>
+    <include file="$(find camera_grabber)/launch/repub_image_topic_tools.launch"/>
+    <include file="$(find drivenet)/launch/b1_v3_drivenet_group_a.launch"/>
+    <include file="$(find drivenet)/launch/b1_v3_drivenet_side.launch"/>
+    <include file="$(find drivenet)/launch/b1_v3_drivenet_top.launch"/>
+
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/camera_raw_2021-02-25-15-53-00_77.bag -l -r 3">
+    </node>
+
+    <node pkg="car_model" type="calc_hz.py" name="calc_hz" output="screen" required="true" args="--duration 15">
+    </node>
+</launch>

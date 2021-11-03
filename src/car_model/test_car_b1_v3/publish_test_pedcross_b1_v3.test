@@ -1,0 +1,30 @@
+<launch>
+    <include file="$(find itri_tracking_3d)/launch/tpp.launch">
+        <arg name="input_source" value="6" />
+        <arg name="drivable_area_filter" value="False" />
+    </include>    
+
+    <include file="$(find itri_pedcross)/launch/ped.launch">
+        <arg name="car_model" value="1"/>
+    </include>
+
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/pedcross_2021-05-06-13-36-41_0_filtered.bag /cam/front_bottom_60/raw:=/cam/front_bottom_60 /cam/front_top_far_30/raw:=/cam/front_top_far_30 /cam/right_back_60/raw:=/cam/right_back_60 /cam/left_back_60/raw:=/cam/left_back_60" />
+
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+        <rosparam>
+            topics:
+                - name: /Tracking3D
+                  timeout: 15
+                  negative: False
+                - name: /PedCross/Alert
+                  timeout: 15
+                  negative: False
+                - name: /PedCross/DrawBBox/front_bottom_60
+                  timeout: 15
+                  negative: False
+                - name: /PedCross/3D_marker
+                  timeout: 15
+                  negative: False
+        </rosparam>
+    </test>
+</launch>

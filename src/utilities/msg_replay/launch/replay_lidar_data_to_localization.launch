@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="msg_replay" type="msg_replay_node" name="replay_LidarFrontLeft_to_localization" output="screen" cwd="node" respawn="true" args="-input_topic /LidarFrontLeft -output_topic /LidarFrontLeft/replay_to_localization" />
+  <node pkg="msg_replay" type="msg_replay_node" name="replay_LidarFrontRight_to_localization" output="screen" cwd="node" respawn="true" args="-input_topic /LidarFrontRight -output_topic /LidarFrontRight/replay_to_localization" />
+</launch>

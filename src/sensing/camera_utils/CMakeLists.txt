@@ -7,8 +7,10 @@ include(CompilerFlags)
 find_package(catkin REQUIRED COMPONENTS
   car_model
   roscpp
-  geometry_msgs)
-catkin_package(CATKIN_DEPENDS roscpp geometry_msgs car_model)
+  geometry_msgs
+  msgs
+  )
+catkin_package(CATKIN_DEPENDS roscpp geometry_msgs car_model msgs)
 
 find_package(CUDA)
 if (NOT ${CUDA_FOUND})
@@ -47,6 +49,10 @@ set(CAMERA_UTILS_SOURCES
   src/camera_params_hino.cpp
   src/camera_params_b1.cpp
   src/camera_params_b1_v2.cpp
+  src/camera_params_b1_v3.cpp 
+  src/camera_params_c1.cpp
+  src/camera_params_c2.cpp
+  src/camera_params_c3.cpp
   src/camera_distance_mapper.cpp
   src/cv_color.cpp
   src/imu_distance.cpp
@@ -61,7 +67,9 @@ set(CAMERA_UTILS_SOURCES
   src/npp_utils.cpp
   src/projection/parameters.cpp
   src/projection/projector2.cpp
-  src/projection/projector3.cpp)
+  src/projection/projector3.cpp
+  src/tracker/tracker.cpp
+  src/tracker/kalman.cpp)
 
 set(CAMERA_UTILS_LIB_DEPS
   ${OpenCV_LIBS}
@@ -81,11 +89,13 @@ set(CAMERA_UTILS_INCLUDE_DIRS
   ${car_model_BINARY_DIR}/include
   ${PROJECT_BINARY_DIR}/include
   ${PROJECT_SOURCE_DIR}/include
-  ${PROJECT_SOURCE_DIR}/include/projection)
+  ${PROJECT_SOURCE_DIR}/include/projection
+  ${PROJECT_SOURCE_DIR}/include/tracker)
 
 include_directories(${CAMERA_UTILS_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME} STATIC ${CAMERA_UTILS_SOURCES})
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME} ${CAMERA_UTILS_LIB_DEPS})
 add_subdirectory(src/test)
 
