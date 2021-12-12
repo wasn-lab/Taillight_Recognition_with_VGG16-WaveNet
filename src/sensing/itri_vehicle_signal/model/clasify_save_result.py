@@ -1,16 +1,19 @@
+# -*- coding: UTF-8 -*-
 import os
 import sys
 import cv2
 import numpy as np
 from data import DataSet
-from extractor import Extractor
+from extractor_attention import Extractor
+from attention_model import Attention_model
 from keras.models import load_model
 from sklearn.metrics import precision_recall_curve
 
+from keras.preprocessing import image 
 import csv
 
 def save_result_as_csv(result):
-	with open('itridataset_clasify_result.csv', 'a', newline='') as csvfile:
+	with open('attention3_itridataset_clasify_result_1212.csv', 'a', newline='') as csvfile:
 		writer = csv.writer(csvfile)
 		for i in result:
 			writer.writerow(i)
@@ -95,8 +98,14 @@ while True:
 
     # For each frame extract feature and prepare it for classification
     sequence = []
-    for image in resized_frames:
-        features = extract_model.extract_image(image)
+    for img in resized_frames:
+        features = attn_model.attention(img)
+        if not isinstance(img, np.ndarray):
+            img_array = image.img_to_array(img)
+        else :
+            img_array = img
+        features = features * img_array
+        features = extract_model.extract_image(features)
         sequence.append(features)
 
     # Clasify sequence
