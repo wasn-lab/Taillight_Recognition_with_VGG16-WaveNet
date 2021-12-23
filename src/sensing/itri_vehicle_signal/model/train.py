@@ -100,6 +100,8 @@ def main():
 		print ("Example: python train.py 75 2 720 1280")
 		exit (1)
 
+
+	"""
 	sequences_dir = os.path.join('data', 'sequences')
 	if not os.path.exists(sequences_dir):
 		os.mkdir(sequences_dir)
@@ -107,17 +109,18 @@ def main():
 	checkpoints_dir = os.path.join('data', 'checkpoints')
 	if not os.path.exists(checkpoints_dir):
 		os.mkdir(checkpoints_dir)
+	"""
 
 	# model can be only 'lstm'
 	model = 'lstm'
 	saved_model = None  # None or weights file
 	load_to_memory = False # pre-load the sequences into memory
-	batch_size = 4
+	batch_size = 8
 	nb_epoch = 1000
-	data_type = 'features'
+	data_type = 'images'
 	image_shape = (image_height, image_width, 3)
 
-	extract_features(seq_length=seq_length, class_limit=class_limit, image_shape=image_shape)
+	# extract_features(seq_length=seq_length, class_limit=class_limit, image_shape=image_shape)
 
 	train(data_type, seq_length, model, saved_model=saved_model,
 		class_limit=class_limit, image_shape=image_shape,

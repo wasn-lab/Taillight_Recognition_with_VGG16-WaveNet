@@ -1,13 +1,14 @@
 """
 A collection of models we'll use to attempt to classify videos.
 """
-from keras.layers import Dense, Flatten, Dropout, ZeroPadding3D
+from keras.layers import Input, Dense, Flatten, Dropout, ZeroPadding3D, Reshape
 from keras.layers.recurrent import LSTM
-from keras.models import Sequential, load_model
+from keras.models import Sequential, Model, load_model
 from keras.optimizers import Adam, RMSprop
 from keras.layers.wrappers import TimeDistributed
 from keras.layers.convolutional import (Conv2D, MaxPooling3D, Conv3D,
     MaxPooling2D)
+from keras.applications.inception_v3 import InceptionV3, preprocess_input
 from collections import deque
 import sys
 
@@ -33,6 +34,9 @@ class ResearchModels():
         if self.nb_classes >= 10:
             metrics.append('top_k_categorical_accuracy')
 
+        self.model = self.attention(use_attention=True)
+        self.model = self.cnn()
+
         # Get the appropriate model.
         if self.saved_model is not None:
             print("Loading model %s" % self.saved_model)
@@ -52,16 +56,109 @@ class ResearchModels():
 
         print(self.model.summary())
 
+    def attention(self, use_attention=False, image_shape=(20, 224, 224, 3)):
+        input_tensor = Input(image_shape, name="img_input")
+        if use_attention:
+            # Get model with pretrained weights.
+            base_model = TimeDistributed(Conv2D(32, (3, 3), dilation_rate=1, strides=(1, 1), padding="same"))(input_tensor)
+            base_model = TimeDistributed(Conv2D(64, (3, 3), dilation_rate=2, strides=(1, 1), padding="same"))(base_model)
+            base_model = TimeDistributed(Conv2D(64, (3, 3), dilation_rate=2, strides=(1, 1), padding="same"))(base_model)
+            base_model = TimeDistributed(Conv2D(3, (3, 3), dilation_rate=1, strides=(1, 1), padding="same"))(base_model)
+
+            # base_model.trainable = True   # todo: find-tune the model
+
+            model = Model(
+                inputs=input_tensor,
+                outputs=base_model
+            )
+        else :
+            model = Model(
+                inputs=input_tensor,
+                outputs=input_tensor
+            )
+        # print(model.summary())
+        return model
+
+    def cnn(self):
+        # Get model with pretrained weights.
+        x = self.model.output
+
+        base_model = InceptionV3(
+            weights='imagenet',
+            include_top=True
+        )
+
+        base_model.model = Model(
+            inputs=base_model.input,
+            outputs=base_model.get_layer('avg_pool').output
+        )
+
+        # base_model.trainable = True   # todo: find-tune the model
+        # print(base_model.summary())
+        base_model = TimeDistributed(base_model)(x)
+        
+        # base_model = Flatten()(base_model)
+        # shape = base_model.shape
+        # print(shape)
+        # print((shape[1], shape[2]*shape[3]*shape[4]))
+        # base_model = Reshape((shape[1], shape[2]*shape[3]*shape[4]))(base_model)
+        
+        # We'll extract features at the final pool layer.
+        model = Model(
+            inputs=self.model.input,
+            outputs=base_model
+        )
+        #Test freeze cnn part 
+        model.trainable=False
+        # print(model.summary())
+        return model
+
     def lstm(self):
-        """Build a simple LSTM network. We pass the extracted features from
-        our CNN to this model predomenently."""
-        # Model.
-        model = Sequential()
-        model.add(LSTM(2048, return_sequences=False,
-                       input_shape=self.input_shape,
-                       dropout=0.5))
-        model.add(Dense(512, activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Dense(self.nb_classes, activation='softmax'))
+        # """Build a simple LSTM network. We pass the extracted features from
+        # our CNN to this model predomenently."""
+        # # Model.
+        # model = Sequential()
+        # model.add(LSTM(2048, return_sequences=False,
+        #                input_shape=self.input_shape,
+        #                dropout=0.5))
+        # model.add(Dense(512, activation='relu'))
+        # model.add(Dropout(0.5))
+        # model.add(Dense(self.nb_classes, activation='softmax'))
+        lstm_model = self.model.output
+        lstm_model = LSTM(2048, return_sequences=False,dropout=0.5)(lstm_model)
+        lstm_model = Dense(512, activation='relu')(lstm_model)
+        lstm_model = Dropout(0.5)(lstm_model)
+        lstm_model = Dense(self.nb_classes, activation='softmax')(lstm_model)
+
+        model = Model(
+            inputs=self.model.input,
+            outputs=lstm_model
+        )
 
         return model
+
+def main():
+    if (len(sys.argv) == 5):
+        seq_length = int(sys.argv[1])
+        class_limit = int(sys.argv[2])
+        image_height = int(sys.argv[3])
+        image_width = int(sys.argv[4])
+    else:
+        print ("Usage: python train.py sequence_length class_limit image_height image_width")
+        print ("Example: python train.py 75 2 720 1280")
+        exit (1)
+
+    # model can be only 'lstm'
+    model = 'lstm'
+    saved_model = None  # None or weights file
+    load_to_memory = False # pre-load the sequences into memory
+    batch_size = 8
+    nb_epoch = 1000
+    data_type = 'features'
+    image_shape = (image_height, image_width, 3)
+
+    test = ResearchModels(class_limit, model, seq_length, saved_model)
+
+if __name__ == '__main__':
+    #np.set_printoptions(threshold=sys.maxsize)
+    main()
