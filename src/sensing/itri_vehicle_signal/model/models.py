@@ -11,6 +11,9 @@ from keras.layers.convolutional import (Conv2D, MaxPooling3D, Conv3D,
 from keras.applications.inception_v3 import InceptionV3, preprocess_input
 from collections import deque
 import sys
+from keras.utils.vis_utils import plot_model
+from data import DataSet
+
 
 class ResearchModels():
     def __init__(self, nb_classes, model, seq_length,
@@ -34,20 +37,20 @@ class ResearchModels():
         if self.nb_classes >= 10:
             metrics.append('top_k_categorical_accuracy')
 
-        self.model = self.attention(use_attention=True)
-        self.model = self.cnn()
+        self.model = self.attention(use_attention=False)
+        self.model = self.cnn(trainable=False)
 
-        # Get the appropriate model.
-        if self.saved_model is not None:
-            print("Loading model %s" % self.saved_model)
-            self.model = load_model(self.saved_model)
-        elif model == 'lstm':
-            print("Loading LSTM model.")
-            self.input_shape = (seq_length, features_length)
-            self.model = self.lstm()
-        else:
-            print("Unknown network.")
-            sys.exit()
+        # # Get the appropriate model.
+        # if self.saved_model is not None:
+        #     print("Loading model %s" % self.saved_model)
+        #     self.model = load_model(self.saved_model)
+        # elif model == 'lstm':
+        #     print("Loading LSTM model.")
+        #     self.input_shape = (seq_length, features_length)
+        #     self.model = self.lstm()
+        # else:
+        #     print("Unknown network.")
+        #     sys.exit()
 
         # Now compile the network.
         optimizer = Adam(lr=5e-6, decay=5e-7)
@@ -60,10 +63,10 @@ class ResearchModels():
         input_tensor = Input(image_shape, name="img_input")
         if use_attention:
             # Get model with pretrained weights.
-            base_model = TimeDistributed(Conv2D(32, (3, 3), dilation_rate=1, strides=(1, 1), padding="same"))(input_tensor)
-            base_model = TimeDistributed(Conv2D(64, (3, 3), dilation_rate=2, strides=(1, 1), padding="same"))(base_model)
-            base_model = TimeDistributed(Conv2D(64, (3, 3), dilation_rate=2, strides=(1, 1), padding="same"))(base_model)
-            base_model = TimeDistributed(Conv2D(3, (3, 3), dilation_rate=1, strides=(1, 1), padding="same"))(base_model)
+            base_model = TimeDistributed(Conv2D(32, (3, 3), dilation_rate=1, strides=(1, 1), padding="same", name="attention_conv1"))(input_tensor)
+            base_model = TimeDistributed(Conv2D(64, (3, 3), dilation_rate=2, strides=(1, 1), padding="same", name="attention_conv2"))(base_model)
+            base_model = TimeDistributed(Conv2D(64, (3, 3), dilation_rate=2, strides=(1, 1), padding="same", name="attention_conv3"))(base_model)
+            base_model = TimeDistributed(Conv2D(3, (3, 3), dilation_rate=1, strides=(1, 1), padding="same", name="attention_conv4"))(base_model)
 
             # base_model.trainable = True   # todo: find-tune the model
 
@@ -79,7 +82,7 @@ class ResearchModels():
         # print(model.summary())
         return model
 
-    def cnn(self):
+    def cnn(self, trainable = False):
         # Get model with pretrained weights.
         x = self.model.output
 
@@ -108,8 +111,12 @@ class ResearchModels():
             inputs=self.model.input,
             outputs=base_model
         )
-        #Test freeze cnn part 
-        model.trainable=False
+
+        #Test freeze cnn part
+        for layer in model.layers:
+            layer.trainable = trainable
+
+        # model.trainable=False
         # print(model.summary())
         return model
 
@@ -157,7 +164,43 @@ def main():
     data_type = 'features'
     image_shape = (image_height, image_width, 3)
 
+
+
+    # Get the data and process it.
+    if image_shape is None:
+        data = DataSet(
+            seq_length=seq_length,
+            class_limit=class_limit
+            )
+    else:
+        data = DataSet(
+            seq_length=seq_length,
+            class_limit=class_limit,
+            image_shape=image_shape
+            )
+
+    # Get samples per epoch.
+    # Multiply by 0.7 to attempt to guess how much of data.data is the train set.
+    steps_per_epoch = (len(data.data) * 0.7) // batch_size
+
+    if load_to_memory:
+        # Get data.
+        X, y = data.get_all_sequences_in_memory('train', data_type)
+        X_test, y_test = data.get_all_sequences_in_memory('test', data_type)
+    else:
+        # Get generators.
+        generator = data.frame_generator(batch_size, 'train', data_type)
+        val_generator = data.frame_generator(batch_size, 'test', data_type)
+
+
+
     test = ResearchModels(class_limit, model, seq_length, saved_model)
+
+    print(test.model.summary())
+
+    # plot_model(test.model, show_shapes=True, to_file='debug_model.png')
+
+    test.predict(np.expand_dims(sequence, axis=0))
 
 if __name__ == '__main__':
     #np.set_printoptions(threshold=sys.maxsize)
