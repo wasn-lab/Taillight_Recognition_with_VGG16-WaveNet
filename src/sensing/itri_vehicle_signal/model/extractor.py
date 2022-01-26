@@ -4,6 +4,8 @@ from keras.models import Model, load_model
 from keras.layers import Input
 import numpy as np
 
+from keras.utils.vis_utils import plot_model
+
 class Extractor():
 	def __init__(self, image_shape=(224, 224, 3), weights=None):
 		"""Either load pretrained from imagenet, or load our saved
@@ -28,6 +30,8 @@ class Extractor():
 			outputs=base_model.get_layer('avg_pool').output
 		)
 
+		plot_model(self.model, expand_nested=True, show_shapes=True, to_file='test_Inception3.png')
+
 	def extract(self, image_path):
 		img = image.load_img(image_path)
 
@@ -51,3 +55,7 @@ class Extractor():
 		return features
 
 
+if __name__ == '__main__':
+	#np.set_printoptions(threshold=sys.maxsize)
+	image_shape=(224, 224, 3)
+	model = Extractor(image_shape=image_shape)

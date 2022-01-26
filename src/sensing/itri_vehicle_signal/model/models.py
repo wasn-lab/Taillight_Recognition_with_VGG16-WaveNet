@@ -8,11 +8,13 @@ from keras.optimizers import Adam, RMSprop
 from keras.layers.wrappers import TimeDistributed
 from keras.layers.convolutional import (Conv2D, MaxPooling3D, Conv3D,
     MaxPooling2D)
+from keras.layers.convolutional_recurrent import ConvLSTM2D
 from keras.applications.inception_v3 import InceptionV3, preprocess_input
 from collections import deque
 import sys
 from keras.utils.vis_utils import plot_model
 from data import DataSet
+import numpy as np
 
 
 class ResearchModels():
@@ -40,17 +42,17 @@ class ResearchModels():
         self.model = self.attention(use_attention=False)
         self.model = self.cnn(trainable=False)
 
-        # # Get the appropriate model.
-        # if self.saved_model is not None:
-        #     print("Loading model %s" % self.saved_model)
-        #     self.model = load_model(self.saved_model)
-        # elif model == 'lstm':
-        #     print("Loading LSTM model.")
-        #     self.input_shape = (seq_length, features_length)
-        #     self.model = self.lstm()
-        # else:
-        #     print("Unknown network.")
-        #     sys.exit()
+        # Get the appropriate model.
+        if self.saved_model is not None:
+            print("Loading model %s" % self.saved_model)
+            self.model = load_model(self.saved_model)
+        elif model == 'lstm':
+            print("Loading LSTM model.")
+            self.input_shape = (seq_length, features_length)
+            self.model = self.lstm()
+        else:
+            print("Unknown network.")
+            sys.exit()
 
         # Now compile the network.
         optimizer = Adam(lr=5e-6, decay=5e-7)
@@ -83,22 +85,43 @@ class ResearchModels():
         return model
 
     def cnn(self, trainable = False):
+        # # Get model with pretrained weights.
+        # x = self.model.output
+
+        # base_model = InceptionV3(
+        #     weights='imagenet',
+        #     include_top=True
+        # )
+
+        # base_model.model = Model(
+        #     inputs=base_model.input,
+        #     outputs=base_model.get_layer('avg_pool').output
+        # )
+
+
         # Get model with pretrained weights.
         x = self.model.output
+        image_shape = (224 , 224, 3)
+        input_tensor = Input(image_shape)
+
 
         base_model = InceptionV3(
+            input_tensor=input_tensor,
             weights='imagenet',
             include_top=True
         )
 
-        base_model.model = Model(
+
+        base_model = Model(
             inputs=base_model.input,
             outputs=base_model.get_layer('avg_pool').output
         )
-
         # base_model.trainable = True   # todo: find-tune the model
         # print(base_model.summary())
-        base_model = TimeDistributed(base_model)(x)
+        base_model = TimeDistributed(base_model, name='td_feature_extractor')(x)
+
+
+
         
         # base_model = Flatten()(base_model)
         # shape = base_model.shape
@@ -131,11 +154,23 @@ class ResearchModels():
         # model.add(Dense(512, activation='relu'))
         # model.add(Dropout(0.5))
         # model.add(Dense(self.nb_classes, activation='softmax'))
+
         lstm_model = self.model.output
-        lstm_model = LSTM(2048, return_sequences=False,dropout=0.5)(lstm_model)
-        lstm_model = Dense(512, activation='relu')(lstm_model)
+        lstm_model = LSTM(2048, return_sequences=False,dropout=0.5, name="lstm_1")(lstm_model)
+        lstm_model = Dense(512, activation='relu', name="dense_layer_1")(lstm_model)
         lstm_model = Dropout(0.5)(lstm_model)
-        lstm_model = Dense(self.nb_classes, activation='softmax')(lstm_model)
+        lstm_model = Dense(self.nb_classes, activation='softmax', name="dense_layer_2")(lstm_model)
+
+        # lstm_model = self.model.output
+        # lstm_model = ConvLSTM2D(filters=64, kernel_size=(3, 3), return_sequences=False, 
+        #                         data_format="channels_last", name="convlstm2d_1")(lstm_model)
+        # lstm_model = Dropout(0.2)(lstm_model)
+        # lstm_model = Flatten()(lstm_model)
+        # lstm_model = Dense(256,activation='relu', name="dense_layer_1")(lstm_model)
+        # lstm_model = Dropout(0.3)(lstm_model)
+        # lstm_model = Dense(self.nb_classes, activation='softmax', name="dense_layer_2")(lstm_model)
+
+
 
         model = Model(
             inputs=self.model.input,
@@ -161,10 +196,8 @@ def main():
     load_to_memory = False # pre-load the sequences into memory
     batch_size = 8
     nb_epoch = 1000
-    data_type = 'features'
+    data_type = 'images'
     image_shape = (image_height, image_width, 3)
-
-
 
     # Get the data and process it.
     if image_shape is None:
@@ -193,14 +226,12 @@ def main():
         val_generator = data.frame_generator(batch_size, 'test', data_type)
 
 
-
     test = ResearchModels(class_limit, model, seq_length, saved_model)
 
-    print(test.model.summary())
+    # print(test.model.summary())
 
-    # plot_model(test.model, show_shapes=True, to_file='debug_model.png')
+    plot_model(test.model, expand_nested=True, show_shapes=True, to_file='debug_model.png')
 
-    test.predict(np.expand_dims(sequence, axis=0))
 
 if __name__ == '__main__':
     #np.set_printoptions(threshold=sys.maxsize)

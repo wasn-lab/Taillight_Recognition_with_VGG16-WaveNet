@@ -5,6 +5,7 @@ import numpy as np
 from data import DataSet
 from extractor import Extractor
 from keras.models import load_model
+from keras.utils.vis_utils import plot_model
 
 if (len(sys.argv) == 5):
     seq_length = int(sys.argv[1])
@@ -36,8 +37,10 @@ width = int(width)
 height = int(height)
 
 # get the model.
-extract_model = Extractor(image_shape=(224, 224, 3))
+# extract_model = Extractor(image_shape=(224, 224, 3))
 saved_LSTM_model = load_model(saved_model)
+# print(saved_LSTM_model.summary())
+plot_model(saved_LSTM_model, expand_nested=True, show_shapes=True, to_file='debug_model_clasify.png')
 
 small_frames = False
 
@@ -77,13 +80,13 @@ while True:
         frame_count = 0
 
     # For each frame extract feature and prepare it for classification
-    sequence = []
-    for image in resized_frames:
-        features = extract_model.extract_image(image)
-        sequence.append(features)
+    # sequence = []
+    # for image in resized_frames:
+    #     features = extract_model.extract_image(image)
+    #     sequence.append(features)
 
     # Clasify sequence
-    prediction = saved_LSTM_model.predict(np.expand_dims(sequence, axis=0))
+    prediction = saved_LSTM_model.predict(np.expand_dims(resized_frames, axis=0))
     print(prediction)
     values = data.print_class_from_prediction(np.squeeze(prediction, axis=0))
 

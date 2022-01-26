@@ -105,11 +105,11 @@ def main():
 	sequences_dir = os.path.join('data', 'sequences')
 	if not os.path.exists(sequences_dir):
 		os.mkdir(sequences_dir)
-
+	"""
 	checkpoints_dir = os.path.join('data', 'checkpoints')
 	if not os.path.exists(checkpoints_dir):
 		os.mkdir(checkpoints_dir)
-	"""
+
 
 	# model can be only 'lstm'
 	model = 'lstm'
