@@ -12,6 +12,14 @@ import threading
 from processor import process_image
 from keras.utils import to_categorical
 
+import argparse
+import tensorlayer as tl
+import tensorflow as tf
+from FEQE import enhancement_model
+from FEQE.model import *
+from FEQE.utils import *
+# import FEQE
+
 class threadsafe_iterator:
     def __init__(self, iterator):
         self.iterator = iterator
@@ -53,6 +61,9 @@ class DataSet():
         self.data = self.clean_data()
 
         self.image_shape = image_shape
+
+        # Init FEQE model
+        self.sess, self.t_sr, self.t_lr = self.set_FEQE()
 
     @staticmethod
     def get_data():
@@ -178,8 +189,13 @@ class DataSet():
                     frames = self.get_frames_for_sample(sample)
                     frames = self.rescale_list(frames, self.seq_length)
 
+                    # FEQE maybe can app after this line
+                    # because FEQE also use a sequence as input
+                    sequence = enhancement_model.run(self.sess, self.t_sr, self.t_lr, frames)
+
                     # Build the image sequence
-                    sequence = self.build_image_sequence(frames)
+                    sequence = self.build_image_sequence(sequence)
+
                 else:
                     # Get the sequence from disk.
                     sequence = self.get_extracted_sequence(data_type, sample)
@@ -285,3 +301,53 @@ class DataSet():
             result.append("%s: %.2f" % (class_prediction[0], class_prediction[1]))
 
         return result
+
+    def set_FEQE(sef):
+        parser = argparse.ArgumentParser(description="")
+        parser.add_argument("--model_path", type=str, default="FEQE/checkpoint/mse_s2/model.ckpt-2000", help="model path")
+        parser.add_argument('--save_path', type=str, default='results')
+        parser.add_argument("--dataset", default="Set5", type=str, help="dataset name, Default: Set5")
+
+        parser.add_argument('--downsample_type', type=str, default='desubpixel')
+        parser.add_argument('--upsample_type', type=str, default='subpixel')
+        parser.add_argument('--conv_type', type=str, default='default')
+        parser.add_argument('--body_type', type=str, default='resnet')
+        parser.add_argument('--n_feats', type=int, default=16,
+                            help='number of convolution feats')
+        parser.add_argument('--n_blocks', type=int, default=20,
+                            help='number of residual block if body_type=resnet')
+        parser.add_argument('--n_groups', type=int, default=0,
+                            help='number of residual group if body_type=res_in_res')
+        parser.add_argument('--n_convs', type=int, default=0,
+                            help='number of conv layers if body_type=conv')
+        parser.add_argument('--n_squeezes', type=int, default=0,
+                            help='number of squeeze blocks if body_type=squeeze')
+
+        parser.add_argument('--scale', type=int, default=4)
+
+        args = parser.parse_args()
+        #=================Model===================================
+        print('Loading FEQE model...')
+        t_lr = tf.placeholder('float32', [1, None, None, 3], name='input_image')
+        t_hr = tf.placeholder('float32', [1, None, None, 3], name='label_image')
+
+        opt = {
+            'n_feats': args.n_feats,
+            'n_blocks': args.n_blocks,
+            'n_groups': args.n_groups,
+            'n_convs': args.n_convs,
+            'n_squeezes': args.n_squeezes,
+            'downsample_type': args.downsample_type,
+            'upsample_type': args.upsample_type,
+            'conv_type': args.conv_type,
+            'body_type': args.body_type,
+            'scale': args.scale
+        }
+        t_sr = FEQE(t_lr, opt)
+
+        sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
+        tl.layers.initialize_global_variables(sess)
+        saver = tf.train.Saver()
+        saver.restore(sess, args.model_path)
+
+        return sess, t_sr, t_lr

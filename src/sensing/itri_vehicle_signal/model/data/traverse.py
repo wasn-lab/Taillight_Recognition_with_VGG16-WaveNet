@@ -6,7 +6,7 @@ from shutil import copyfile
 import cv2
 
 
-def add_frames(train_or_test, classname, path):
+def add_frames(train_or_test, classname, path, brake):
 
 	seq_len = 20
 
@@ -41,7 +41,7 @@ def add_frames(train_or_test, classname, path):
 				transfer_file(src, dst, (224, 224)) # resize and copy
 				frame_cnt += 1
 
-			data_files.append([train_or_test, classname, filename_no_ext, frame_cnt])
+			data_files.append([train_or_test, classname, filename_no_ext, frame_cnt, brake])
 
 		if(nb_frames > seq_len):
 			for i in range((nb_frames//seq_len)*seq_len):
@@ -61,7 +61,7 @@ def add_frames(train_or_test, classname, path):
 					data_files_last_seq_idx = 0
 
 				if(len(data_files) == 0 or data_files_last_seq_idx != seq_idx):
-					data_files.append([train_or_test, classname, filename_no_ext, seq_len])
+					data_files.append([train_or_test, classname, filename_no_ext, seq_len, brake])
 
 	
 
@@ -114,7 +114,11 @@ def main():
 		if os.path.exists(seq_path) is not True:
 			os.makedirs(seq_path)
 
-		add_frames(train_or_test, classname, extract_path)
+		brake_flag = 0
+		if extract_path[0] == 'B':
+			brake_flag = 1
+
+		add_frames(train_or_test, classname, extract_path, brake_flag)
 	else:
 		print ("invalid argument")
 		print ("Usage: python traverse.py [train_or_test] [class_name] [path]")

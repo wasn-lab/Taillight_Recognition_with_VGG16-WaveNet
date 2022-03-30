@@ -7,15 +7,53 @@ from extractor import Extractor
 from keras.models import load_model
 from keras.utils.vis_utils import plot_model
 
-if (len(sys.argv) == 5):
-    seq_length = int(sys.argv[1])
-    class_limit = int(sys.argv[2])
-    saved_model = sys.argv[3]
-    video_file = sys.argv[4]
-else:
-    print ("Usage: python clasify.py sequence_length class_limit saved_model_name video_file_name")
-    print ("Example: python clasify.py 75 2 lstm-features.095-0.090.hdf5 some_video.mp4")
-    exit (1)
+import csv
+import argparse
+
+
+"""These are the main training settings. Set each before running
+this file."""
+parser = argparse.ArgumentParser(description="")
+parser.add_argument("--seq_length", type=int, default=20,
+                    help="the length of a sequence")
+parser.add_argument("--class_limit", type=int, default=4,
+                    help="how much classes need to clasify")
+parser.add_argument("--saved_model", type=str, default="data/checkpoints/lstm-images.039-0.014.hdf5",
+                    help="the path of model")
+parser.add_argument("--video_file", type=str, default="utils/turnright.mp4",
+                    help="the path of video that need to clasify")
+args = parser.parse_args()
+
+
+def save_result_as_csv(result):
+    # The list of column names as mentioned in the CSV file
+    headersCSV = ['video_name','flasher','no_signal','turn_left','turn_right']
+    with open('ncu_dataset_clasify_result_0327.csv', 'a', newline='') as f_object:
+        dictwriter_object = csv.DictWriter(f_object, fieldnames=headersCSV)
+        for i in result :
+            dic = {'video_name':i[0],'flasher':i[1][0][0],'no_signal':i[1][0][1],'turn_left':i[1][0][2],'turn_right':i[1][0][3]}
+            dictwriter_object.writerow(dic)
+        f_object.close()
+    # with open('ncu_dataset_clasify_result_0317.csv', 'a', newline='') as csvfile:
+    #     writer = csv.writer(csvfile)
+    #     for i in result:
+    #         print(i[1][0])
+    #         writer.writerow(i)
+
+seq_length = args.seq_length
+class_limit = args.class_limit
+saved_model = args.saved_model
+video_file = args.video_file
+
+# if (len(sys.argv) == 5):
+#     seq_length = int(sys.argv[1])
+#     class_limit = int(sys.argv[2])
+#     saved_model = sys.argv[3]
+#     video_file = sys.argv[4]
+# else:
+#     print ("Usage: python clasify.py sequence_length class_limit saved_model_name video_file_name")
+#     print ("Example: python clasify.py 75 2 lstm-features.095-0.090.hdf5 some_video.mp4")
+#     exit (1)
 
 capture = cv2.VideoCapture(os.path.join(video_file))
 width = capture.get(cv2.CAP_PROP_FRAME_WIDTH)   # float
@@ -26,6 +64,10 @@ print("original shape: (%d x %d)" % (width, height))
 #exit(0)
 
 fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
+
+#save all result of mp4 in folder after clasify
+clasify_result = []
+
 filename, file_extension = os.path.splitext(video_file)
 result_file = filename + "_result.mp4"
 video_writer = cv2.VideoWriter(result_file, fourcc, 30, (int(width), int(height)))
@@ -88,6 +130,7 @@ while True:
     # Clasify sequence
     prediction = saved_LSTM_model.predict(np.expand_dims(resized_frames, axis=0))
     print(prediction)
+    clasify_result.append([video_file, prediction])
     values = data.print_class_from_prediction(np.squeeze(prediction, axis=0))
 
     # Add prediction to frames and write them to new video
@@ -104,3 +147,4 @@ while True:
         break
 
 video_writer.release()
+save_result_as_csv(clasify_result)

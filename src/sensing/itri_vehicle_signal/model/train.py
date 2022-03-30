@@ -8,6 +8,9 @@ from extract_features import extract_features
 import time
 import os.path
 import sys
+from matplotlib import pyplot
+import argparse
+
 
 def train(data_type, seq_length, model, saved_model=None,
           class_limit=None, image_shape=None,
@@ -21,16 +24,16 @@ def train(data_type, seq_length, model, saved_model=None,
 			save_best_only=True)
 
 	# Helper: TensorBoard
-	#tb = TensorBoard(log_dir=os.path.join('data', 'logs', model))
+	tb = TensorBoard(log_dir=os.path.join('data', 'logs', model))
 
 	# Helper: Stop when we stop learning.
 	#early_stopper = EarlyStopping(patience=5)
 	early_stopper = EarlyStopping(patience=15)
 
 	# Helper: Save results.
-	#itimestamp = time.time()
-	#csv_logger = CSVLogger(os.path.join('data', 'logs', model + '-' + 'training-' + \
-	#    str(timestamp) + '.log'))
+	timestamp = time.time()
+	csv_logger = CSVLogger(os.path.join('data', 'logs', model + '-' + 'training-' + \
+	   str(timestamp) + '.log'))
 
 	# Get the data and process it.
 	if image_shape is None:
@@ -70,35 +73,57 @@ def train(data_type, seq_length, model, saved_model=None,
 			batch_size=batch_size,
 			validation_data=(X_test, y_test),
 			verbose=1,
-			#callbacks=[tb, early_stopper, csv_logger, checkpointer],
-			callbacks=[early_stopper, checkpointer],
+			callbacks=[tb, early_stopper, csv_logger, checkpointer],
+			# callbacks=[early_stopper, checkpointer],
 			epochs=nb_epoch)
 	else:
 		# Use fit generator.
-		rm.model.fit_generator(
+		history = rm.model.fit_generator(
 			generator=generator,
 			steps_per_epoch=steps_per_epoch,
 			epochs=nb_epoch,
 			verbose=1,
-			#callbacks=[tb, early_stopper, csv_logger, checkpointer],
-			callbacks=[early_stopper, checkpointer],
+			callbacks=[tb, early_stopper, csv_logger, checkpointer],
+			# callbacks=[early_stopper, checkpointer],
 			validation_data=val_generator,
 			validation_steps=40,
 			workers=4)
+	pyplot.plot(history.history['loss'][500:])
+	pyplot.plot(history.history['val_loss'][500:])
+	pyplot.title('model train vs validation loss')
+	pyplot.ylabel('loss')
+	pyplot.xlabel('epoch')
+	pyplot.legend(['train', 'validation'], loc='upper right')
+	pyplot.show()
 
 def main():
 	"""These are the main training settings. Set each before running
 	this file."""
+	parser = argparse.ArgumentParser(description="")
+	parser.add_argument("--seq_length", type=int, default=20,
+						help="the length of a sequence")
+	parser.add_argument("--class_limit", type=int, default=4,
+						help="how much classes need to clasify")
+	parser.add_argument("--image_height", type=int, default=224,
+						help="how to reszie the image height")
+	parser.add_argument("--image_width", type=int, default=224,
+						help="how to reszie the image width")
+	args = parser.parse_args()
 
-	if (len(sys.argv) == 5):
-		seq_length = int(sys.argv[1])
-		class_limit = int(sys.argv[2])
-		image_height = int(sys.argv[3])
-		image_width = int(sys.argv[4])
-	else:
-		print ("Usage: python train.py sequence_length class_limit image_height image_width")
-		print ("Example: python train.py 75 2 720 1280")
-		exit (1)
+	seq_length = args.seq_length
+	class_limit = args.class_limit
+	image_height = args.image_height
+	image_width = args.image_width
+
+	# if (len(sys.argv) == 5):
+	# 	seq_length = int(sys.argv[1])
+	# 	class_limit = int(sys.argv[2])
+	# 	image_height = int(sys.argv[3])
+	# 	image_width = int(sys.argv[4])
+	# else:
+	# 	print ("Usage: python train.py sequence_length class_limit image_height image_width")
+	# 	print ("Example: python train.py 75 2 720 1280")
+	# 	exit (1)
 
 
 	"""
@@ -115,7 +140,7 @@ def main():
 	model = 'lstm'
 	saved_model = None  # None or weights file
 	load_to_memory = False # pre-load the sequences into memory
-	batch_size = 8
+	batch_size = 16
 	nb_epoch = 1000
 	data_type = 'images'
 	image_shape = (image_height, image_width, 3)

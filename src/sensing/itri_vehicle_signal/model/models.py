@@ -9,12 +9,15 @@ from keras.layers.wrappers import TimeDistributed
 from keras.layers.convolutional import (Conv2D, MaxPooling3D, Conv3D,
     MaxPooling2D)
 from keras.layers.convolutional_recurrent import ConvLSTM2D
-from keras.applications.inception_v3 import InceptionV3, preprocess_input
+# from keras.applications.inception_v3 import InceptionV3, preprocess_input
+from keras.applications.resnet50 import ResNet50, preprocess_input
 from collections import deque
 import sys
 from keras.utils.vis_utils import plot_model
 from data import DataSet
 import numpy as np
+import argparse
+
 
 
 class ResearchModels():
@@ -35,7 +38,7 @@ class ResearchModels():
         self.feature_queue = deque()
 
         # Set the metrics. Only use top k if there's a need.
-        metrics = ['accuracy']
+        metrics = ['categorical_accuracy']
         if self.nb_classes >= 10:
             metrics.append('top_k_categorical_accuracy')
 
@@ -55,7 +58,8 @@ class ResearchModels():
             sys.exit()
 
         # Now compile the network.
-        optimizer = Adam(lr=5e-6, decay=5e-7)
+        # optimizer = Adam(lr=5e-6, decay=5e-7)
+        optimizer = Adam(lr=1e-5, decay=5e-7)
         self.model.compile(loss='categorical_crossentropy', optimizer=optimizer,
                            metrics=metrics)
 
@@ -105,7 +109,7 @@ class ResearchModels():
         input_tensor = Input(image_shape)
 
 
-        base_model = InceptionV3(
+        base_model = ResNet50(
             input_tensor=input_tensor,
             weights='imagenet',
             include_top=True
@@ -155,11 +159,26 @@ class ResearchModels():
         # model.add(Dropout(0.5))
         # model.add(Dense(self.nb_classes, activation='softmax'))
 
+
         lstm_model = self.model.output
         lstm_model = LSTM(2048, return_sequences=False,dropout=0.5, name="lstm_1")(lstm_model)
         lstm_model = Dense(512, activation='relu', name="dense_layer_1")(lstm_model)
         lstm_model = Dropout(0.5)(lstm_model)
         lstm_model = Dense(self.nb_classes, activation='softmax', name="dense_layer_2")(lstm_model)
+
+        # # Turn light detection
+        # turnlight_model = self.model.output
+        # turnlight_model = LSTM(2048, return_sequences=False,dropout=0.5, name="turnlight_lstm_1")(turnlight_model)
+        # turnlight_model = Dense(512, activation='relu', name="turnlight_dense_layer_1")(turnlight_model)
+        # turnlight_model = Dropout(0.5)(turnlight_model)
+        # turnlight_model = Dense(self.nb_classes, activation='softmax', name="turnlight_dense_layer_2")(turnlight_model)
+
+        # # Brake detection
+        # brake_model = self.model.output
+        # brake_model = LSTM(2048, return_sequences=False,dropout=0.5, name="brake_lstm_1")(brake_model)
+        # brake_model = Dense(512, activation='relu', name="brake_dense_layer_1")(brake_model)
+        # brake_model = Dropout(0.5)(brake_model)
+        # brake_model = Dense(1, activation='sigmoid', name="brake_dense_layer_2")(brake_model)
 
         # lstm_model = self.model.output
         # lstm_model = ConvLSTM2D(filters=64, kernel_size=(3, 3), return_sequences=False, 
@@ -174,21 +193,40 @@ class ResearchModels():
 
         model = Model(
             inputs=self.model.input,
+            # outputs=[turnlight_model, brake_model]
             outputs=lstm_model
         )
 
         return model
 
 def main():
-    if (len(sys.argv) == 5):
-        seq_length = int(sys.argv[1])
-        class_limit = int(sys.argv[2])
-        image_height = int(sys.argv[3])
-        image_width = int(sys.argv[4])
-    else:
-        print ("Usage: python train.py sequence_length class_limit image_height image_width")
-        print ("Example: python train.py 75 2 720 1280")
-        exit (1)
+
+    parser = argparse.ArgumentParser(description="")
+    parser.add_argument("--seq_length", type=int, default=20,
+                        help="the length of a sequence")
+    parser.add_argument("--class_limit", type=int, default=4,
+                        help="how much classes need to clasify")
+    parser.add_argument("--image_height", type=int, default=224,
+                        help="how to reszie the image height")
+    parser.add_argument("--image_width", type=int, default=224,
+                        help="how to reszie the image width")
+    args = parser.parse_args()
+
+    seq_length = args.seq_length
+    class_limit = args.class_limit
+    image_height = args.image_height
+    image_width = args.image_width
+
+
+    # if (len(sys.argv) == 5):
+    #     seq_length = int(sys.argv[1])
+    #     class_limit = int(sys.argv[2])
+    #     image_height = int(sys.argv[3])
+    #     image_width = int(sys.argv[4])
+    # else:
+    #     print ("Usage: python train.py sequence_length class_limit image_height image_width")
+    #     print ("Example: python train.py 75 2 720 1280")
+    #     exit (1)
 
     # model can be only 'lstm'
     model = 'lstm'
@@ -230,7 +268,7 @@ def main():
 
     # print(test.model.summary())
 
-    plot_model(test.model, expand_nested=True, show_shapes=True, to_file='debug_model.png')
+    plot_model(test.model, expand_nested=True, show_shapes=True, to_file='model_struct.png')
 
 
 if __name__ == '__main__':
