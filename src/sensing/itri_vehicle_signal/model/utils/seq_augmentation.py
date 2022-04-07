@@ -42,11 +42,27 @@ seq = iaa.Sequential([
 		# shear=(-8, 8)
 	# )
 
-	iaa.AddToBrightness((0, 100)),
+	# iaa.AddToBrightness((0, 100)),
+	iaa.AddToBrightness((-10, 60)),
 
 	#iaa.AddToHue((-255, 255)),
 
-	iaa.AddToHueAndSaturation((-100, 100), per_channel=True),
+	#Increases or decreases hue and saturation by random values
+	#add random values between (a,b) to the hue and saturation
+	# iaa.AddToHueAndSaturation((-100, 100), per_channel=True),
+	iaa.AddToHueAndSaturation((-15, 15), per_channel=True),
+
+	#Apply random four point perspective transformations to images
+	#most transformations don’t change the image very much, 
+	#while some “focus” on polygons far inside the image.
+	iaa.PerspectiveTransform(scale=(0.01, 0.1)),
+
+
+	# The augmenter has the parameters alpha and sigma.
+	# alpha controls the strength of the displacement: higher values mean that pixels are moved further. 
+	# sigma controls the smoothness of the displacement: higher values lead to smoother patterns – as if the image was below water 
+	# – while low values will cause indivdual pixels to be moved very differently from their neighbours, leading to noisy and pixelated images.
+	iaa.ElasticTransformation(alpha=(0, 1), sigma=(0.25, 0.5)),
 
 	# iaa.AddToHueAndSaturation((-50, 50), per_channel=True),
 
@@ -58,6 +74,7 @@ seq = iaa.Sequential([
 
 def aug_frames(path, aug_count):
 
+	# print("start augment")
 	seq_len = 20
 
 	nb_frames = 0
@@ -68,7 +85,7 @@ def aug_frames(path, aug_count):
 
 	for root, dirs, files in os.walk(path):
 		#print (root, dirs, files)
-		frames = sorted(glob.glob(os.path.join(root, '*png')))
+		frames = sorted(glob.glob(os.path.join(root, '*jpg')))
 		nb_frames = len(frames)
 
 		#print("root: %s" % root)
@@ -125,6 +142,7 @@ def aug_frames(path, aug_count):
 				i+=1
 
 			print("        [%d] jpg file created" % i)
+
 
 def mkdir(path):
 	try:
