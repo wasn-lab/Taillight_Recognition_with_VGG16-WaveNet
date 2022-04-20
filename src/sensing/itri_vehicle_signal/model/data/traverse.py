@@ -115,7 +115,8 @@ def main():
 			os.makedirs(seq_path)
 
 		brake_flag = 0
-		if extract_path[0] == 'B':
+		# print(extract_path)
+		if 'B' in extract_path:
 			brake_flag = 1
 
 		add_frames(train_or_test, classname, extract_path, brake_flag)

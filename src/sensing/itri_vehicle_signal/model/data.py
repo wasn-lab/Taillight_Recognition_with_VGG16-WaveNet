@@ -157,7 +157,7 @@ class DataSet():
             X.append(sequence)
             y.append(self.get_class_one_hot(row[1]))
 
-        return np.array(X), np.array(y)
+        return np.array(X), [np.array(y), np.array(row[4])]
 
     @threadsafe_generator
     def frame_generator(self, batch_size, train_test, data_type):
@@ -173,7 +173,7 @@ class DataSet():
         print("Creating %s generator with %d samples." % (train_test, len(data)))
 
         while 1:
-            X, y = [], []
+            X, y1, y2 = [], [], []
 
             # Generate batch_size samples.
             for _ in range(batch_size):
@@ -204,9 +204,10 @@ class DataSet():
                         raise ValueError("Can't find sequence. Did you generate them?")
 
                 X.append(sequence)
-                y.append(self.get_class_one_hot(sample[1]))
+                y1.append(self.get_class_one_hot(sample[1]))
+                y2.append(sample[4])
 
-            yield np.array(X), np.array(y)
+            yield np.array(X), [np.array(y1), np.array(y2)]
 
     def build_image_sequence(self, frames):
         """Given a set of frames (filenames), build our sequence."""
@@ -282,6 +283,7 @@ class DataSet():
     def print_class_from_prediction(self, predictions, nb_to_return=5):
         """Given a prediction, print the top classes."""
         # Get the prediction for each label.
+
         label_predictions = {}
         for i, label in enumerate(self.classes):
             label_predictions[label] = predictions[i]

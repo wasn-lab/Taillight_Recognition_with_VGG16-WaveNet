@@ -60,8 +60,13 @@ class ResearchModels():
         # Now compile the network.
         # optimizer = Adam(lr=5e-6, decay=5e-7)
         optimizer = Adam(lr=1e-5, decay=5e-7)
-        self.model.compile(loss='categorical_crossentropy', optimizer=optimizer,
-                           metrics=metrics)
+        self.model.compile(loss=
+                            {'turnlight_output': 'categorical_crossentropy', 
+                             'brake_output': 'binary_crossentropy'},
+                           optimizer=optimizer,
+                           metrics=
+                            {'turnlight_output': 'accuracy',
+                             'brake_output': 'accuracy'})
 
         print(self.model.summary())
 
@@ -159,26 +164,29 @@ class ResearchModels():
         # model.add(Dropout(0.5))
         # model.add(Dense(self.nb_classes, activation='softmax'))
 
-
+        """
         lstm_model = self.model.output
         lstm_model = LSTM(2048, return_sequences=False,dropout=0.5, name="lstm_1")(lstm_model)
         lstm_model = Dense(512, activation='relu', name="dense_layer_1")(lstm_model)
         lstm_model = Dropout(0.5)(lstm_model)
         lstm_model = Dense(self.nb_classes, activation='softmax', name="dense_layer_2")(lstm_model)
+        """
 
-        # # Turn light detection
-        # turnlight_model = self.model.output
-        # turnlight_model = LSTM(2048, return_sequences=False,dropout=0.5, name="turnlight_lstm_1")(turnlight_model)
-        # turnlight_model = Dense(512, activation='relu', name="turnlight_dense_layer_1")(turnlight_model)
-        # turnlight_model = Dropout(0.5)(turnlight_model)
-        # turnlight_model = Dense(self.nb_classes, activation='softmax', name="turnlight_dense_layer_2")(turnlight_model)
+        # Turn light detection
+        turnlight_model = self.model.output
+        turnlight_model = LSTM(2048, return_sequences=False,dropout=0.5, name="turnlight_lstm_1")(turnlight_model)
+        turnlight_model = Dense(512, activation='relu', name="turnlight_dense_layer_1")(turnlight_model)
+        turnlight_model = Dropout(0.5)(turnlight_model)
+        turnlight_model = Dense(self.nb_classes, activation='softmax', name="turnlight_output")(turnlight_model)
 
-        # # Brake detection
-        # brake_model = self.model.output
-        # brake_model = LSTM(2048, return_sequences=False,dropout=0.5, name="brake_lstm_1")(brake_model)
-        # brake_model = Dense(512, activation='relu', name="brake_dense_layer_1")(brake_model)
+        # Brake detection
+        brake_model = self.model.output
+        brake_model = LSTM(2048, return_sequences=False,dropout=0.5, name="brake_lstm_1")(brake_model)
+        brake_model = Dense(512, activation='relu', name="brake_dense_layer_1")(brake_model)
+        brake_model = Dropout(0.5)(brake_model)
+        # brake_model = Dense(256, activation='relu', name="brake_dense_layer_2")(brake_model)
         # brake_model = Dropout(0.5)(brake_model)
-        # brake_model = Dense(1, activation='sigmoid', name="brake_dense_layer_2")(brake_model)
+        brake_model = Dense(1, activation='sigmoid', name="brake_output")(brake_model)
 
         # lstm_model = self.model.output
         # lstm_model = ConvLSTM2D(filters=64, kernel_size=(3, 3), return_sequences=False, 
@@ -193,8 +201,8 @@ class ResearchModels():
 
         model = Model(
             inputs=self.model.input,
-            # outputs=[turnlight_model, brake_model]
-            outputs=lstm_model
+            outputs=[turnlight_model, brake_model]
+            # outputs=lstm_model
         )
 
         return model
