@@ -88,6 +88,7 @@ def train(data_type, seq_length, model, saved_model=None,
 			validation_data=val_generator,
 			validation_steps=40,
 			workers=4)
+	print(history.history.keys())
 	pyplot.plot(history.history['loss'][500:])
 	pyplot.plot(history.history['val_loss'][500:])
 	pyplot.title('model train vs validation loss')

@@ -155,7 +155,7 @@ class DataSet():
                     raise
 
             X.append(sequence)
-            y.append(self.get_class_one_hot(row[1]))
+            y.append([self.get_class_one_hot(row[1]), row[4]])
 
         return np.array(X), np.array(y)
 
@@ -204,7 +204,7 @@ class DataSet():
                         raise ValueError("Can't find sequence. Did you generate them?")
 
                 X.append(sequence)
-                y.append(self.get_class_one_hot(sample[1]))
+                y.append([self.get_class_one_hot(sample[1]), sample[4]])
 
             yield np.array(X), np.array(y)
 
