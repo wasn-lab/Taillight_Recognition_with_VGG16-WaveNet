@@ -1,19 +1,19 @@
 """
 A collection of models we'll use to attempt to classify videos.
 """
-from keras.layers import Input, Dense, Flatten, Dropout, ZeroPadding3D, Reshape
-from keras.layers.recurrent import LSTM
-from keras.models import Sequential, Model, load_model
-from keras.optimizers import Adam, RMSprop
-from keras.layers.wrappers import TimeDistributed
-from keras.layers.convolutional import (Conv2D, MaxPooling3D, Conv3D,
+from tensorflow.keras.layers import Input, Dense, Flatten, Dropout, ZeroPadding3D, Reshape
+from tensorflow.python.keras.layers.recurrent import LSTM
+from tensorflow.keras.models import Sequential, Model, load_model
+from tensorflow.keras.optimizers import Adam, RMSprop
+from tensorflow.python.keras.layers.wrappers import TimeDistributed
+from tensorflow.python.keras.layers.convolutional import (Conv2D, MaxPooling3D, Conv3D,
     MaxPooling2D)
-from keras.layers.convolutional_recurrent import ConvLSTM2D
-# from keras.applications.inception_v3 import InceptionV3, preprocess_input
-from keras.applications.resnet50 import ResNet50, preprocess_input
+from tensorflow.python.keras.layers.convolutional_recurrent import ConvLSTM2D
+# from tensorflow.keras.applications.inception_v3 import InceptionV3, preprocess_input
+from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input
 from collections import deque
 import sys
-from keras.utils.vis_utils import plot_model
+from tensorflow.python.keras.utils.vis_utils import plot_model
 from data import DataSet
 import numpy as np
 import argparse
@@ -48,7 +48,9 @@ class ResearchModels():
         # Get the appropriate model.
         if self.saved_model is not None:
             print("Loading model %s" % self.saved_model)
-            self.model = load_model(self.saved_model)
+            # self.model = load_model(self.saved_model)
+            self.model = self.lstm()
+            self.model.load_weights(self.saved_model, by_name = True)
         elif model == 'lstm':
             print("Loading LSTM model.")
             self.input_shape = (seq_length, features_length)
@@ -60,13 +62,14 @@ class ResearchModels():
         # Now compile the network.
         # optimizer = Adam(lr=5e-6, decay=5e-7)
         optimizer = Adam(lr=1e-5, decay=5e-7)
-        self.model.compile(loss=
-                            {'turnlight_output': 'categorical_crossentropy', 
-                             'brake_output': 'binary_crossentropy'},
+        self.model.compile(loss='categorical_crossentropy',
+                            # {'turnlight_output': 'categorical_crossentropy',
+                            #  'brake_output': 'binary_crossentropy'},
+                           # loss_weights = {'turnlight_output': 1.0, 'brake_output': 0.25},
                            optimizer=optimizer,
-                           metrics=
-                            {'turnlight_output': 'accuracy',
-                             'brake_output': 'accuracy'})
+                           metrics= 'categorical_accuracy')
+                            # {'turnlight_output': 'accuracy',
+                            #  'brake_output': 'accuracy'})
 
         print(self.model.summary())
 
@@ -125,13 +128,13 @@ class ResearchModels():
             inputs=base_model.input,
             outputs=base_model.get_layer('avg_pool').output
         )
+
         # base_model.trainable = True   # todo: find-tune the model
         # print(base_model.summary())
         base_model = TimeDistributed(base_model, name='td_feature_extractor')(x)
 
 
 
-        
         # base_model = Flatten()(base_model)
         # shape = base_model.shape
         # print(shape)
@@ -156,53 +159,35 @@ class ResearchModels():
         # """Build a simple LSTM network. We pass the extracted features from
         # our CNN to this model predomenently."""
         # # Model.
-        # model = Sequential()
-        # model.add(LSTM(2048, return_sequences=False,
-        #                input_shape=self.input_shape,
-        #                dropout=0.5))
-        # model.add(Dense(512, activation='relu'))
-        # model.add(Dropout(0.5))
-        # model.add(Dense(self.nb_classes, activation='softmax'))
 
-        """
-        lstm_model = self.model.output
-        lstm_model = LSTM(2048, return_sequences=False,dropout=0.5, name="lstm_1")(lstm_model)
-        lstm_model = Dense(512, activation='relu', name="dense_layer_1")(lstm_model)
-        lstm_model = Dropout(0.5)(lstm_model)
-        lstm_model = Dense(self.nb_classes, activation='softmax', name="dense_layer_2")(lstm_model)
-        """
 
         # Turn light detection
         turnlight_model = self.model.output
         turnlight_model = LSTM(2048, return_sequences=False,dropout=0.5, name="turnlight_lstm_1")(turnlight_model)
-        turnlight_model = Dense(512, activation='relu', name="turnlight_dense_layer_1")(turnlight_model)
+        turnlight_model = Dense(1024, activation='relu', name="turnlight_dense_layer_1")(turnlight_model)
+        turnlight_model = Dropout(0.5)(turnlight_model)
+        turnlight_model = Dense(512, activation='relu', name="turnlight_dense_layer_2")(turnlight_model)
+        turnlight_model = Dropout(0.5)(turnlight_model)
+        turnlight_model = Dense(128, activation='relu', name="turnlight_dense_layer_3")(turnlight_model)
         turnlight_model = Dropout(0.5)(turnlight_model)
         turnlight_model = Dense(self.nb_classes, activation='softmax', name="turnlight_output")(turnlight_model)
 
+
         # Brake detection
         brake_model = self.model.output
-        brake_model = LSTM(2048, return_sequences=False,dropout=0.5, name="brake_lstm_1")(brake_model)
+        brake_model = LSTM(2048, return_sequences=False, dropout=0.5, name="brake_lstm_1")(brake_model)
         brake_model = Dense(512, activation='relu', name="brake_dense_layer_1")(brake_model)
         brake_model = Dropout(0.5)(brake_model)
         # brake_model = Dense(256, activation='relu', name="brake_dense_layer_2")(brake_model)
         # brake_model = Dropout(0.5)(brake_model)
         brake_model = Dense(1, activation='sigmoid', name="brake_output")(brake_model)
 
-        # lstm_model = self.model.output
-        # lstm_model = ConvLSTM2D(filters=64, kernel_size=(3, 3), return_sequences=False, 
-        #                         data_format="channels_last", name="convlstm2d_1")(lstm_model)
-        # lstm_model = Dropout(0.2)(lstm_model)
-        # lstm_model = Flatten()(lstm_model)
-        # lstm_model = Dense(256,activation='relu', name="dense_layer_1")(lstm_model)
-        # lstm_model = Dropout(0.3)(lstm_model)
-        # lstm_model = Dense(self.nb_classes, activation='softmax', name="dense_layer_2")(lstm_model)
-
 
 
         model = Model(
             inputs=self.model.input,
-            outputs=[turnlight_model, brake_model]
-            # outputs=lstm_model
+            # outputs=[turnlight_model, brake_model]
+            outputs=turnlight_model
         )
 
         return model
@@ -226,21 +211,12 @@ def main():
     image_width = args.image_width
 
 
-    # if (len(sys.argv) == 5):
-    #     seq_length = int(sys.argv[1])
-    #     class_limit = int(sys.argv[2])
-    #     image_height = int(sys.argv[3])
-    #     image_width = int(sys.argv[4])
-    # else:
-    #     print ("Usage: python train.py sequence_length class_limit image_height image_width")
-    #     print ("Example: python train.py 75 2 720 1280")
-    #     exit (1)
-
     # model can be only 'lstm'
     model = 'lstm'
     saved_model = None  # None or weights file
+    # saved_model = './data/checkpoints_0413_with_two_output/lstm-images.016-1.015.hdf5'
     load_to_memory = False # pre-load the sequences into memory
-    batch_size = 8
+    batch_size = 16
     nb_epoch = 1000
     data_type = 'images'
     image_shape = (image_height, image_width, 3)
@@ -260,7 +236,10 @@ def main():
 
     # Get samples per epoch.
     # Multiply by 0.7 to attempt to guess how much of data.data is the train set.
-    steps_per_epoch = (len(data.data) * 0.7) // batch_size
+    # This needs to be modified, otherwise the data will be reused between training and valid
+    train_data, test_data = data.split_train_test()
+    steps_per_epoch = (len(train_data) * 0.7) // batch_size
+
 
     if load_to_memory:
         # Get data.
@@ -276,6 +255,19 @@ def main():
 
     # print(test.model.summary())
 
+    # print(len(test.model.layers))
+    test.model._layers = [layer for layer in test.model._layers if not isinstance(layer, dict)]
+    # steps_per_epoch = (len(data.data) * 0.7) // batch_size
+    # test.model.fit_generator(
+    #         generator=generator,
+    #         steps_per_epoch=steps_per_epoch,
+    #         epochs=1,
+    #         verbose=1,
+    #         # callbacks=[tb, early_stopper, csv_logger, checkpointer],
+    #         # callbacks=[early_stopper, checkpointer],
+    #         validation_data=val_generator,
+    #         validation_steps=40,
+    #         workers=4)
     plot_model(test.model, expand_nested=True, show_shapes=True, to_file='model_struct.png')
 
 

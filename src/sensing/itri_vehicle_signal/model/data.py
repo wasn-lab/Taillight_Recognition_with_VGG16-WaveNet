@@ -10,15 +10,15 @@ import sys
 import operator
 import threading
 from processor import process_image
-from keras.utils import to_categorical
+from tensorflow.keras.utils import to_categorical
 
 import argparse
 import tensorlayer as tl
 import tensorflow as tf
-from FEQE import enhancement_model
-from FEQE.model import *
-from FEQE.utils import *
-# import FEQE
+# from FEQE import enhancement_model
+# from FEQE.model import *
+# from FEQE.utils import *
+# # import FEQE
 
 class threadsafe_iterator:
     def __init__(self, iterator):
@@ -62,8 +62,8 @@ class DataSet():
 
         self.image_shape = image_shape
 
-        # Init FEQE model
-        self.sess, self.t_sr, self.t_lr = self.set_FEQE()
+        # # Init FEQE model
+        # self.sess, self.t_sr, self.t_lr = self.set_FEQE()
 
     @staticmethod
     def get_data():
@@ -189,12 +189,12 @@ class DataSet():
                     frames = self.get_frames_for_sample(sample)
                     frames = self.rescale_list(frames, self.seq_length)
 
-                    # FEQE maybe can app after this line
-                    # because FEQE also use a sequence as input
-                    sequence = enhancement_model.run(self.sess, self.t_sr, self.t_lr, frames)
+                    # # FEQE maybe can app after this line
+                    # # because FEQE also use a sequence as input
+                    # sequence = enhancement_model.run(self.sess, self.t_sr, self.t_lr, frames)
 
                     # Build the image sequence
-                    sequence = self.build_image_sequence(sequence)
+                    sequence = self.build_image_sequence(frames)
 
                 else:
                     # Get the sequence from disk.
@@ -205,9 +205,10 @@ class DataSet():
 
                 X.append(sequence)
                 y1.append(self.get_class_one_hot(sample[1]))
-                y2.append(sample[4])
+                y2.append(int(sample[4]))
 
-            yield np.array(X), [np.array(y1), np.array(y2)]
+            # yield np.array(X), [np.array(y1), np.array(y2)]
+            yield np.array(X), np.array(y1)
 
     def build_image_sequence(self, frames):
         """Given a set of frames (filenames), build our sequence."""
@@ -304,6 +305,7 @@ class DataSet():
 
         return result
 
+"""
     def set_FEQE(sef):
         parser = argparse.ArgumentParser(description="")
         parser.add_argument("--model_path", type=str, default="FEQE/checkpoint/mse_s2/model.ckpt-2000", help="model path")
@@ -353,3 +355,4 @@ class DataSet():
         saver.restore(sess, args.model_path)
 
         return sess, t_sr, t_lr
+"""
