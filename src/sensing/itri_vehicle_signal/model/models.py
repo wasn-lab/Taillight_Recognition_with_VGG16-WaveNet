@@ -17,7 +17,7 @@ from tensorflow.python.keras.utils.vis_utils import plot_model
 from data import DataSet
 import numpy as np
 import argparse
-
+import random
 
 
 class ResearchModels():
@@ -62,14 +62,14 @@ class ResearchModels():
         # Now compile the network.
         # optimizer = Adam(lr=5e-6, decay=5e-7)
         optimizer = Adam(lr=1e-5, decay=5e-7)
-        self.model.compile(loss='categorical_crossentropy',
-                            # {'turnlight_output': 'categorical_crossentropy',
-                            #  'brake_output': 'binary_crossentropy'},
-                           # loss_weights = {'turnlight_output': 1.0, 'brake_output': 0.25},
+        self.model.compile(loss=#'categorical_crossentropy',
+                                {'turnlight_output': 'categorical_crossentropy',
+                                 'brake_output': 'binary_crossentropy'},
+                           loss_weights = {'turnlight_output': 1.0, 'brake_output': 0.25},
                            optimizer=optimizer,
-                           metrics= 'categorical_accuracy')
-                            # {'turnlight_output': 'accuracy',
-                            #  'brake_output': 'accuracy'})
+                           metrics= #'categorical_accuracy')
+                                {'turnlight_output': 'accuracy',
+                                 'brake_output': 'accuracy'})
 
         print(self.model.summary())
 
@@ -178,16 +178,16 @@ class ResearchModels():
         brake_model = LSTM(2048, return_sequences=False, dropout=0.5, name="brake_lstm_1")(brake_model)
         brake_model = Dense(512, activation='relu', name="brake_dense_layer_1")(brake_model)
         brake_model = Dropout(0.5)(brake_model)
-        # brake_model = Dense(256, activation='relu', name="brake_dense_layer_2")(brake_model)
-        # brake_model = Dropout(0.5)(brake_model)
+        brake_model = Dense(256, activation='relu', name="brake_dense_layer_2")(brake_model)
+        brake_model = Dropout(0.5)(brake_model)
         brake_model = Dense(1, activation='sigmoid', name="brake_output")(brake_model)
 
 
 
         model = Model(
             inputs=self.model.input,
-            # outputs=[turnlight_model, brake_model]
-            outputs=turnlight_model
+            outputs=[turnlight_model, brake_model]
+            # outputs=turnlight_model
         )
 
         return model
@@ -220,6 +220,7 @@ def main():
     nb_epoch = 1000
     data_type = 'images'
     image_shape = (image_height, image_width, 3)
+    train_split_percent=0.7
 
     # Get the data and process it.
     if image_shape is None:
@@ -238,7 +239,7 @@ def main():
     # Multiply by 0.7 to attempt to guess how much of data.data is the train set.
     # This needs to be modified, otherwise the data will be reused between training and valid
     train_data, test_data = data.split_train_test()
-    steps_per_epoch = (len(train_data) * 0.7) // batch_size
+    steps_per_epoch = (len(train_data) * 0.9) // batch_size
 
 
     if load_to_memory:
@@ -247,8 +248,8 @@ def main():
         X_test, y_test = data.get_all_sequences_in_memory('test', data_type)
     else:
         # Get generators.
-        generator = data.frame_generator(batch_size, 'train', data_type)
-        val_generator = data.frame_generator(batch_size, 'test', data_type)
+        generator = data.frame_generator(batch_size, 'train', data_type, train_split_percent)
+        val_generator = data.frame_generator(batch_size, 'test', data_type, train_split_percent)
 
 
     test = ResearchModels(class_limit, model, seq_length, saved_model)
@@ -256,18 +257,19 @@ def main():
     # print(test.model.summary())
 
     # print(len(test.model.layers))
+
+    test.model.fit_generator(
+            generator=generator,
+            steps_per_epoch=steps_per_epoch,
+            epochs=1,
+            verbose=1,
+            # callbacks=[tb, early_stopper, csv_logger, checkpointer],
+            # callbacks=[early_stopper, checkpointer],
+            validation_data=val_generator,
+            validation_steps=20,
+            workers=4)
+
     test.model._layers = [layer for layer in test.model._layers if not isinstance(layer, dict)]
-    # steps_per_epoch = (len(data.data) * 0.7) // batch_size
-    # test.model.fit_generator(
-    #         generator=generator,
-    #         steps_per_epoch=steps_per_epoch,
-    #         epochs=1,
-    #         verbose=1,
-    #         # callbacks=[tb, early_stopper, csv_logger, checkpointer],
-    #         # callbacks=[early_stopper, checkpointer],
-    #         validation_data=val_generator,
-    #         validation_steps=40,
-    #         workers=4)
     plot_model(test.model, expand_nested=True, show_shapes=True, to_file='model_struct.png')
 
 

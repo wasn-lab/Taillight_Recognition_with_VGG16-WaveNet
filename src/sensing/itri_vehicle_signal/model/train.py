@@ -50,8 +50,9 @@ def train(data_type, seq_length, model, saved_model=None,
 
 	# Get samples per epoch.
 	# Multiply by 0.7 to attempt to guess how much of data.data is the train set.
+	train_split_percent=0.7
 	train_data, test_data = data.split_train_test()
-	steps_per_epoch = (len(train_data) * 0.7) // batch_size
+	steps_per_epoch = (len(train_data) * 0.9) // batch_size
 
 	if load_to_memory:
 		# Get data.
@@ -59,8 +60,8 @@ def train(data_type, seq_length, model, saved_model=None,
 		X_test, y_test = data.get_all_sequences_in_memory('test', data_type)
 	else:
 		# Get generators.
-		generator = data.frame_generator(batch_size, 'train', data_type)
-		val_generator = data.frame_generator(batch_size, 'test', data_type)
+		generator = data.frame_generator(batch_size, 'train', data_type, train_split_percent)
+		val_generator = data.frame_generator(batch_size, 'test', data_type, train_split_percent)
 
 	# Get the model.
 	rm = ResearchModels(len(data.classes), model, seq_length, saved_model)
@@ -87,7 +88,7 @@ def train(data_type, seq_length, model, saved_model=None,
 			callbacks=[tb, early_stopper, csv_logger, checkpointer],
 			# callbacks=[early_stopper, checkpointer],
 			validation_data=val_generator,
-			validation_steps=40,
+			validation_steps=20,
 			workers=4)
 	# pyplot.plot(history.history['loss'][500:])
 	# pyplot.plot(history.history['val_loss'][500:])
@@ -129,7 +130,7 @@ def main():
 
 	# model can be only 'lstm'
 	model = 'lstm'
-	saved_model = './data/checkpoints_0427_trunlight_line/lstm-images.031-0.026.hdf5'
+	saved_model = './data/checkpoints_0428_fine_turn_with_0427/lstm-images.011-0.028.hdf5'
 	# saved_model = None  # None or weights file
 
 	load_to_memory = False # pre-load the sequences into memory

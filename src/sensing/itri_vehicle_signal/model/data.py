@@ -68,7 +68,7 @@ class DataSet():
     @staticmethod
     def get_data():
         """Load our data from file."""
-        with open(os.path.join('data', 'data_file.csv'), 'r') as fin:
+        with open(os.path.join('data', 'pre-train_dataset', 'data_file.csv'), 'r') as fin:
             reader = csv.reader(fin)
             data = list(reader)
 
@@ -137,7 +137,7 @@ class DataSet():
 
         print("Loading %d samples into memory for %sing." % (len(data), train_test))
 
-        X, y = [], []
+        X, y1, y2 = [], [], []
         for row in data:
 
             if data_type == 'images':
@@ -155,12 +155,13 @@ class DataSet():
                     raise
 
             X.append(sequence)
-            y.append(self.get_class_one_hot(row[1]))
+            y1.append(self.get_class_one_hot(row[1]))
+            y2.append(int(row[4]))
 
-        return np.array(X), [np.array(y), np.array(row[4])]
+        return np.array(X), [np.array(y1), np.array(y2)]
 
     @threadsafe_generator
-    def frame_generator(self, batch_size, train_test, data_type):
+    def frame_generator(self, batch_size, train_test, data_type, train_split_percent):
         """Return a generator that we can use to train on. There are
         a couple different things we can return:
 
@@ -168,9 +169,19 @@ class DataSet():
         """
         # Get the right dataset for the generator.
         train, test = self.split_train_test()
+        rand_data_list=list(range(len(train)))
+        random.shuffle(rand_data_list)
+        cut_point = int(len(train)*train_split_percent)
+
         data = train if train_test == 'train' else test
 
-        print("Creating %s generator with %d samples." % (train_test, len(data)))
+        if train_test == 'train' :
+            data = [data[i] for i in rand_data_list[:cut_point]]
+            print("Creating %s generator with %d samples." % (train_test, len(data)))
+        else :
+            data = [data[i] for i in rand_data_list[cut_point:]]
+            print("Creating %s generator with %d samples." % (train_test, len(data)))
+
 
         while 1:
             X, y1, y2 = [], [], []
@@ -206,9 +217,10 @@ class DataSet():
                 X.append(sequence)
                 y1.append(self.get_class_one_hot(sample[1]))
                 y2.append(int(sample[4]))
-
-            # yield np.array(X), [np.array(y1), np.array(y2)]
-            yield np.array(X), np.array(y1)
+            # if train_test == "test":
+            #     print(np.array(y2).shape)
+            yield np.array(X), [np.array(y1), np.array(y2)]
+            # yield np.array(X), np.array(y1)
 
     def build_image_sequence(self, frames):
         """Given a set of frames (filenames), build our sequence."""
@@ -255,7 +267,7 @@ class DataSet():
     def get_frames_for_sample(sample):
         """Given a sample row from the data file, get all the corresponding frame
         filenames."""
-        path = os.path.join('data', sample[0], sample[1])
+        path = os.path.join('data', 'pre-train_dataset', sample[0], sample[1])
         filename = sample[2]
         images = sorted(glob.glob(os.path.join(path, filename + '*jpg')))
         return images
