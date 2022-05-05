@@ -1,7 +1,7 @@
 """
 A collection of models we'll use to attempt to classify videos.
 """
-from tensorflow.keras.layers import Input, Dense, Flatten, Dropout, ZeroPadding3D, Reshape
+from tensorflow.keras.layers import Input, Dense, Flatten, Dropout, ZeroPadding3D, Reshape, AveragePooling1D
 from tensorflow.python.keras.layers.recurrent import LSTM
 from tensorflow.keras.models import Sequential, Model, load_model
 from tensorflow.keras.optimizers import Adam, RMSprop
@@ -64,12 +64,12 @@ class ResearchModels():
         optimizer = Adam(lr=1e-5, decay=5e-7)
         self.model.compile(loss=#'categorical_crossentropy',
                                 {'turnlight_output': 'categorical_crossentropy',
-                                 'brake_output': 'binary_crossentropy'},
-                           loss_weights = {'turnlight_output': 1.0, 'brake_output': 0.25},
+                                 'average_brake_output': 'binary_crossentropy'},
+                           loss_weights = {'turnlight_output': 1.0, 'average_brake_output': 0.25},
                            optimizer=optimizer,
                            metrics= #'categorical_accuracy')
                                 {'turnlight_output': 'accuracy',
-                                 'brake_output': 'accuracy'})
+                                 'average_brake_output': 'accuracy'})
 
         print(self.model.summary())
 
@@ -175,14 +175,18 @@ class ResearchModels():
 
         # Brake detection
         brake_model = self.model.output
-        brake_model = LSTM(2048, return_sequences=False, dropout=0.5, name="brake_lstm_1")(brake_model)
-        brake_model = Dense(512, activation='relu', name="brake_dense_layer_1")(brake_model)
-        brake_model = Dropout(0.5)(brake_model)
-        brake_model = Dense(256, activation='relu', name="brake_dense_layer_2")(brake_model)
-        brake_model = Dropout(0.5)(brake_model)
-        brake_model = Dense(1, activation='sigmoid', name="brake_output")(brake_model)
-
-
+        # brake_model = LSTM(2048, return_sequences=False, dropout=0.5, name="brake_lstm_1")(brake_model)
+        # brake_model = Dense(512, activation='relu', name="brake_dense_layer_1")(brake_model)
+        # brake_model = Dropout(0.5)(brake_model)
+        # brake_model = Dense(256, activation='relu', name="brake_dense_layer_2")(brake_model)
+        # brake_model = Dropout(0.5)(brake_model)
+        # brake_model = Dense(1, activation='sigmoid', name="brake_output")(brake_model)
+        brake_model = TimeDistributed(Dense(512, activation='relu', name="brake_dense_layer_1"))(brake_model)
+        brake_model = TimeDistributed(Dropout(0.5))(brake_model)
+        brake_model = TimeDistributed(Dense(128, activation='relu', name="brake_dense_layer_2"))(brake_model)
+        brake_model = TimeDistributed(Dropout(0.5))(brake_model)
+        brake_model = TimeDistributed(Dense(1, activation='sigmoid', name="brake_output"))(brake_model)
+        brake_model = AveragePooling1D(pool_size = self.seq_length, padding='valid', name="average_brake_output")(brake_model)
 
         model = Model(
             inputs=self.model.input,

@@ -50,7 +50,7 @@ def train(data_type, seq_length, model, saved_model=None,
 
 	# Get samples per epoch.
 	# Multiply by 0.7 to attempt to guess how much of data.data is the train set.
-	train_split_percent=0.7
+	train_split_percent=0.85
 	train_data, test_data = data.split_train_test()
 	steps_per_epoch = (len(train_data) * 0.9) // batch_size
 
@@ -88,7 +88,7 @@ def train(data_type, seq_length, model, saved_model=None,
 			callbacks=[tb, early_stopper, csv_logger, checkpointer],
 			# callbacks=[early_stopper, checkpointer],
 			validation_data=val_generator,
-			validation_steps=20,
+			validation_steps=15,
 			workers=4)
 	# pyplot.plot(history.history['loss'][500:])
 	# pyplot.plot(history.history['val_loss'][500:])
