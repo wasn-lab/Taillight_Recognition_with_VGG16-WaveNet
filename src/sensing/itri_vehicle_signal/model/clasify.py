@@ -4,8 +4,8 @@ import cv2
 import numpy as np
 from data import DataSet
 from extractor import Extractor
-from keras.models import load_model
-from keras.utils.vis_utils import plot_model
+from tensorflow.keras.models import load_model
+from tensorflow.python.keras.utils.vis_utils import plot_model
 
 import csv
 import argparse
@@ -18,20 +18,21 @@ parser.add_argument("--seq_length", type=int, default=20,
                     help="the length of a sequence")
 parser.add_argument("--class_limit", type=int, default=4,
                     help="how much classes need to clasify")
-parser.add_argument("--saved_model", type=str, default="data/checkpoints/lstm-images.039-0.014.hdf5",
+parser.add_argument("--saved_model", type=str, default="data/checkpoints_0428_fine_turn_with_0427/lstm-images.005-0.100.hdf5",
                     help="the path of model")
-parser.add_argument("--video_file", type=str, default="utils/turnright.mp4",
+parser.add_argument("--video_file", type=str, default="result_record/turn_right.mp4",
                     help="the path of video that need to clasify")
 args = parser.parse_args()
 
 
 def save_result_as_csv(result):
     # The list of column names as mentioned in the CSV file
-    headersCSV = ['video_name','flasher','no_signal','turn_left','turn_right']
-    with open('ncu_dataset_clasify_result_0327.csv', 'a', newline='') as f_object:
+    headersCSV = ['video_name','flasher','no_signal','turn_left','turn_right','brake']
+    with open('result_record/ncu_dataset_clasify_result_0429.csv', 'a', newline='') as f_object:
         dictwriter_object = csv.DictWriter(f_object, fieldnames=headersCSV)
         for i in result :
-            dic = {'video_name':i[0],'flasher':i[1][0][0],'no_signal':i[1][0][1],'turn_left':i[1][0][2],'turn_right':i[1][0][3]}
+            dic = {'video_name':i[0],'flasher':i[1][0][0],'no_signal':i[1][0][1],'turn_left':i[1][0][2],'turn_right':i[1][0][3],'brake':i[2][0][0]}
+            # dic = {'video_name':i[0],'flasher':i[1][0][0],'no_signal':i[1][0][1],'turn_left':i[1][0][2],'turn_right':i[1][0][3]}
             dictwriter_object.writerow(dic)
         f_object.close()
     # with open('ncu_dataset_clasify_result_0317.csv', 'a', newline='') as csvfile:
@@ -45,15 +46,7 @@ class_limit = args.class_limit
 saved_model = args.saved_model
 video_file = args.video_file
 
-# if (len(sys.argv) == 5):
-#     seq_length = int(sys.argv[1])
-#     class_limit = int(sys.argv[2])
-#     saved_model = sys.argv[3]
-#     video_file = sys.argv[4]
-# else:
-#     print ("Usage: python clasify.py sequence_length class_limit saved_model_name video_file_name")
-#     print ("Example: python clasify.py 75 2 lstm-features.095-0.090.hdf5 some_video.mp4")
-#     exit (1)
+
 
 capture = cv2.VideoCapture(os.path.join(video_file))
 width = capture.get(cv2.CAP_PROP_FRAME_WIDTH)   # float
@@ -82,6 +75,7 @@ height = int(height)
 # extract_model = Extractor(image_shape=(224, 224, 3))
 saved_LSTM_model = load_model(saved_model)
 # print(saved_LSTM_model.summary())
+saved_LSTM_model._layers = [layer for layer in saved_LSTM_model._layers if not isinstance(layer, dict)]
 plot_model(saved_LSTM_model, expand_nested=True, show_shapes=True, to_file='debug_model_clasify.png')
 
 small_frames = False
@@ -130,14 +124,20 @@ while True:
     # Clasify sequence
     prediction = saved_LSTM_model.predict(np.expand_dims(resized_frames, axis=0))
     print(prediction)
-    clasify_result.append([video_file, prediction])
-    values = data.print_class_from_prediction(np.squeeze(prediction, axis=0))
+    # turn_light_prediction = prediction
+    turn_light_prediction = prediction[0]
+    brake_prediction = prediction[1]
+    # clasify_result.append([video_file, turn_light_prediction])
+    clasify_result.append([video_file, turn_light_prediction, brake_prediction])
+    values = data.print_class_from_prediction(np.squeeze(turn_light_prediction, axis=0))
+    brake_pred="%s: %.2f" % ("brake", brake_prediction[0])
 
     # Add prediction to frames and write them to new video
     for image in frames:
         for i in range(len(values)):
 			# cv2.putText(影像, 文字, 座標, 字型, 大小, 顏色, 線條寬度, 線條種類)
             cv2.putText(image, values[i], (10, 10 * i + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255), lineType=cv2.LINE_AA)
+        cv2.putText(image, brake_pred, (10, 10 * len(values) + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255), lineType=cv2.LINE_AA)
         video_writer.write(image)
 
     frames = []

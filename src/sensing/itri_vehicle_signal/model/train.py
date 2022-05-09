@@ -1,7 +1,7 @@
 """
 Train our LSTM on extracted features.
 """
-from keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping, CSVLogger
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping, CSVLogger
 from models import ResearchModels
 from data import DataSet
 from extract_features import extract_features
@@ -27,8 +27,8 @@ def train(data_type, seq_length, model, saved_model=None,
 	tb = TensorBoard(log_dir=os.path.join('data', 'logs', model))
 
 	# Helper: Stop when we stop learning.
-	#early_stopper = EarlyStopping(patience=5)
-	early_stopper = EarlyStopping(patience=15)
+	early_stopper = EarlyStopping(patience=5)
+	# early_stopper = EarlyStopping(patience=15)
 
 	# Helper: Save results.
 	timestamp = time.time()
@@ -50,7 +50,9 @@ def train(data_type, seq_length, model, saved_model=None,
 
 	# Get samples per epoch.
 	# Multiply by 0.7 to attempt to guess how much of data.data is the train set.
-	steps_per_epoch = (len(data.data) * 0.7) // batch_size
+	train_split_percent=0.85
+	train_data, test_data = data.split_train_test()
+	steps_per_epoch = (len(train_data) * 0.9) // batch_size
 
 	if load_to_memory:
 		# Get data.
@@ -58,8 +60,8 @@ def train(data_type, seq_length, model, saved_model=None,
 		X_test, y_test = data.get_all_sequences_in_memory('test', data_type)
 	else:
 		# Get generators.
-		generator = data.frame_generator(batch_size, 'train', data_type)
-		val_generator = data.frame_generator(batch_size, 'test', data_type)
+		generator = data.frame_generator(batch_size, 'train', data_type, train_split_percent)
+		val_generator = data.frame_generator(batch_size, 'test', data_type, train_split_percent)
 
 	# Get the model.
 	rm = ResearchModels(len(data.classes), model, seq_length, saved_model)
@@ -86,16 +88,17 @@ def train(data_type, seq_length, model, saved_model=None,
 			callbacks=[tb, early_stopper, csv_logger, checkpointer],
 			# callbacks=[early_stopper, checkpointer],
 			validation_data=val_generator,
-			validation_steps=40,
+			validation_steps=15,
 			workers=4)
-	print(history.history.keys())
-	pyplot.plot(history.history['loss'][500:])
-	pyplot.plot(history.history['val_loss'][500:])
-	pyplot.title('model train vs validation loss')
-	pyplot.ylabel('loss')
-	pyplot.xlabel('epoch')
-	pyplot.legend(['train', 'validation'], loc='upper right')
-	pyplot.show()
+
+	# pyplot.plot(history.history['loss'][500:])
+	# pyplot.plot(history.history['val_loss'][500:])
+	# pyplot.title('model train vs validation loss')
+	# pyplot.ylabel('loss')
+	# pyplot.xlabel('epoch')
+	# pyplot.legend(['train', 'validation'], loc='upper right')
+	# pyplot.show()
+
 
 def main():
 	"""These are the main training settings. Set each before running
@@ -116,16 +119,6 @@ def main():
 	image_height = args.image_height
 	image_width = args.image_width
 
-	# if (len(sys.argv) == 5):
-	# 	seq_length = int(sys.argv[1])
-	# 	class_limit = int(sys.argv[2])
-	# 	image_height = int(sys.argv[3])
-	# 	image_width = int(sys.argv[4])
-	# else:
-	# 	print ("Usage: python train.py sequence_length class_limit image_height image_width")
-	# 	print ("Example: python train.py 75 2 720 1280")
-	# 	exit (1)
-
 
 	"""
 	sequences_dir = os.path.join('data', 'sequences')
@@ -139,9 +132,11 @@ def main():
 
 	# model can be only 'lstm'
 	model = 'lstm'
-	saved_model = None  # None or weights file
+	saved_model = './data/checkpoints_0428_fine_turn_with_0427/lstm-images.011-0.028.hdf5'
+	# saved_model = None  # None or weights file
+
 	load_to_memory = False # pre-load the sequences into memory
-	batch_size = 16
+	batch_size = 8
 	nb_epoch = 1000
 	data_type = 'images'
 	image_shape = (image_height, image_width, 3)

@@ -26,8 +26,6 @@ def add_frames(train_or_test, classname, path, brake):
 		last_seq_idx = int(get_last_seq_idx(train_or_test, classname))
 		print("last_seq_idx: %d" % last_seq_idx)
 
-		
-
 		if(nb_frames <= seq_len):
 			#print(nb_frames)
 			#print(frames)
@@ -63,7 +61,9 @@ def add_frames(train_or_test, classname, path, brake):
 				if(len(data_files) == 0 or data_files_last_seq_idx != seq_idx):
 					data_files.append([train_or_test, classname, filename_no_ext, seq_len, brake])
 
-	
+		# Make a small dataset to pre-train or test if the model is working
+		# if len(data_files)>299 :
+		# 	break
 
 	print(data_files)
 

@@ -10,15 +10,15 @@ import sys
 import operator
 import threading
 from processor import process_image
-from keras.utils import to_categorical
+from tensorflow.keras.utils import to_categorical
 
 import argparse
 import tensorlayer as tl
 import tensorflow as tf
-from FEQE import enhancement_model
-from FEQE.model import *
-from FEQE.utils import *
-# import FEQE
+# from FEQE import enhancement_model
+# from FEQE.model import *
+# from FEQE.utils import *
+# # import FEQE
 
 class threadsafe_iterator:
     def __init__(self, iterator):
@@ -62,13 +62,13 @@ class DataSet():
 
         self.image_shape = image_shape
 
-        # Init FEQE model
-        self.sess, self.t_sr, self.t_lr = self.set_FEQE()
+        # # Init FEQE model
+        # self.sess, self.t_sr, self.t_lr = self.set_FEQE()
 
     @staticmethod
     def get_data():
         """Load our data from file."""
-        with open(os.path.join('data', 'data_file.csv'), 'r') as fin:
+        with open(os.path.join('data', 'pre-train_dataset', 'data_file.csv'), 'r') as fin:
             reader = csv.reader(fin)
             data = list(reader)
 
@@ -137,7 +137,7 @@ class DataSet():
 
         print("Loading %d samples into memory for %sing." % (len(data), train_test))
 
-        X, y = [], []
+        X, y1, y2 = [], [], []
         for row in data:
 
             if data_type == 'images':
@@ -155,12 +155,14 @@ class DataSet():
                     raise
 
             X.append(sequence)
-            y.append([self.get_class_one_hot(row[1]), row[4]])
 
-        return np.array(X), np.array(y)
+            y1.append(self.get_class_one_hot(row[1]))
+            y2.append(int(row[4]))
+
+        return np.array(X), [np.array(y1), np.array(y2)]
 
     @threadsafe_generator
-    def frame_generator(self, batch_size, train_test, data_type):
+    def frame_generator(self, batch_size, train_test, data_type, train_split_percent):
         """Return a generator that we can use to train on. There are
         a couple different things we can return:
 
@@ -168,12 +170,22 @@ class DataSet():
         """
         # Get the right dataset for the generator.
         train, test = self.split_train_test()
+        rand_data_list=list(range(len(train)))
+        random.shuffle(rand_data_list)
+        cut_point = int(len(train)*train_split_percent)
+
         data = train if train_test == 'train' else test
 
-        print("Creating %s generator with %d samples." % (train_test, len(data)))
+        if train_test == 'train' :
+            data = [data[i] for i in rand_data_list[:cut_point]]
+            print("Creating %s generator with %d samples." % (train_test, len(data)))
+        else :
+            data = [data[i] for i in rand_data_list[cut_point:]]
+            print("Creating %s generator with %d samples." % (train_test, len(data)))
+
 
         while 1:
-            X, y = [], []
+            X, y1, y2 = [], [], []
 
             # Generate batch_size samples.
             for _ in range(batch_size):
@@ -189,12 +201,12 @@ class DataSet():
                     frames = self.get_frames_for_sample(sample)
                     frames = self.rescale_list(frames, self.seq_length)
 
-                    # FEQE maybe can app after this line
-                    # because FEQE also use a sequence as input
-                    sequence = enhancement_model.run(self.sess, self.t_sr, self.t_lr, frames)
+                    # # FEQE maybe can app after this line
+                    # # because FEQE also use a sequence as input
+                    # sequence = enhancement_model.run(self.sess, self.t_sr, self.t_lr, frames)
 
                     # Build the image sequence
-                    sequence = self.build_image_sequence(sequence)
+                    sequence = self.build_image_sequence(frames)
 
                 else:
                     # Get the sequence from disk.
@@ -204,9 +216,14 @@ class DataSet():
                         raise ValueError("Can't find sequence. Did you generate them?")
 
                 X.append(sequence)
-                y.append([self.get_class_one_hot(sample[1]), sample[4]])
 
-            yield np.array(X), np.array(y)
+                y1.append(self.get_class_one_hot(sample[1]))
+                y2.append(int(sample[4]))
+            # if train_test == "test":
+            #     print(np.array(y2).shape)
+            yield np.array(X), [np.array(y1), np.array(y2)]
+            # yield np.array(X), np.array(y1)
+
 
     def build_image_sequence(self, frames):
         """Given a set of frames (filenames), build our sequence."""
@@ -253,7 +270,7 @@ class DataSet():
     def get_frames_for_sample(sample):
         """Given a sample row from the data file, get all the corresponding frame
         filenames."""
-        path = os.path.join('data', sample[0], sample[1])
+        path = os.path.join('data', 'pre-train_dataset', sample[0], sample[1])
         filename = sample[2]
         images = sorted(glob.glob(os.path.join(path, filename + '*jpg')))
         return images
@@ -282,6 +299,7 @@ class DataSet():
     def print_class_from_prediction(self, predictions, nb_to_return=5):
         """Given a prediction, print the top classes."""
         # Get the prediction for each label.
+
         label_predictions = {}
         for i, label in enumerate(self.classes):
             label_predictions[label] = predictions[i]
@@ -302,6 +320,7 @@ class DataSet():
 
         return result
 
+"""
     def set_FEQE(sef):
         parser = argparse.ArgumentParser(description="")
         parser.add_argument("--model_path", type=str, default="FEQE/checkpoint/mse_s2/model.ckpt-2000", help="model path")
@@ -351,3 +370,4 @@ class DataSet():
         saver.restore(sess, args.model_path)
 
         return sess, t_sr, t_lr
+"""
