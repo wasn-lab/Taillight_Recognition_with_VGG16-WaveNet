@@ -19,10 +19,12 @@ import numpy as np
 import argparse
 import random
 
+from WaveNetClassifier import WaveNetClassifier
+
 
 class ResearchModels():
     def __init__(self, nb_classes, model, seq_length,
-                 saved_model=None, features_length=2048):
+                 saved_model=None, features_length=2048, image_shape=(224,224,3)):
         """
         `model` = lstm (only one for this case)
         `nb_classes` = the number of classes to predict
@@ -36,6 +38,7 @@ class ResearchModels():
         self.saved_model = saved_model
         self.nb_classes = nb_classes
         self.feature_queue = deque()
+        self.image_shape = image_shape
 
         # Set the metrics. Only use top k if there's a need.
         metrics = ['categorical_accuracy']
@@ -113,8 +116,8 @@ class ResearchModels():
 
         # Get model with pretrained weights.
         x = self.model.output
-        image_shape = (224 , 224, 3)
-        input_tensor = Input(image_shape)
+        # image_shape = (224 , 224, 3)
+        input_tensor = Input(self.image_shape)
 
 
         base_model = ResNet50(
@@ -160,6 +163,7 @@ class ResearchModels():
         # our CNN to this model predomenently."""
         # # Model.
 
+        """
         # Turn light detection
         turnlight_model = self.model.output
         turnlight_model = LSTM(2048, return_sequences=False,dropout=0.5, name="turnlight_lstm_1")(turnlight_model)
@@ -170,6 +174,14 @@ class ResearchModels():
         turnlight_model = Dense(128, activation='relu', name="turnlight_dense_layer_3")(turnlight_model)
         turnlight_model = Dropout(0.5)(turnlight_model)
         turnlight_model = Dense(self.nb_classes, activation='softmax', name="turnlight_output")(turnlight_model)
+        """
+        x = self.model.output
+        wavenet_class = WaveNetClassifier(input_tensor=x, output_shape=self.nb_classes, kernel_size = 2, dilation_depth = 9, task = 'classification')
+        turnlight_model = wavenet_class.get_model()
+        # turnlight_model = Model(
+        #     inputs=self.model.output,
+        #     outputs=turnlight_model
+        # )
 
 
         # Brake detection
@@ -220,7 +232,7 @@ def main():
     saved_model = None  # None or weights file
     # saved_model = './data/checkpoints_0413_with_two_output/lstm-images.016-1.015.hdf5'
     load_to_memory = False # pre-load the sequences into memory
-    batch_size = 16
+    batch_size = 1
     nb_epoch = 1000
     data_type = 'images'
     image_shape = (image_height, image_width, 3)
@@ -243,7 +255,7 @@ def main():
     # Multiply by 0.7 to attempt to guess how much of data.data is the train set.
     # This needs to be modified, otherwise the data will be reused between training and valid
     train_data, test_data = data.split_train_test()
-    steps_per_epoch = (len(train_data) * 0.9) // batch_size
+    steps_per_epoch = (len(train_data) * 0.3) // batch_size
 
 
     if load_to_memory:
@@ -256,22 +268,22 @@ def main():
         val_generator = data.frame_generator(batch_size, 'test', data_type, train_split_percent)
 
 
-    test = ResearchModels(class_limit, model, seq_length, saved_model)
+    test = ResearchModels(class_limit, model, seq_length, saved_model, image_shape=image_shape)
 
     # print(test.model.summary())
 
     # print(len(test.model.layers))
 
-    test.model.fit_generator(
-            generator=generator,
-            steps_per_epoch=steps_per_epoch,
-            epochs=1,
-            verbose=1,
-            # callbacks=[tb, early_stopper, csv_logger, checkpointer],
-            # callbacks=[early_stopper, checkpointer],
-            validation_data=val_generator,
-            validation_steps=20,
-            workers=4)
+    # test.model.fit_generator(
+    #         generator=generator,
+    #         steps_per_epoch=steps_per_epoch,
+    #         epochs=1,
+    #         verbose=1,
+    #         # callbacks=[tb, early_stopper, csv_logger, checkpointer],
+    #         # callbacks=[early_stopper, checkpointer],
+    #         validation_data=val_generator,
+    #         validation_steps=2,
+    #         workers=4)
 
     test.model._layers = [layer for layer in test.model._layers if not isinstance(layer, dict)]
     plot_model(test.model, expand_nested=True, show_shapes=True, to_file='model_struct.png')
