@@ -156,6 +156,7 @@ class DataSet():
                     raise
 
             X.append(sequence)
+
             y1.append(self.get_class_one_hot(row[1]))
             y2.append(int(row[4]))
 
@@ -216,12 +217,14 @@ class DataSet():
                         raise ValueError("Can't find sequence. Did you generate them?")
 
                 X.append(sequence)
+
                 y1.append(self.get_class_one_hot(sample[1]))
                 y2.append(int(sample[4]))
             # if train_test == "test":
             #     print(np.array(y2).shape)
             yield np.array(X), [np.array(y1), np.array(y2)]
             # yield np.array(X), np.array(y1)
+
 
     def build_image_sequence(self, frames):
         """Given a set of frames (filenames), build our sequence."""
@@ -268,6 +271,7 @@ class DataSet():
     def get_frames_for_sample(sample):
         """Given a sample row from the data file, get all the corresponding frame
         filenames."""
+
         # path = os.path.join('data', 'pre-train_dataset', sample[0], sample[1])
         path = os.path.join('data', sample[0], sample[1])
         filename = sample[2]

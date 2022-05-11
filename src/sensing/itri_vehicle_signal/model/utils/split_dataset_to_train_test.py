@@ -164,6 +164,6 @@ def split_to_train_test():
 
 if __name__ == '__main__':
     print(args.aug)
-    # aug_count = counting_label()
-    # do_seq_augmentation(aug_count, args.aug)
+    aug_count = counting_label()
+    do_seq_augmentation(aug_count, args.aug)
     split_to_train_test()

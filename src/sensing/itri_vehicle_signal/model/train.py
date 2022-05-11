@@ -92,6 +92,7 @@ def train(data_type, seq_length, model, saved_model=None,
 			validation_data=val_generator,
 			validation_steps=validation_step,
 			workers=4)
+
 	# pyplot.plot(history.history['loss'][500:])
 	# pyplot.plot(history.history['val_loss'][500:])
 	# pyplot.title('model train vs validation loss')
@@ -99,6 +100,7 @@ def train(data_type, seq_length, model, saved_model=None,
 	# pyplot.xlabel('epoch')
 	# pyplot.legend(['train', 'validation'], loc='upper right')
 	# pyplot.show()
+
 
 def main():
 	"""These are the main training settings. Set each before running
