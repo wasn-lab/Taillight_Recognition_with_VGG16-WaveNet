@@ -27,7 +27,7 @@ def train(data_type, seq_length, model, saved_model=None,
 	tb = TensorBoard(log_dir=os.path.join('data', 'logs', model))
 
 	# Helper: Stop when we stop learning.
-	early_stopper = EarlyStopping(patience=5)
+	early_stopper = EarlyStopping(patience=10)
 	# early_stopper = EarlyStopping(patience=15)
 
 	# Helper: Save results.
@@ -52,7 +52,9 @@ def train(data_type, seq_length, model, saved_model=None,
 	# Multiply by 0.7 to attempt to guess how much of data.data is the train set.
 	train_split_percent=0.85
 	train_data, test_data = data.split_train_test()
-	steps_per_epoch = (len(train_data) * 0.9) // batch_size
+	steps_per_epoch = (len(train_data)* train_split_percent * 0.9) // batch_size
+	validation_step = (len(train_data)* (1-train_split_percent) * 0.9) // batch_size
+	print(validation_step)
 
 	if load_to_memory:
 		# Get data.
@@ -88,7 +90,7 @@ def train(data_type, seq_length, model, saved_model=None,
 			callbacks=[tb, early_stopper, csv_logger, checkpointer],
 			# callbacks=[early_stopper, checkpointer],
 			validation_data=val_generator,
-			validation_steps=15,
+			validation_steps=validation_step,
 			workers=4)
 	# pyplot.plot(history.history['loss'][500:])
 	# pyplot.plot(history.history['val_loss'][500:])
