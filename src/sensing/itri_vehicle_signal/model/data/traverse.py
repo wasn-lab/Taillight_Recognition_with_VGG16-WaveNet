@@ -8,7 +8,7 @@ import cv2
 
 def add_frames(train_or_test, classname, path, brake):
 
-	seq_len = 20
+	seq_len = 64
 
 	nb_frames = 0
 
@@ -18,7 +18,10 @@ def add_frames(train_or_test, classname, path, brake):
 		#print (root, dirs, files)
 		frames = sorted(glob.glob(os.path.join(root, '*png')))
 		frames += sorted(glob.glob(os.path.join(root, '*jpg')))
+		frames.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
 		nb_frames = len(frames)
+		# print(frames)
+		# input()
 
 		if(nb_frames == 0):
 			continue

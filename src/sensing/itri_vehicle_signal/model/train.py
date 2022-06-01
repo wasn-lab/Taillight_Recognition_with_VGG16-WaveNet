@@ -8,8 +8,26 @@ from extract_features import extract_features
 import time
 import os.path
 import sys
-from matplotlib import pyplot
+from matplotlib import pyplot as plt
 import argparse
+import os
+
+
+# Seed value
+# Apparently you may use different seed values at each stage
+seed_value= 1
+# 1. Set the `PYTHONHASHSEED` environment variable at a fixed value
+import os
+os.environ['PYTHONHASHSEED']=str(seed_value)
+# 2. Set the `python` built-in pseudo-random generator at a fixed value
+import random
+random.seed(seed_value)
+# 3. Set the `numpy` pseudo-random generator at a fixed value
+import numpy as np
+np.random.seed(seed_value)
+# 4. Set the `tensorflow` pseudo-random generator at a fixed value
+import tensorflow as tf
+tf.compat.v1.set_random_seed(seed_value)
 
 
 def train(data_type, seq_length, model, saved_model=None,
@@ -50,16 +68,16 @@ def train(data_type, seq_length, model, saved_model=None,
 
 	# Get samples per epoch.
 	# Multiply by 0.7 to attempt to guess how much of data.data is the train set.
-	train_split_percent=0.85
+	train_split_percent=0.7
 	train_data, test_data = data.split_train_test()
 	steps_per_epoch = (len(train_data)* train_split_percent * 0.9) // batch_size
 	validation_step = (len(train_data)* (1-train_split_percent) * 0.9) // batch_size
-	print(validation_step)
+	# print(validation_step)
 
 	if load_to_memory:
 		# Get data.
-		X, y = data.get_all_sequences_in_memory('train', data_type)
-		X_test, y_test = data.get_all_sequences_in_memory('test', data_type)
+		X, y = data.get_all_sequences_in_memory('train', data_type, train_split_percent)
+		X_test, y_test = data.get_all_sequences_in_memory('test', data_type, train_split_percent)
 	else:
 		# Get generators.
 		generator = data.frame_generator(batch_size, 'train', data_type, train_split_percent)
@@ -93,20 +111,24 @@ def train(data_type, seq_length, model, saved_model=None,
 			validation_steps=validation_step,
 			workers=4)
 
-	# pyplot.plot(history.history['loss'][500:])
-	# pyplot.plot(history.history['val_loss'][500:])
-	# pyplot.title('model train vs validation loss')
-	# pyplot.ylabel('loss')
-	# pyplot.xlabel('epoch')
-	# pyplot.legend(['train', 'validation'], loc='upper right')
-	# pyplot.show()
+	plt.style.use("ggplot")
+	plt.figure()
+	plt.plot( H.history["loss"], label="train_loss")
+	plt.plot( H.history["val_loss"], label="val_loss")
+	plt.plot( H.history["turnlight_output_categorical_accuracy"], label="train_acc")
+	plt.plot( H.history["val_turnlight_output_categorical_accuracy"], label="val_acc")
+	plt.title("Training Loss and Accuracy on Dataset")
+	plt.xlabel("Epoch #")
+	plt.ylabel("Loss/Accuracy")
+	plt.legend(loc="lower left")
+	plt.show()
 
 
 def main():
 	"""These are the main training settings. Set each before running
 	this file."""
 	parser = argparse.ArgumentParser(description="")
-	parser.add_argument("--seq_length", type=int, default=20,
+	parser.add_argument("--seq_length", type=int, default=64,
 						help="the length of a sequence")
 	parser.add_argument("--class_limit", type=int, default=4,
 						help="how much classes need to clasify")
@@ -134,8 +156,8 @@ def main():
 
 	# model can be only 'lstm'
 	model = 'lstm'
-	saved_model = './data/checkpoints_0428_fine_turn_with_0427/lstm-images.011-0.028.hdf5'
-	# saved_model = None  # None or weights file
+	# saved_model = './data/checkpoints_0514/lstm-images.018-0.290.hdf5'
+	saved_model = None  # None or weights file
 
 	load_to_memory = False # pre-load the sequences into memory
 	batch_size = 8

@@ -1,7 +1,7 @@
 """
 A collection of models we'll use to attempt to classify videos.
 """
-from tensorflow.keras.layers import Input, Dense, Flatten, Dropout, ZeroPadding3D, Reshape, AveragePooling1D
+from tensorflow.keras.layers import Input, Dense, Flatten, Dropout, ZeroPadding3D, Reshape, AveragePooling1D, GlobalAveragePooling1D
 from tensorflow.python.keras.layers.recurrent import LSTM
 from tensorflow.keras.models import Sequential, Model, load_model
 from tensorflow.keras.optimizers import Adam, RMSprop
@@ -10,7 +10,7 @@ from tensorflow.python.keras.layers.convolutional import (Conv2D, MaxPooling3D, 
     MaxPooling2D)
 from tensorflow.python.keras.layers.convolutional_recurrent import ConvLSTM2D
 # from tensorflow.keras.applications.inception_v3 import InceptionV3, preprocess_input
-from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input
+from tensorflow.keras.applications.resnet import ResNet50, preprocess_input
 from collections import deque
 import sys
 from tensorflow.python.keras.utils.vis_utils import plot_model
@@ -39,6 +39,7 @@ class ResearchModels():
         self.nb_classes = nb_classes
         self.feature_queue = deque()
         self.image_shape = image_shape
+        self.input_shape = (seq_length,)+image_shape
 
         # Set the metrics. Only use top k if there's a need.
         metrics = ['categorical_accuracy']
@@ -56,7 +57,7 @@ class ResearchModels():
             self.model.load_weights(self.saved_model, by_name = True)
         elif model == 'lstm':
             print("Loading LSTM model.")
-            self.input_shape = (seq_length, features_length)
+            # self.input_shape = (seq_length, features_length)
             self.model = self.lstm()
         else:
             print("Unknown network.")
@@ -67,17 +68,17 @@ class ResearchModels():
         optimizer = Adam(lr=1e-5, decay=5e-7)
         self.model.compile(loss=#'categorical_crossentropy',
                                 {'turnlight_output': 'categorical_crossentropy',
-                                 'average_brake_output': 'binary_crossentropy'},
-                           loss_weights = {'turnlight_output': 1.0, 'average_brake_output': 0.25},
+                                 'avg_brake_output': 'binary_crossentropy'},
+                           loss_weights = {'turnlight_output': [10, 10, 25, 25], 'avg_brake_output': 15},
                            optimizer=optimizer,
                            metrics= #'categorical_accuracy')
                                 {'turnlight_output': 'accuracy',
-                                 'average_brake_output': 'accuracy'})
+                                 'avg_brake_output': 'accuracy'})
 
         print(self.model.summary())
 
-    def attention(self, use_attention=False, image_shape=(20, 224, 224, 3)):
-        input_tensor = Input(image_shape, name="img_input")
+    def attention(self, use_attention=False):
+        input_tensor = Input(self.input_shape, name="img_input")
         if use_attention:
             # Get model with pretrained weights.
             base_model = TimeDistributed(Conv2D(32, (3, 3), dilation_rate=1, strides=(1, 1), padding="same", name="attention_conv1"))(input_tensor)
@@ -125,6 +126,8 @@ class ResearchModels():
             weights='imagenet',
             include_top=True
         )
+        for layer in base_model.layers[:144]:
+            layer.trainable = False
 
 
         base_model = Model(
@@ -151,8 +154,8 @@ class ResearchModels():
         )
 
         #Test freeze cnn part
-        for layer in model.layers:
-            layer.trainable = trainable
+        # for layer in model.layers:
+        #     layer.trainable = trainable
 
         # model.trainable=False
         # print(model.summary())
@@ -176,29 +179,44 @@ class ResearchModels():
         turnlight_model = Dense(self.nb_classes, activation='softmax', name="turnlight_output")(turnlight_model)
         """
         x = self.model.output
-        wavenet_class = WaveNetClassifier(input_tensor=x, output_shape=self.nb_classes, kernel_size = 2, dilation_depth = 9, task = 'classification')
+        wavenet_class = WaveNetClassifier(input_tensor=x, output_shape=self.nb_classes, kernel_size = 2, dilation_depth = 6, n_filters = 1024, task = 'classification')
         turnlight_model = wavenet_class.get_model()
         # turnlight_model = Model(
         #     inputs=self.model.output,
         #     outputs=turnlight_model
         # )
-
+        # turnlight_model = LSTM(2048, return_sequences=False,dropout=0.5, name="turnlight_lstm_1")(turnlight_model)
+        # turnlight_model = Dense(1024, activation='relu', name="turnlight_dense_layer_1")(turnlight_model)
+        # turnlight_model = Dropout(0.5)(turnlight_model)
+        # turnlight_model = Dense(512, activation='relu', name="turnlight_dense_layer_2")(turnlight_model)
+        # turnlight_model = Dropout(0.5)(turnlight_model)
+        # turnlight_model = Dense(128, activation='relu', name="turnlight_dense_layer_3")(turnlight_model)
+        # turnlight_model = Dropout(0.5)(turnlight_model)
+        # turnlight_model = Dense(self.nb_classes, activation='softmax', name="turnlight_output")(turnlight_model)
 
         # Brake detection
         brake_model = self.model.output
+
+        # brake_model = GlobalAveragePooling1D()(brake_model)
+        # brake_model = Dense(512, activation='relu', name="brake_dense_layer_1")(brake_model)
+        # brake_model = Dropout(0.5)(brake_model)
+        # # brake_model = BatchNormalization()(brake_model)
+        # # brake_model = Dense(256, activation='relu', name="brake_dense_layer_2")(brake_model)
+        # # brake_model = Dropout(0.5)(brake_model)
+        # brake_model = Dense(1, activation='sigmoid', name="avg_brake_output")(brake_model)
+
         # brake_model = LSTM(2048, return_sequences=False, dropout=0.5, name="brake_lstm_1")(brake_model)
         # brake_model = Dense(512, activation='relu', name="brake_dense_layer_1")(brake_model)
         # brake_model = Dropout(0.5)(brake_model)
         # brake_model = Dense(256, activation='relu', name="brake_dense_layer_2")(brake_model)
         # brake_model = Dropout(0.5)(brake_model)
         # brake_model = Dense(1, activation='sigmoid', name="brake_output")(brake_model)
-        brake_model = TimeDistributed(Dense(512, activation='relu', name="brake_dense_layer_1"))(brake_model)
+        brake_model = TimeDistributed(Dense(1024, activation='relu', name="brake_dense_layer_1"))(brake_model)
         brake_model = TimeDistributed(Dropout(0.5))(brake_model)
-        brake_model = TimeDistributed(Dense(128, activation='relu', name="brake_dense_layer_2"))(brake_model)
+        brake_model = TimeDistributed(Dense(512, activation='relu', name="brake_dense_layer_2"))(brake_model)
         brake_model = TimeDistributed(Dropout(0.5))(brake_model)
         brake_model = TimeDistributed(Dense(1, activation='sigmoid', name="brake_output"))(brake_model)
-        brake_model = AveragePooling1D(pool_size = self.seq_length, padding='valid', name="average_brake_output")(brake_model)
-
+        brake_model = AveragePooling1D(pool_size = self.seq_length, padding='valid', name="avg_brake_output")(brake_model)
 
         model = Model(
             inputs=self.model.input,
@@ -211,7 +229,7 @@ class ResearchModels():
 def main():
 
     parser = argparse.ArgumentParser(description="")
-    parser.add_argument("--seq_length", type=int, default=20,
+    parser.add_argument("--seq_length", type=int, default=64,
                         help="the length of a sequence")
     parser.add_argument("--class_limit", type=int, default=4,
                         help="how much classes need to clasify")
@@ -232,7 +250,7 @@ def main():
     saved_model = None  # None or weights file
     # saved_model = './data/checkpoints_0413_with_two_output/lstm-images.016-1.015.hdf5'
     load_to_memory = False # pre-load the sequences into memory
-    batch_size = 1
+    batch_size = 8
     nb_epoch = 1000
     data_type = 'images'
     image_shape = (image_height, image_width, 3)
@@ -260,8 +278,8 @@ def main():
 
     if load_to_memory:
         # Get data.
-        X, y = data.get_all_sequences_in_memory('train', data_type)
-        X_test, y_test = data.get_all_sequences_in_memory('test', data_type)
+        X, y = data.get_all_sequences_in_memory('train', data_type, train_split_percent)
+        X_test, y_test = data.get_all_sequences_in_memory('test', data_type, train_split_percent)
     else:
         # Get generators.
         generator = data.frame_generator(batch_size, 'train', data_type, train_split_percent)
@@ -274,16 +292,16 @@ def main():
 
     # print(len(test.model.layers))
 
-    # test.model.fit_generator(
-    #         generator=generator,
-    #         steps_per_epoch=steps_per_epoch,
-    #         epochs=1,
-    #         verbose=1,
-    #         # callbacks=[tb, early_stopper, csv_logger, checkpointer],
-    #         # callbacks=[early_stopper, checkpointer],
-    #         validation_data=val_generator,
-    #         validation_steps=2,
-    #         workers=4)
+    test.model.fit_generator(
+            generator=generator,
+            steps_per_epoch=steps_per_epoch,
+            epochs=1,
+            verbose=1,
+            # callbacks=[tb, early_stopper, csv_logger, checkpointer],
+            # callbacks=[early_stopper, checkpointer],
+            validation_data=val_generator,
+            validation_steps=40,
+            workers=4)
 
     test.model._layers = [layer for layer in test.model._layers if not isinstance(layer, dict)]
     plot_model(test.model, expand_nested=True, show_shapes=True, to_file='model_struct.png')

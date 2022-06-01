@@ -2,13 +2,13 @@ import numpy as np
 import pandas as pd
 import sys
 import tensorflow as tf
-from keras.layers import Input, Dense, Lambda, Flatten, Reshape, Activation, Dropout, Add, TimeDistributed, Multiply, Conv1D, Conv2D, MaxPooling1D, AveragePooling1D
-from keras.models import Model, Sequential, load_model
-from keras import backend as K
-from keras import metrics
-from keras import optimizers
-from keras.callbacks import History, ModelCheckpoint
-from tensorflow.python.keras import backend
+from tensorflow.keras.layers import Input, Dense, Lambda, Flatten, Reshape, Activation, Dropout, Add, TimeDistributed, Multiply, Conv1D, Conv2D, MaxPooling1D, AveragePooling1D, GlobalAveragePooling1D
+from tensorflow.keras.models import Model, Sequential, load_model
+from tensorflow.python.keras import backend 
+from tensorflow.python.keras import metrics
+from tensorflow.keras import optimizers
+from tensorflow.keras.callbacks import History, ModelCheckpoint
+
 
 
 class WaveNetClassifier():
@@ -115,26 +115,17 @@ class WaveNetClassifier():
     return res, skip
 
   def construct_model(self):  
-    
-    # input_shape = self.input_shape.shape
-
-    # feature_shape = tuple(self.input_tensor.shape[1:])
-    # print(feature_shape)
-
-    # if input_shape[0] :
-    #   batch_size = tuple(input_shape[0])
-    # else:
-    #   batch_size = 8
 
     if self.input_tensor is None:
       x = Input(shape=self.input_shape, name='original_input')
     else:
-      print(backend.is_keras_tensor(self.input_tensor))
+      # print(backend.is_keras_tensor(self.input_tensor))
       if not backend.is_keras_tensor(self.input_tensor):
         x = Input(tensor=self.input_tensor, shape=self.input_shape)
       else:
         x = self.input_tensor
-    print(x)    
+        x._name = "wavenet_input"
+    # print(x)    
 
     if self.expand_dims == True:
       x_reshaped = Reshape(self.input_shape + (1,), name='reshaped_input')(x)
@@ -157,14 +148,12 @@ class WaveNetClassifier():
       out = AveragePooling1D(target_kernel_size, padding='same', name='wave_final')(out)
       out = TimeDistributed(Activation(self.activation))(out)
     else:
-      out = Conv1D(int(self.n_filters/2), int(self.n_filters/2), padding='same', activation='relu', name='conv_500ms')(out)
-      out = Conv1D(self.output_shape, int(self.n_filters/2), padding='same', activation='relu', name='conv_500ms_target_shape')(out)
-      out = AveragePooling1D(100, padding='same',name = 'downsample_to_2Hz')(out)
-      out = Conv1D(self.output_shape, 2, padding='same', activation=self.activation, name='final_conv')(out)
-      # out = AveragePooling1D((int) (self.input_shape[0] / 8000)+1, name='final_pooling')(out)
-      # out = Reshape((self.output_shape))(out)
-      out = Flatten(name='turnlight_output')(out)
-      # out = Activation(self.activation)(out)
+      out = Conv1D(self.n_filters, 8, padding='same', activation='relu', name='conv_500ms')(out)
+      out = Conv1D((int)(self.n_filters/4), 8, padding='same', activation='relu', name='conv_500ms_target_shape')(out)
+      out = AveragePooling1D(8, padding='same',name = 'downsample_to_2Hz')(out)
+      out = Conv1D(self.output_shape, (int)(2048/32), padding='same', name='final_conv')(out)
+      out = GlobalAveragePooling1D(name='globalavg_pooling')(out)
+      out = Activation(self.activation, name='turnlight_output')(out)
     # if self.scale_ratio != 1:
     #   out = Lambda(lambda x: x * self.scale_ratio, name='output_reshaped')(out)
     # print(x)

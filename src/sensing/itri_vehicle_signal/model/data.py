@@ -40,7 +40,7 @@ def threadsafe_generator(func):
 
 class DataSet():
 
-    def __init__(self, seq_length=40, class_limit=None, image_shape=(224, 224, 3)):
+    def __init__(self, seq_length=64, class_limit=None, image_shape=(224, 224, 3)):
         """Constructor.
         seq_length = (int) the number of frames to consider
         class_limit = (int) number of classes to limit the data to.
@@ -61,6 +61,10 @@ class DataSet():
         self.data = self.clean_data()
 
         self.image_shape = image_shape
+
+        train, test = self.split_train_test()
+        self.rand_data_list=list(range(len(train)))
+        random.shuffle(self.rand_data_list)
 
         # # Init FEQE model
         # self.sess, self.t_sr, self.t_lr = self.set_FEQE()
@@ -127,16 +131,25 @@ class DataSet():
                 test.append(item)
         return train, test
 
-    def get_all_sequences_in_memory(self, train_test, data_type):
+    def get_all_sequences_in_memory(self, train_test, data_type, train_split_percent):
         """
         This is a mirror of our generator, but attempts to load everything into
         memory so we can train way faster.
         """
-        # Get the right dataset.
+        # Get the right dataset..
         train, test = self.split_train_test()
+        cut_point = int(len(train)*train_split_percent)
         data = train if train_test == 'train' else test
 
-        print("Loading %d samples into memory for %sing." % (len(data), train_test))
+        if train_test == 'train' :
+            data = [data[i] for i in self.rand_data_list[:cut_point]]
+            print("Loading %d samples into memory for %sing." % (len(data), train_test))
+        else :
+            data = [data[i] for i in self.rand_data_list[cut_point:]]
+            print("Loading %d samples into memory for %sing." % (len(data), train_test))
+        # print(data)
+
+        # print("Loading %d samples into memory for %sing." % (len(data), train_test))
 
         X, y1, y2 = [], [], []
         for row in data:
@@ -171,19 +184,16 @@ class DataSet():
         """
         # Get the right dataset for the generator.
         train, test = self.split_train_test()
-        rand_data_list=list(range(len(train)))
-        random.shuffle(rand_data_list)
         cut_point = int(len(train)*train_split_percent)
-
         data = train if train_test == 'train' else test
 
         if train_test == 'train' :
-            data = [data[i] for i in rand_data_list[:cut_point]]
+            data = [data[i] for i in self.rand_data_list[:cut_point]]
             print("Creating %s generator with %d samples." % (train_test, len(data)))
         else :
-            data = [data[i] for i in rand_data_list[cut_point:]]
+            data = [data[i] for i in self.rand_data_list[cut_point:]]
             print("Creating %s generator with %d samples." % (train_test, len(data)))
-
+        # print(data)
 
         while 1:
             X, y1, y2 = [], [], []
@@ -220,6 +230,9 @@ class DataSet():
 
                 y1.append(self.get_class_one_hot(sample[1]))
                 y2.append(int(sample[4]))
+            # print(np.array(y1).shape)
+            # print(np.array(y2).shape)
+            # print([np.array(y1), np.array(y2)])
             # if train_test == "test":
             #     print(np.array(y2).shape)
             yield np.array(X), [np.array(y1), np.array(y2)]
@@ -275,7 +288,8 @@ class DataSet():
         # path = os.path.join('data', 'pre-train_dataset', sample[0], sample[1])
         path = os.path.join('data', sample[0], sample[1])
         filename = sample[2]
-        images = sorted(glob.glob(os.path.join(path, filename + '*jpg')))
+        images = sorted(glob.glob(os.path.join(path, filename + '-' + '*jpg')))
+        images.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
         return images
 
     @staticmethod
