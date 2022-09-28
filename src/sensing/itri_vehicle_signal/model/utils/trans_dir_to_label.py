@@ -6,12 +6,12 @@ from tqdm import tqdm
 
 label = ["OOO", "OLO", "OOR", "OLR", "BOO", "BLO", "BOR", "BLR", "BBB"]
 
-dir_path = './data/dataset/' 
+dir_path = '../data/rear_dataset/' 
 if not os.path.exists(dir_path):
     os.mkdir(dir_path)
 
-pbar = tqdm(total=len(glob.glob('./test/*/*light_mask/')))
-for file in glob.glob('./test/*/*light_mask/'):
+pbar = tqdm(total=len(glob.glob('./rear_train/*/*light_mask/')))
+for file in glob.glob('./rear_train/*/*light_mask/'):
     # print(file)
     for obj_label in label :
         if obj_label in file:

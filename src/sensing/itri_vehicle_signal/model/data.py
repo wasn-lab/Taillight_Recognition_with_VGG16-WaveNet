@@ -38,9 +38,10 @@ def threadsafe_generator(func):
         return threadsafe_iterator(func(*a, **kw))
     return gen
 
+# +
 class DataSet():
 
-    def __init__(self, seq_length=64, class_limit=None, image_shape=(224, 224, 3)):
+    def __init__(self, seq_length=40, class_limit=None, image_shape=(224, 224, 3)):
         """Constructor.
         seq_length = (int) the number of frames to consider
         class_limit = (int) number of classes to limit the data to.
@@ -72,8 +73,8 @@ class DataSet():
     @staticmethod
     def get_data():
         """Load our data from file."""
-        # with open(os.path.join('data', 'pre-train_dataset', 'data_file.csv'), 'r') as fin:
         with open(os.path.join('data', 'data_file.csv'), 'r') as fin:
+        # with open('/work/u6854278/data_file.csv', 'r') as fin:
             reader = csv.reader(fin)
             data = list(reader)
 
@@ -117,8 +118,25 @@ class DataSet():
         label_hot = to_categorical(label_encoded, len(self.classes))
 
         assert len(label_hot) == len(self.classes)
+#         if class_str == 'flashers' :
+# #             label_hot = [1, 1]
+#             label_L = [1]
+#             label_R = [1]
+#         elif class_str == 'turn_left' :
+# #             label_hot = [1, 0]
+#             label_L = [1]
+#             label_R = [0]
+#         elif class_str == 'turn_right' :
+# #             label_hot = [0, 1]
+#             label_L = [0]
+#             label_R = [1]
+#         else :
+# #             label_hot = [0 ,0]
+#             label_L = [0]
+#             label_R = [0]
 
         return label_hot
+        # return label_L, label_R
 
     def split_train_test(self):
         """Split the data into train and test groups."""
@@ -131,25 +149,16 @@ class DataSet():
                 test.append(item)
         return train, test
 
-    def get_all_sequences_in_memory(self, train_test, data_type, train_split_percent):
+    def get_all_sequences_in_memory(self, train_test, data_type):
         """
         This is a mirror of our generator, but attempts to load everything into
         memory so we can train way faster.
         """
-        # Get the right dataset..
+        # Get the right dataset.
         train, test = self.split_train_test()
-        cut_point = int(len(train)*train_split_percent)
         data = train if train_test == 'train' else test
 
-        if train_test == 'train' :
-            data = [data[i] for i in self.rand_data_list[:cut_point]]
-            print("Loading %d samples into memory for %sing." % (len(data), train_test))
-        else :
-            data = [data[i] for i in self.rand_data_list[cut_point:]]
-            print("Loading %d samples into memory for %sing." % (len(data), train_test))
-        # print(data)
-
-        # print("Loading %d samples into memory for %sing." % (len(data), train_test))
+        print("Loading %d samples into memory for %sing." % (len(data), train_test))
 
         X, y1, y2 = [], [], []
         for row in data:
@@ -187,16 +196,43 @@ class DataSet():
         cut_point = int(len(train)*train_split_percent)
         data = train if train_test == 'train' else test
 
-        if train_test == 'train' :
-            data = [data[i] for i in self.rand_data_list[:cut_point]]
-            print("Creating %s generator with %d samples." % (train_test, len(data)))
-        else :
-            data = [data[i] for i in self.rand_data_list[cut_point:]]
-            print("Creating %s generator with %d samples." % (train_test, len(data)))
-        # print(data)
+#         if train_test == 'train' :
+#             data_pre = [data[i] for i in self.rand_data_list[:cut_point]]
+#             print("Creating %s generator with %d samples." % (train_test, len(data_pre)))
+#         else :
+#             data_pre = [data[i] for i in self.rand_data_list[cut_point:]]
+#             print("Creating %s generator with %d samples." % (train_test, len(data_pre)))
+#         print(data)
+#         print(np.array(data).shape)
 
+        flasher_list = [i for i in data if i[1] == 'flashers']
+        no_signal_list = [i for i in data if i[1] == 'no_signal']
+        turn_left_list = [i for i in data if i[1] == 'turn_left']
+        turn_right_list = [i for i in data if i[1] == 'turn_right']
+        data_num = [len(flasher_list),len(no_signal_list),len(turn_left_list),len(turn_right_list)]
+        print(data_num)
+        
+        data = []
+        random.shuffle(flasher_list)
+        random.shuffle(no_signal_list)
+        random.shuffle(turn_left_list)
+        random.shuffle(turn_right_list)
+        # if train_test == "train" :
+            # flasher_list = flasher_list[:min(data_num)]
+            # no_signal_list = no_signal_list[:min(data_num)]
+            # turn_left_list = turn_left_list[:min(data_num)]
+            # turn_right_list = turn_right_list[:min(data_num)]
+        for i in range(min(data_num)) :
+            data.append(flasher_list[i])
+            data.append(no_signal_list[i])
+            data.append(turn_left_list[i])
+            data.append(turn_right_list[i])
+        print("Creating %s generator with %d samples." % (train_test, len(data))) 
+        random.shuffle(data)
+        # print(data)
+        current_step = 0
         while 1:
-            X, y1, y2 = [], [], []
+            X, y1, y1_L, y1_R, y2 = [], [], [], [], []
 
             # Generate batch_size samples.
             for _ in range(batch_size):
@@ -204,13 +240,16 @@ class DataSet():
                 sequence = None
 
                 # Get a random sample.
-                sample = random.choice(data)
+#                 sample = random.choice(data)
+                sample = data[current_step]
+                # print(sample)
 
                 # Check to see if we've already saved this sequence.
                 if data_type is "images":
                     # Get and resample frames.
                     frames = self.get_frames_for_sample(sample)
                     frames = self.rescale_list(frames, self.seq_length)
+                    # print(frames)
 
                     # # FEQE maybe can app after this line
                     # # because FEQE also use a sequence as input
@@ -229,14 +268,37 @@ class DataSet():
                 X.append(sequence)
 
                 y1.append(self.get_class_one_hot(sample[1]))
-                y2.append(int(sample[4]))
-            # print(np.array(y1).shape)
-            # print(np.array(y2).shape)
-            # print([np.array(y1), np.array(y2)])
+                # y_L, y_R = self.get_class_one_hot(sample[1])
+                # y1_L.append(float(y_L[0]))
+                # y1_R.append(float(y_R[0]))
+                y2.append(float(sample[4]))
             # if train_test == "test":
             #     print(np.array(y2).shape)
-            yield np.array(X), [np.array(y1), np.array(y2)]
-            # yield np.array(X), np.array(y1)
+            
+                current_step += 1
+                if current_step > len(data)-5 :
+                    data = []
+                    random.shuffle(flasher_list)
+                    random.shuffle(no_signal_list)
+                    random.shuffle(turn_left_list)
+                    random.shuffle(turn_right_list)
+                    for i in range(min(data_num)) :
+                        data.append(flasher_list[i])
+                        data.append(no_signal_list[i])
+                        data.append(turn_left_list[i])
+                        data.append(turn_right_list[i])
+                    random.shuffle(data)
+                    current_step = 0
+#                 print(data)
+                # np.set_printoptions(threshold=sys.maxsize)
+                # print(np.array(X))
+                # print([np.array(y1), np.array(y2)])
+                # print([np.array(y1_L), np.array(y1_R), np.array(y2)])
+                # print(np.array(y1))
+                # input()
+            # yield np.array(X), [np.array(y1), np.array(y2)]
+            # yield np.array(X), [np.array(y1_L), np.array(y1_R), np.array(y2)]
+            yield np.array(X), np.array(y1)
 
 
     def build_image_sequence(self, frames):
@@ -284,11 +346,10 @@ class DataSet():
     def get_frames_for_sample(sample):
         """Given a sample row from the data file, get all the corresponding frame
         filenames."""
-
-        # path = os.path.join('data', 'pre-train_dataset', sample[0], sample[1])
         path = os.path.join('data', sample[0], sample[1])
+        # path = os.path.join('/work/u6854278', sample[0], sample[1])
         filename = sample[2]
-        images = sorted(glob.glob(os.path.join(path, filename + '-' + '*jpg')))
+        images = sorted(glob.glob(os.path.join(path, filename + "-" + '*jpg')))
         images.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
         return images
 
@@ -317,10 +378,19 @@ class DataSet():
         """Given a prediction, print the top classes."""
         # Get the prediction for each label.
 
+        # result = []
+        # print("%s: %.2f" % ('L', predictions[0]))
+        # print("%s: %.2f" % ('R', predictions[1]))
+        # result.append("%s: %.2f" % ('L', predictions[0]))
+        # result.append("%s: %.2f" % ('R', predictions[1]))
+        
+        # return result
+
+        
         label_predictions = {}
         for i, label in enumerate(self.classes):
             label_predictions[label] = predictions[i]
-
+        
         # Now sort them.
         sorted_lps = sorted(
             label_predictions.items(),
@@ -336,6 +406,7 @@ class DataSet():
             result.append("%s: %.2f" % (class_prediction[0], class_prediction[1]))
 
         return result
+# -
 
 """
     def set_FEQE(sef):

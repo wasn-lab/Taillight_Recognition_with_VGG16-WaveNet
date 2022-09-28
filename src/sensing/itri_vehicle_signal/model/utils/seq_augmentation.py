@@ -43,7 +43,7 @@ seq = iaa.Sequential([
 	# )
 
 	# iaa.AddToBrightness((0, 100)),
-	iaa.AddToBrightness((-10, 60)),
+	iaa.AddToBrightness((-10, 20)),
 
 	#iaa.AddToHue((-255, 255)),
 
@@ -55,14 +55,16 @@ seq = iaa.Sequential([
 	#Apply random four point perspective transformations to images
 	#most transformations don’t change the image very much, 
 	#while some “focus” on polygons far inside the image.
-	iaa.PerspectiveTransform(scale=(0.01, 0.1)),
+	iaa.PerspectiveTransform(scale=(0.005, 0.01)),
 
 
 	# The augmenter has the parameters alpha and sigma.
 	# alpha controls the strength of the displacement: higher values mean that pixels are moved further. 
 	# sigma controls the smoothness of the displacement: higher values lead to smoother patterns – as if the image was below water 
 	# – while low values will cause indivdual pixels to be moved very differently from their neighbours, leading to noisy and pixelated images.
-	iaa.ElasticTransformation(alpha=(0, 1), sigma=(0.25, 0.5)),
+	iaa.ElasticTransformation(alpha=(0, 1), sigma=(0.125, 0.5)),
+
+	iaa.AdditiveGaussianNoise(scale=(0, 0.01*255), per_channel=True)
 
 	# iaa.AddToHueAndSaturation((-50, 50), per_channel=True),
 
@@ -83,9 +85,14 @@ def aug_frames(path, aug_count):
 
 	path = os.path.abspath(path)
 
+	if aug_count < 1 :
+		print(path)
+		return()
+
 	for root, dirs, files in os.walk(path):
 		#print (root, dirs, files)
-		frames = sorted(glob.glob(os.path.join(root, '*jpg')))
+		frames = sorted(glob.glob(os.path.join(root, '*png')))
+		frames.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
 		nb_frames = len(frames)
 
 		#print("root: %s" % root)
@@ -110,18 +117,20 @@ def aug_frames(path, aug_count):
 
 			dirname, basename = os.path.split(path)
 
-			#print("dirname: %s" % dirname)
-			#print("basename: %s" % basename)
-
 			print("base sequence: [ %s ]" % basename)
 
 			aug_seq_name = dirname + "/aug_seq_%02d_" % (aug_i) + basename
 
 			aug_seq_name = "aug_seq_%02d_" % (aug_i) + basename
 
-			aug_seq_path = dirname + "/" + aug_seq_name + "/light_mask"
+			dirname, basename = os.path.split(dirname)
+			# print("dirname: %s" % dirname)
+			# print("basename: %s" % basename)
 
-			#print("aug_seq_path: %s" % aug_seq_path)
+			aug_seq_path = dirname + "/" + aug_seq_name +'_'+ basename + "/light_mask"
+
+			print("aug_seq_path: %s" % aug_seq_path)
+			# input()
 			print("    create augmented sequence: [ %s ]" % aug_seq_name)
 
 			mkdir(aug_seq_path)

@@ -8,7 +8,7 @@ import cv2
 
 def add_frames(train_or_test, classname, path, brake):
 
-	seq_len = 64
+	seq_len = 32
 
 	nb_frames = 0
 
@@ -23,13 +23,13 @@ def add_frames(train_or_test, classname, path, brake):
 		# print(frames)
 		# input()
 
-		if(nb_frames == 0):
+		if(nb_frames < seq_len):
 			continue
 
 		last_seq_idx = int(get_last_seq_idx(train_or_test, classname))
 		print("last_seq_idx: %d" % last_seq_idx)
 
-		if(nb_frames <= seq_len):
+		if(nb_frames == seq_len):
 			#print(nb_frames)
 			#print(frames)
 			frame_cnt = 0

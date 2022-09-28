@@ -18,7 +18,7 @@ parser.add_argument('--aug', type=bool, default= False)
 args = parser.parse_args()
 
 
-dataset_path = "./sort_dataset"
+dataset_path = "./rear_train"
 
 label = ["OOO", "OLO", "OOR", "OLR", "BOO", "BLO", "BOR", "BLR", "BBB"]
 
@@ -35,7 +35,7 @@ def counting_label():
 
     for root, dirs, files in os.walk(dataset_path):
         for obj_label in label:
-            obj_list = [i for i in dirs if i[-3:] == obj_label]
+            obj_list = [i for i in dirs if obj_label in i]
             if not obj_list:
                 continue
             print(obj_label+" has "+str(len(obj_list)))
@@ -89,7 +89,7 @@ def do_seq_augmentation(aug_count, aug_flag=False):
     print("Get more data by augment")
     for root, dirs, files in os.walk(dataset_path):
         for obj_label in label:
-            obj_list = [i for i in dirs if i[-3:] == obj_label]
+            obj_list = [i for i in dirs if obj_label in i]
             if not obj_list:
                 continue
             for obj in obj_list:
@@ -166,4 +166,4 @@ if __name__ == '__main__':
     print(args.aug)
     aug_count = counting_label()
     do_seq_augmentation(aug_count, args.aug)
-    split_to_train_test()
+    # split_to_train_test()
