@@ -1,4 +1,5 @@
 前幾層的資料夾是有包含ROS的，純車尾燈辨識的程式在 itriadv/src/sensing/ itri_vehicle_signal/model 底下
+執行前要先把dataset準備好
 
 Rear Signal Dataset
 http://vllab1.ucmerced.edu/~hhsu22/rear_signal/rear_signal
