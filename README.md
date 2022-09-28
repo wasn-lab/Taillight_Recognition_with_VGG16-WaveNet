@@ -4,6 +4,7 @@ Rear Signal Dataset
 http://vllab1.ucmerced.edu/~hhsu22/rear_signal/rear_signal
 
 If just want to use pre-train model to run the VGG16-WaveNet, go to itriadv/src/sensing/ itri_vehicle_signal/model, and run clasify.py
+
 pre-train model (不知道學校的gmail甚麼時候會關起來)
 Turn light : https://drive.google.com/file/d/1LkLLo_ki_tr7zLdrQl2mT9PABS7qGdcY/view?usp=sharing 
 Brake light : https://drive.google.com/file/d/1khSyjkEBZW-zH3pzMszdr8MGXV2JYVy1/view?usp=sharing
